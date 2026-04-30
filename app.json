@@ -1,0 +1,88 @@
+{
+  "expo": {
+    "name": "Strake Jesuit Tutors",
+    "slug": "strakejesuit-tutors",
+    "version": "1.0.0",
+    "platforms": ["ios", "android", "web"],
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1B4D2E"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.strakejesuit.tutors",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Strake Jesuit Tutors uses your photo library so you can set a profile picture.",
+        "NSCameraUsageDescription": "Strake Jesuit Tutors uses your camera so you can take a profile photo.",
+        "NSPhotoLibraryAddUsageDescription": "Strake Jesuit Tutors saves profile photos to your library.",
+        "NSCalendarsUsageDescription": "Strake Jesuit Tutors adds your confirmed tutoring sessions to your calendar.",
+        "NSRemindersUsageDescription": "Strake Jesuit Tutors sets reminders so you never miss a tutoring session.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "privacyManifests": {
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+          }
+        ]
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1B4D2E"
+      },
+      "package": "com.strakejesuit.tutors",
+      "versionCode": 1,
+      "permissions": [
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "CAMERA",
+        "READ_CALENDAR",
+        "WRITE_CALENDAR"
+      ]
+    },
+    "scheme": "strakejesuittutors",
+    "plugins": [
+      "expo-font",
+      "expo-asset",
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "Strake Jesuit Tutors adds confirmed tutoring sessions to your calendar.",
+          "remindersPermission": "Strake Jesuit Tutors sets reminders so you never miss a session."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Strake Jesuit Tutors uses your photo library so you can set a profile picture.",
+          "cameraPermission": "Strake Jesuit Tutors uses your camera so you can take a profile photo."
+        }
+      ]
+    ],
+    "web": {
+      "favicon": "./assets/icon.png",
+      "name": "Strake Jesuit Tutors",
+      "shortName": "SJ Tutors",
+      "description": "Peer-to-peer SAT & AP tutoring for Strake Jesuit students",
+      "lang": "en",
+      "backgroundColor": "#1B4D2E",
+      "themeColor": "#1B4D2E",
+      "bundler": "metro"
+    },
+    "extra": {
+      "privacyPolicyUrl": "https://betterullc.com/privacy",
+      "termsOfServiceUrl": "https://betterullc.com/terms",
+      "eas": {
+        "projectId": ""
+      }
+    }
+  }
+}
