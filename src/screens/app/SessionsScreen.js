@@ -11,12 +11,14 @@ import colors from '../../theme/colors';
 import { heading } from '../../theme/fonts';
 import SessionCard from '../../components/SessionCard';
 import { addSessionToCalendar, getSessionTimeLabel } from '../../utils/calendar';
+import { useResponsive } from '../../hooks/useResponsive';
 
 const TABS = ['Upcoming', 'Past'];
 const useNativeDriver = Platform.OS !== 'web';
 
 export default function SessionsScreen({ navigation }) {
   const { profile } = useAuthStore();
+  const { isWide, columns } = useResponsive();
   const [tab, setTab]         = useState('Upcoming');
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -167,7 +169,10 @@ export default function SessionsScreen({ navigation }) {
         <FlatList
           data={sessions}
           keyExtractor={(s) => s.id}
-          contentContainerStyle={styles.list}
+          key={columns}
+          numColumns={columns}
+          columnWrapperStyle={columns > 1 ? styles.columnWrapper : undefined}
+          contentContainerStyle={[styles.list, isWide && styles.listWide]}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={styles.empty}>
@@ -184,6 +189,7 @@ export default function SessionsScreen({ navigation }) {
             </View>
           }
           renderItem={({ item }) => (
+            <View style={columns > 1 ? styles.gridItem : undefined}>
             <SessionCard
               session={item}
               currentUserId={profile?.id}
@@ -193,6 +199,7 @@ export default function SessionsScreen({ navigation }) {
               onAddToCalendar={handleAddToCalendar}
               calendarAdded={calendarAdded.has(item.id)}
             />
+            </View>
           )}
         />
       )}
@@ -318,7 +325,10 @@ const styles = StyleSheet.create({
   tabTextActive: { color: colors.red, fontWeight: '800' },
 
   loader: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  list:   { padding: 14, paddingBottom: 32 },
+  list:      { padding: 14, paddingBottom: 32 },
+  listWide:  { maxWidth: 1100, alignSelf: 'center', width: '100%' },
+  columnWrapper: { gap: 12 },
+  gridItem:  { flex: 1 },
   empty:  { alignItems: 'center', paddingTop: 72 },
   emptyText: { fontSize: 16, fontWeight: '700', color: colors.gray500, marginTop: 14, marginBottom: 20 },
   findBtn:  { backgroundColor: colors.red, borderRadius: 14, paddingHorizontal: 24, paddingVertical: 12 },

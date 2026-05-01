@@ -12,6 +12,7 @@ import SubjectBadge from '../../components/SubjectBadge';
 import RatingStars from '../../components/RatingStars';
 import AvailabilityGrid from '../../components/AvailabilityGrid';
 import ReportModal from '../../components/ReportModal';
+import { useResponsive } from '../../hooks/useResponsive';
 
 export default function TutorProfileScreen({ route, navigation }) {
   const { tutor: initialTutor } = route.params;
@@ -24,6 +25,7 @@ export default function TutorProfileScreen({ route, navigation }) {
   const [loading, setLoading]   = useState(true);
   const [reportVisible, setReportVisible] = useState(false);
 
+  const { isWide } = useResponsive();
   const initials = tutor.full_name?.split(' ').map((w) => w[0]).slice(0, 2).join('') ?? '?';
   const isSelf   = myProfile?.id === tutor.id;
 
@@ -89,9 +91,7 @@ export default function TutorProfileScreen({ route, navigation }) {
           )}
           <Text style={styles.heroName}>{tutor.full_name}</Text>
           <Text style={styles.heroEmail}>{tutor.email}</Text>
-          {tutor.phone && (
-            <Text style={styles.heroPhone}>{tutor.phone}</Text>
-          )}
+          {tutor.phone && <Text style={styles.heroPhone}>{tutor.phone}</Text>}
           <RatingStars rating={tutor.avg_rating} count={tutor.review_count} size={15} />
         </View>
 
@@ -99,7 +99,7 @@ export default function TutorProfileScreen({ route, navigation }) {
         <View style={styles.statsBar}>
           {[
             { icon: 'checkmark-circle-outline', val: tutor.session_count ?? 0, lbl: 'Sessions' },
-            { icon: 'book-outline',             val: (tutor.subjects ?? []).length,  lbl: 'Subjects' },
+            { icon: 'book-outline',             val: (tutor.subjects ?? []).length, lbl: 'Subjects' },
             { icon: 'star-outline',             val: tutor.avg_rating ? Number(tutor.avg_rating).toFixed(1) : '—', lbl: 'Rating' },
           ].map((s, i) => (
             <React.Fragment key={s.lbl}>
@@ -113,70 +113,77 @@ export default function TutorProfileScreen({ route, navigation }) {
           ))}
         </View>
 
-        {/* Bio */}
-        {tutor.bio && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>About</Text>
-            <Text style={styles.bio}>{tutor.bio}</Text>
+        {/* ── Desktop: two-column body ── Mobile: stacked ── */}
+        <View style={isWide ? styles.desktopBody : undefined}>
+
+          {/* Left column (desktop) / full (mobile): bio + subjects + availability */}
+          <View style={isWide ? styles.desktopCol : undefined}>
+            {tutor.bio && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>About</Text>
+                <Text style={styles.bio}>{tutor.bio}</Text>
+              </View>
+            )}
+
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Subjects</Text>
+              <View style={styles.badgeRow}>
+                {(tutor.subjects ?? []).map((s) => (
+                  <SubjectBadge
+                    key={typeof s === 'object' ? s.subject : s}
+                    subject={typeof s === 'object' ? s.subject : s}
+                    grade={typeof s === 'object' ? s.grade : undefined}
+                  />
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Availability</Text>
+              <Text style={styles.gridHint}>
+                {isSelf ? 'Your free periods' : 'Tap a green slot to book a session'}
+              </Text>
+              {!loading && (
+                <AvailabilityGrid
+                  availability={availability}
+                  highlightSlot={selectedSlot}
+                  onSelectSlot={isSelf ? undefined : (d, p) => setSlot({ day: d, period: p })}
+                />
+              )}
+            </View>
           </View>
-        )}
 
-        {/* Subjects */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Subjects</Text>
-          <View style={styles.badgeRow}>
-            {(tutor.subjects ?? []).map((s) => (
-              <SubjectBadge
-                key={typeof s === 'object' ? s.subject : s}
-                subject={typeof s === 'object' ? s.subject : s}
-                grade={typeof s === 'object' ? s.grade : undefined}
-              />
-            ))}
-          </View>
-        </View>
-
-        {/* Availability grid */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Availability</Text>
-          <Text style={styles.gridHint}>
-            {isSelf ? 'Your free periods' : 'Tap a green slot to book a session'}
-          </Text>
-          {!loading && (
-            <AvailabilityGrid
-              availability={availability}
-              highlightSlot={selectedSlot}
-              onSelectSlot={isSelf ? undefined : (d, p) => setSlot({ day: d, period: p })}
-            />
-          )}
-        </View>
-
-        {/* Reviews */}
-        {reviews.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Reviews</Text>
-            {reviews.map((r) => {
-              const revInitials = r.reviewer?.full_name?.split(' ').map((w) => w[0]).slice(0, 2).join('') ?? '?';
-              return (
-                <View key={r.id} style={styles.reviewCard}>
-                  <View style={styles.reviewTop}>
-                    {r.reviewer?.avatar_url ? (
-                      <Image source={{ uri: r.reviewer.avatar_url }} style={styles.reviewAvatar} />
-                    ) : (
-                      <View style={styles.reviewAvatarPlaceholder}>
-                        <Text style={styles.reviewInitials}>{revInitials}</Text>
+          {/* Right column (desktop) / full (mobile): reviews */}
+          <View style={isWide ? styles.desktopCol : undefined}>
+            {reviews.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Reviews</Text>
+                {reviews.map((r) => {
+                  const revInitials = r.reviewer?.full_name?.split(' ').map((w) => w[0]).slice(0, 2).join('') ?? '?';
+                  return (
+                    <View key={r.id} style={styles.reviewCard}>
+                      <View style={styles.reviewTop}>
+                        {r.reviewer?.avatar_url ? (
+                          <Image source={{ uri: r.reviewer.avatar_url }} style={styles.reviewAvatar} />
+                        ) : (
+                          <View style={styles.reviewAvatarPlaceholder}>
+                            <Text style={styles.reviewInitials}>{revInitials}</Text>
+                          </View>
+                        )}
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.reviewAuthor}>{r.reviewer?.full_name ?? 'Anonymous'}</Text>
+                          <RatingStars rating={r.rating} size={12} showCount={false} />
+                        </View>
                       </View>
-                    )}
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.reviewAuthor}>{r.reviewer?.full_name ?? 'Anonymous'}</Text>
-                      <RatingStars rating={r.rating} size={12} showCount={false} />
+                      {r.comment && <Text style={styles.reviewComment}>{r.comment}</Text>}
                     </View>
-                  </View>
-                  {r.comment && <Text style={styles.reviewComment}>{r.comment}</Text>}
-                </View>
-              );
-            })}
+                  );
+                })}
           </View>
         )}
+
+          </View>
+        </View>
 
         <View style={{ height: 120 }} />
       </ScrollView>
@@ -263,6 +270,10 @@ const styles = StyleSheet.create({
   statVal:     { fontSize: 18, fontFamily: heading.md.fontFamily, fontWeight: '800', color: colors.black },
   statLbl:     { fontSize: 11, color: colors.gray500 },
   statDivider: { width: 1, backgroundColor: colors.gray100 },
+
+  // Desktop two-column body
+  desktopBody: { flexDirection: 'row', alignItems: 'flex-start', paddingHorizontal: 16, paddingTop: 8, gap: 0 },
+  desktopCol:  { flex: 1 },
 
   section: {
     backgroundColor: colors.white,
