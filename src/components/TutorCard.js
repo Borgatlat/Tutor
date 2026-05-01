@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../theme/colors';
 import { cardShadow } from '../theme/shadows';
@@ -75,6 +75,13 @@ const styles = StyleSheet.create({
     padding: 18,
     marginBottom: 14,
     ...cardShadow,
+    ...Platform.select({
+      web: {
+        transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+        cursor: 'pointer',
+      },
+      default: {},
+    }),
   },
   top: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   avatar: { width: 52, height: 52, borderRadius: 26, marginRight: 12 },
