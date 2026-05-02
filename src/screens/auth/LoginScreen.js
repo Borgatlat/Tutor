@@ -81,8 +81,11 @@ export default function LoginScreen({ navigation }) {
               placeholder={`name${SCHOOL_EMAIL_DOMAIN}`}
               placeholderTextColor={colors.gray300}
               keyboardType="email-address"
+              inputMode="email"
               autoCapitalize="none"
               autoCorrect={false}
+              autoComplete="email"
+              textContentType="emailAddress"
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
@@ -104,6 +107,8 @@ export default function LoginScreen({ navigation }) {
               placeholder="••••••••"
               placeholderTextColor={colors.gray300}
               secureTextEntry={!showPw}
+              autoComplete="current-password"
+              textContentType="password"
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
@@ -201,31 +206,41 @@ export default function LoginScreen({ navigation }) {
   }
 
   // ─── Mobile layout ───────────────────────────────────────────────────────────
+  // On web (iPhone Safari) KeyboardAvoidingView collapses the container and
+  // blocks input taps — the browser handles keyboard avoidance natively.
+  const Inner = (
+    <ScrollView
+      contentContainerStyle={styles.scroll}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      bounces={true}
+    >
+      <View style={styles.hero}>
+        <View style={styles.heroBadge}>
+          <Ionicons name="school" size={32} color={colors.white} />
+        </View>
+        <Text style={styles.heroSchool}>STRAKE JESUIT</Text>
+        <Text style={styles.heroTitle}>Welcome back,{'\n'}Crusader</Text>
+      </View>
+      <View style={styles.card}>
+        <FormContent />
+      </View>
+    </ScrollView>
+  );
+
   return (
     <SafeAreaView style={styles.safe}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scroll}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          bounces={true}
+      {Platform.OS === 'web' ? (
+        <View style={{ flex: 1 }}>{Inner}</View>
+      ) : (
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
         >
-          <View style={styles.hero}>
-            <View style={styles.heroBadge}>
-              <Ionicons name="school" size={32} color={colors.white} />
-            </View>
-            <Text style={styles.heroSchool}>STRAKE JESUIT</Text>
-            <Text style={styles.heroTitle}>Welcome back,{'\n'}Crusader</Text>
-          </View>
-          <View style={styles.card}>
-            <FormContent />
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+          {Inner}
+        </KeyboardAvoidingView>
+      )}
     </SafeAreaView>
   );
 }

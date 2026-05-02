@@ -245,31 +245,39 @@ export default function SignUpScreen({ navigation }) {
   }
 
   // ─── Mobile layout ───────────────────────────────────────────────────────────
+  const SignUpInner = (
+    <ScrollView
+      contentContainerStyle={styles.scroll}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      bounces={true}
+    >
+      <View style={styles.hero}>
+        <TouchableOpacity style={styles.mobileBackBtn} onPress={() => navigation.goBack()}>
+          <Ionicons name="chevron-back" size={22} color={colors.white} />
+        </TouchableOpacity>
+        <Text style={styles.heroSchool}>STRAKE JESUIT</Text>
+        <Text style={styles.heroTitle}>Join the{'\n'}Community</Text>
+      </View>
+      <View style={styles.card}>
+        <FormContent />
+      </View>
+    </ScrollView>
+  );
+
   return (
     <SafeAreaView style={styles.safe}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scroll}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          bounces={true}
+      {Platform.OS === 'web' ? (
+        <View style={{ flex: 1 }}>{SignUpInner}</View>
+      ) : (
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
         >
-          <View style={styles.hero}>
-            <TouchableOpacity style={styles.mobileBackBtn} onPress={() => navigation.goBack()}>
-              <Ionicons name="chevron-back" size={22} color={colors.white} />
-            </TouchableOpacity>
-            <Text style={styles.heroSchool}>STRAKE JESUIT</Text>
-            <Text style={styles.heroTitle}>Join the{'\n'}Community</Text>
-          </View>
-          <View style={styles.card}>
-            <FormContent />
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+          {SignUpInner}
+        </KeyboardAvoidingView>
+      )}
     </SafeAreaView>
   );
 }

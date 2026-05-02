@@ -158,18 +158,12 @@ export default function ProfileSetupScreen() {
     }
   };
 
-  return (
-    <SafeAreaView style={styles.safe}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scroll}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
+  const setupScroll = (
+    <ScrollView
+      contentContainerStyle={styles.scroll}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
 
           {/* Header */}
           <View style={styles.hero}>
@@ -334,8 +328,22 @@ export default function ProfileSetupScreen() {
             </TouchableOpacity>
 
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+    </ScrollView>
+  );
+
+  return (
+    <SafeAreaView style={styles.safe}>
+      {Platform.OS === 'web' ? (
+        <View style={{ flex: 1 }}>{setupScroll}</View>
+      ) : (
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
+        >
+          {setupScroll}
+        </KeyboardAvoidingView>
+      )}
     </SafeAreaView>
   );
 }
