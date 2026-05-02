@@ -1,21 +1,21 @@
 // ─── Strake Jesuit Official Palette ──────────────────────────────────────────
-// Matched from strakejesuit.org: dark forest green primary, gold accent, white
-// "red" keys map to the dark-green primary so no other files need renaming
-// "green" keys map to the gold accent
+// Primary: dark forest green  |  Accent: medium forest green  |  Base: white
+// "red" keys  → dark forest green primary (hero backgrounds, nav, headers)
+// "green" keys → medium forest green accent (buttons, badges, highlights)
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default {
-  // Primary brand — dark forest green (replaces all former "red" usages)
+  // Primary brand — dark forest green
   red:        '#1B4D2E',   // primary hero / header background
   redDark:    '#123320',   // pressed / darker variant
   redLight:   '#2D6B44',   // hover / lighter variant
   redMuted:   '#E8F0EC',   // tinted background chips
 
-  // Accent — gold (replaces all former "green" usages)
-  green:      '#C9A547',   // gold accent buttons, badges
-  greenDark:  '#A8863A',   // darker gold
-  greenLight: '#D4B560',   // lighter gold
-  greenMuted: '#FAF3E0',   // gold-tinted background
+  // Accent — medium forest green
+  green:      '#2E7D52',   // accent buttons, badges, active states
+  greenDark:  '#1F5C3A',   // darker accent (pressed states)
+  greenLight: '#3D9E68',   // lighter accent (hover)
+  greenMuted: '#E8F4EE',   // green-tinted background
 
   // Base
   white:      '#FFFFFF',
@@ -33,7 +33,7 @@ export default {
   black:      '#111214',
 
   // Semantic
-  warning:    '#C9A547',   // reuse gold for warnings/stars
+  warning:    '#C9A547',   // gold for warnings / star ratings
   error:      '#C0392B',   // destructive actions / error text
   errorMuted: '#FEF2F2',   // error banner background
   errorBorder:'#FECACA',   // error banner border

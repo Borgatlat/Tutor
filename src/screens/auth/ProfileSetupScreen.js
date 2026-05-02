@@ -95,10 +95,11 @@ export default function ProfileSetupScreen() {
         catch (e) { if (__DEV__) console.warn('Avatar upload failed:', e.message); }
       }
 
-      // 2. Update profile row
+      // 2. Update profile row (always set setup_complete: true here)
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
+          setup_complete: true,
           ...(bio       ? { bio }       : {}),
           ...(phone     ? { phone }     : {}),
           ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
@@ -145,14 +146,14 @@ export default function ProfileSetupScreen() {
       // 5. Refresh profile in store (best effort)
       try { await refreshProfile(); } catch (e) { if (__DEV__) console.warn('refreshProfile:', e); }
 
-      // 5. Always mark setup complete — this switches App.js to AppNavigator
-      completeSetup();
+      // 5. Mark setup complete in DB + local state — switches App.js to AppNavigator
+      await completeSetup();
 
     } catch (e) {
       if (__DEV__) console.error('[ProfileSetup] handleSave:', e);
       setSaveError(e?.message ?? 'Something went wrong. Please try again.');
-      // Still navigate forward — user can fix profile details later from Profile tab
-      completeSetup();
+      // Still navigate forward — user can update profile later from Profile tab
+      await completeSetup();
     } finally {
       setLoading(false);
     }
@@ -323,7 +324,7 @@ export default function ProfileSetupScreen() {
               </View>
             ) : null}
 
-            <TouchableOpacity style={styles.skipBtn} onPress={completeSetup}>
+            <TouchableOpacity style={styles.skipBtn} onPress={() => completeSetup()}>
               <Text style={styles.skipText}>Skip for now</Text>
             </TouchableOpacity>
 
