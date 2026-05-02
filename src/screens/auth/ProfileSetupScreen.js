@@ -11,7 +11,7 @@ import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { heading } from '../../theme/fonts';
 import { SUBJECT_CATEGORIES } from '../../constants';
-import AvailabilityGrid from '../../components/AvailabilityGrid';
+import { DAYS } from '../../constants';
 
 export default function ProfileSetupScreen() {
   const { session, profile, refreshProfile, completeSetup } = useAuthStore();
@@ -26,18 +26,22 @@ export default function ProfileSetupScreen() {
   const [phone, setPhone]               = useState('');
   const [selectedSubjects, setSelected] = useState([]);
   const [gradeMap, setGradeMap]         = useState({});
-  const [availability, setAvailability] = useState([]);  // { day, period }[]
+  const [selectedPeriods, setSelectedPeriods] = useState(new Set()); // set of period numbers
   const [loading, setLoading]           = useState(false);
   const [saveError, setSaveError]       = useState('');
 
-  const toggleSlot = (day, period) => {
-    setAvailability((prev) => {
-      const exists = prev.some((a) => a.day === day && a.period === period);
-      return exists
-        ? prev.filter((a) => !(a.day === day && a.period === period))
-        : [...prev, { day, period }];
+  const togglePeriod = (period) => {
+    setSelectedPeriods((prev) => {
+      const next = new Set(prev);
+      if (next.has(period)) next.delete(period); else next.add(period);
+      return next;
     });
   };
+
+  // Expand selected periods across all days for DB save
+  const availabilitySlots = [...selectedPeriods].flatMap((p) =>
+    DAYS.map((d) => ({ day: d, period: p }))
+  );
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -108,24 +112,18 @@ export default function ProfileSetupScreen() {
       }
 
       // 4. Save free periods / availability
-      if (availability.length > 0) {
+      if (availabilitySlots.length > 0) {
         if (isTutor) {
-          await supabase
-            .from('tutor_availability')
-            .delete()
-            .eq('tutor_id', userId);
-          await supabase
-            .from('tutor_availability')
-            .insert(availability.map(({ day, period }) => ({ tutor_id: userId, day, period })));
+          await supabase.from('tutor_availability').delete().eq('tutor_id', userId);
+          await supabase.from('tutor_availability').insert(
+            availabilitySlots.map(({ day, period }) => ({ tutor_id: userId, day, period }))
+          );
         }
         if (isStudent) {
-          await supabase
-            .from('student_availability')
-            .delete()
-            .eq('student_id', userId);
-          await supabase
-            .from('student_availability')
-            .insert(availability.map(({ day, period }) => ({ student_id: userId, day, period })));
+          await supabase.from('student_availability').delete().eq('student_id', userId);
+          await supabase.from('student_availability').insert(
+            availabilitySlots.map(({ day, period }) => ({ student_id: userId, day, period }))
+          );
         }
       }
 
@@ -261,20 +259,31 @@ export default function ProfileSetupScreen() {
             </Text>
             <Text style={styles.hint}>
               {isTutor
-                ? 'Students will see and book these slots — tap to mark a cell free'
-                : 'Tap to mark your free periods so tutors with matching slots rank higher'}
+                ? 'Students will see and book these slots'
+                : 'Tutors with matching free periods rank higher in search'}
             </Text>
-            <View style={styles.gridWrap}>
-              <AvailabilityGrid
-                availability={availability}
-                onToggle={toggleSlot}
-              />
+            <View style={styles.periodChipRow}>
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((p) => {
+                const active = selectedPeriods.has(p);
+                return (
+                  <TouchableOpacity
+                    key={p}
+                    style={[styles.periodChip, active && styles.periodChipActive]}
+                    onPress={() => togglePeriod(p)}
+                    activeOpacity={0.75}
+                  >
+                    <Text style={[styles.periodChipText, active && styles.periodChipTextActive]}>
+                      P{p}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
-            {availability.length > 0 && (
+            {selectedPeriods.size > 0 && (
               <View style={styles.availCountBadge}>
                 <Ionicons name="checkmark-circle" size={14} color={colors.green} />
                 <Text style={styles.availCountText}>
-                  {availability.length} slot{availability.length !== 1 ? 's' : ''} selected
+                  {selectedPeriods.size} period{selectedPeriods.size !== 1 ? 's' : ''} selected
                 </Text>
               </View>
             )}
@@ -426,13 +435,33 @@ const styles = StyleSheet.create({
   skipBtn:  { alignItems: 'center', marginTop: 16 },
   skipText: { fontSize: 14, color: colors.gray400, textDecorationLine: 'underline' },
 
-  gridWrap: {
-    backgroundColor: colors.offWhite,
-    borderRadius: 14,
-    borderWidth: 1,
+  periodChipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginTop: 4,
+  },
+  periodChip: {
+    width: 54,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1.5,
     borderColor: colors.gray200,
-    padding: 12,
-    overflow: 'hidden',
+    backgroundColor: colors.offWhite,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  periodChipActive: {
+    backgroundColor: colors.green,
+    borderColor: colors.green,
+  },
+  periodChipText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.gray600,
+  },
+  periodChipTextActive: {
+    color: colors.white,
   },
   availCountBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
