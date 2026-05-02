@@ -10,7 +10,7 @@ import { supabase, uploadAvatar } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { heading } from '../../theme/fonts';
-import { SUBJECT_CATEGORIES } from '../../constants';
+import { SUBJECT_CATEGORIES, PERIODS } from '../../constants';
 import { DAYS } from '../../constants';
 
 export default function ProfileSetupScreen() {
@@ -22,11 +22,26 @@ export default function ProfileSetupScreen() {
   const isStudent = role === 'student' || role === 'both';
 
   const [avatarUri, setAvatarUri]       = useState(null);
-  const [bio, setBio]                   = useState('');
-  const [phone, setPhone]               = useState('');
-  const [selectedSubjects, setSelected] = useState([]);
-  const [gradeMap, setGradeMap]         = useState({});
-  const [selectedPeriods, setSelectedPeriods] = useState(new Set()); // set of period numbers
+  const [bio, setBio]                   = useState(profile?.bio ?? '');
+  const [phone, setPhone]               = useState(profile?.phone ?? '');
+
+  // Pre-populate subjects from saved profile
+  const savedSubjects = (profile?.subjects ?? []).map((s) =>
+    typeof s === 'object' ? s.subject : s
+  );
+  const savedGradeMap = Object.fromEntries(
+    (profile?.subjects ?? [])
+      .filter((s) => typeof s === 'object' && s.grade)
+      .map((s) => [s.subject, s.grade])
+  );
+  const [selectedSubjects, setSelected] = useState(savedSubjects);
+  const [gradeMap, setGradeMap]         = useState(savedGradeMap);
+
+  // Pre-populate free periods from saved availability (deduplicate by period number)
+  const savedPeriods = new Set(
+    (profile?.availability ?? []).map((a) => a.period)
+  );
+  const [selectedPeriods, setSelectedPeriods] = useState(savedPeriods);
   const [loading, setLoading]           = useState(false);
   const [saveError, setSaveError]       = useState('');
 
