@@ -247,8 +247,17 @@ export default function SignUpScreen({ navigation }) {
   // ─── Mobile layout ───────────────────────────────────────────────────────────
   return (
     <SafeAreaView style={styles.safe}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          bounces={true}
+        >
           <View style={styles.hero}>
             <TouchableOpacity style={styles.mobileBackBtn} onPress={() => navigation.goBack()}>
               <Ionicons name="chevron-back" size={22} color={colors.white} />
@@ -268,7 +277,7 @@ export default function SignUpScreen({ navigation }) {
 const styles = StyleSheet.create({
   // ── Mobile ──────────────────────────────────────────────────────────────────
   safe:   { flex: 1, backgroundColor: colors.red },
-  scroll: { flexGrow: 1 },
+  scroll: { flexGrow: 1, paddingBottom: 32 },
 
   hero: {
     backgroundColor: colors.red,
@@ -291,9 +300,9 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    flex: 1, backgroundColor: colors.white,
+    backgroundColor: colors.white,
     borderTopLeftRadius: 28, borderTopRightRadius: 28,
-    padding: 28, paddingBottom: 48,
+    padding: 28, paddingBottom: 56,
   },
 
   // ── Desktop ─────────────────────────────────────────────────────────────────

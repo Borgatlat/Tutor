@@ -160,8 +160,16 @@ export default function ProfileSetupScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
 
           {/* Header */}
           <View style={styles.hero}>
@@ -334,7 +342,7 @@ export default function ProfileSetupScreen() {
 
 const styles = StyleSheet.create({
   safe:   { flex: 1, backgroundColor: colors.green },
-  scroll: { flexGrow: 1 },
+  scroll: { flexGrow: 1, paddingBottom: 24 },
 
   hero: {
     backgroundColor: colors.green,
@@ -346,12 +354,11 @@ const styles = StyleSheet.create({
   heroSub:   { color: colors.white, fontSize: 14, opacity: 0.8, lineHeight: 20 },
 
   card: {
-    flex: 1,
     backgroundColor: colors.white,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     padding: 28,
-    paddingBottom: 48,
+    paddingBottom: 60,
   },
 
   avatarSection: { alignItems: 'center', marginBottom: 28 },

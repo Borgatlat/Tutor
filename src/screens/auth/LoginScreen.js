@@ -204,10 +204,16 @@ export default function LoginScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
       >
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          bounces={true}
+        >
           <View style={styles.hero}>
             <View style={styles.heroBadge}>
               <Ionicons name="school" size={32} color={colors.white} />
@@ -227,7 +233,9 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   // ── Mobile ──────────────────────────────────────────────────────────────────
   safe:   { flex: 1, backgroundColor: colors.red },
-  scroll: { flexGrow: 1 },
+  // flexGrow: 1 lets content fill the screen minimum, but content sizes
+  // naturally so there IS overflow for the ScrollView to actually scroll
+  scroll: { flexGrow: 1, paddingBottom: 32 },
 
   hero: {
     backgroundColor: colors.red,
@@ -252,9 +260,9 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    flex: 1, backgroundColor: colors.white,
+    backgroundColor: colors.white,
     borderTopLeftRadius: 28, borderTopRightRadius: 28,
-    padding: 28, paddingBottom: 40,
+    padding: 28, paddingBottom: 48,
   },
 
   // ── Desktop ─────────────────────────────────────────────────────────────────
