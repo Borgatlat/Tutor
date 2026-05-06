@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  View, Text, TouchableOpacity, StyleSheet,
   SafeAreaView, KeyboardAvoidingView, Platform, ScrollView,
   ActivityIndicator, Linking,
 } from 'react-native';
+import AppTextInput from '../../components/AppTextInput';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -89,10 +90,12 @@ export default function SignUpScreen({ navigation }) {
         render={({ field: { onChange, value, onBlur } }) => (
           <View style={[styles.inputWrap, errors.full_name && styles.inputError]}>
             <Ionicons name="person-outline" size={18} color={colors.gray400} style={styles.inputIcon} />
-            <TextInput
+            <AppTextInput
               style={styles.input}
               placeholder="John Smith"
               placeholderTextColor={colors.gray300}
+              autoComplete="name"
+              textContentType="name"
               value={value} onChangeText={onChange} onBlur={onBlur}
             />
           </View>
@@ -107,13 +110,16 @@ export default function SignUpScreen({ navigation }) {
         render={({ field: { onChange, value, onBlur } }) => (
           <View style={[styles.inputWrap, errors.email && styles.inputError]}>
             <Ionicons name="mail-outline" size={18} color={colors.gray400} style={styles.inputIcon} />
-            <TextInput
+            <AppTextInput
               style={styles.input}
               placeholder={`name${SCHOOL_EMAIL_DOMAIN}`}
               placeholderTextColor={colors.gray300}
               keyboardType="email-address"
+              inputMode="email"
               autoCapitalize="none"
               autoCorrect={false}
+              autoComplete="email"
+              textContentType="emailAddress"
               value={value} onChangeText={onChange} onBlur={onBlur}
             />
           </View>
@@ -128,11 +134,13 @@ export default function SignUpScreen({ navigation }) {
         render={({ field: { onChange, value, onBlur } }) => (
           <View style={[styles.inputWrap, errors.password && styles.inputError]}>
             <Ionicons name="lock-closed-outline" size={18} color={colors.gray400} style={styles.inputIcon} />
-            <TextInput
+            <AppTextInput
               style={styles.input}
               placeholder="8+ characters"
               placeholderTextColor={colors.gray300}
               secureTextEntry={!showPw}
+              autoComplete="new-password"
+              textContentType="newPassword"
               value={value} onChangeText={onChange} onBlur={onBlur}
             />
             <TouchableOpacity onPress={() => setShowPw(!showPw)} style={styles.eyeBtn}>

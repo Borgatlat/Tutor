@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet, Image,
+  View, Text, TouchableOpacity, StyleSheet, Image,
   SafeAreaView, KeyboardAvoidingView, Platform, ScrollView,
   ActivityIndicator,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase, uploadAvatar } from '../../lib/supabase';
+import AppTextInput from '../../components/AppTextInput';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { heading } from '../../theme/fonts';
@@ -193,7 +194,7 @@ export default function ProfileSetupScreen() {
 
             {/* Bio */}
             <Text style={styles.label}>Bio</Text>
-            <TextInput
+            <AppTextInput
               style={[styles.input, styles.textArea]}
               placeholder="Tell students a little about yourself…"
               placeholderTextColor={colors.gray300}
@@ -207,11 +208,13 @@ export default function ProfileSetupScreen() {
             <Text style={[styles.label, { marginTop: 20 }]}>Phone Number</Text>
             <View style={styles.inputWrap}>
               <Ionicons name="call-outline" size={18} color={colors.gray400} style={styles.inputIcon} />
-              <TextInput
+              <AppTextInput
                 style={styles.inputInner}
                 placeholder="(713) 555-0100"
                 placeholderTextColor={colors.gray300}
                 keyboardType="phone-pad"
+                autoComplete="tel"
+                textContentType="telephoneNumber"
                 value={phone}
                 onChangeText={setPhone}
               />
@@ -254,7 +257,7 @@ export default function ProfileSetupScreen() {
                 {selectedSubjects.map((s) => (
                   <View key={s} style={styles.gradeRow}>
                     <Text style={styles.gradeSubject} numberOfLines={1}>{s}</Text>
-                    <TextInput
+                    <AppTextInput
                       style={styles.gradeInput}
                       placeholder={
                         s === 'SAT Math' || s === 'SAT English'
