@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+    <!--
+      touch-action: manipulation stops the 300ms click delay on iOS Safari.
+      initial-scale=1 keeps the viewport correct; maximum-scale=5 still allows
+      pinch-zoom for accessibility but does NOT disable the keyboard.
+    -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"
+    />
+    <title>Strake Jesuit Tutors</title>
+    <meta name="theme-color" content="#1B4D2E" />
+    <meta name="description" content="Peer-to-peer SAT & AP tutoring for Strake Jesuit students" />
+
+    <!-- React Native Web recommended style reset -->
+    <style id="expo-reset">
+      html, body { height: 100%; }
+      body { overflow: hidden; }
+      #root { display: flex; height: 100%; flex: 1; }
+    </style>
+
+    <!--
+      iOS Safari keyboard fix:
+      React Native Web sets user-select:none on View containers which
+      prevents mobile Safari from showing the keyboard when inputs are tapped.
+      We force text inputs back to selectable, add manipulation touch-action
+      so taps register instantly, and remove the blue tap highlight.
+    -->
+    <style id="ios-input-fix">
+      input,
+      textarea,
+      [contenteditable] {
+        -webkit-user-select: text !important;
+        user-select: text !important;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        /* Prevent iOS Safari from zooming on focus (font-size < 16px trigger) */
+        font-size: max(16px, 1em);
+      }
+
+      /* Keep the placeholder readable at the forced 16px */
+      input::placeholder,
+      textarea::placeholder {
+        font-size: inherit;
+      }
+
+      /* Remove iOS default inner shadow on inputs */
+      input[type="text"],
+      input[type="email"],
+      input[type="password"],
+      input[type="tel"],
+      input[type="search"],
+      textarea {
+        -webkit-appearance: none;
+        appearance: none;
+        border-radius: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>
