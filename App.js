@@ -5,81 +5,136 @@ import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { registerRootComponent } from 'expo';
-
-// ─── iOS Safari keyboard fix ─────────────────────────────────────────────────
-// TWO separate problems on iOS Safari:
-//
-// 1. body { overflow: hidden } (injected by Expo's reset CSS) causes Safari to
-//    try scrolling the body when an input is focused — the scroll fails, Safari
-//    decides the input is inaccessible and drops focus → keyboard never opens.
-//    Fix: body { position: fixed } tells Safari the layout is already anchored;
-//    no scroll is needed; keyboard appears normally.
-//
-// 2. React Native Web puts user-select:none on every View container, which
-//    prevents Safari from treating a tap as a genuine text-input gesture.
-//    Fix: force user-select:text on all input/textarea elements.
-//
-if (Platform.OS === 'web' && typeof document !== 'undefined') {
-  const style = document.createElement('style');
-  style.id = 'rn-web-ios-keyboard-fix';
-  style.textContent = `
-    /* Fix 1 — stop Safari dropping focus when body is overflow:hidden */
-    html, body {
-      position: fixed !important;
-      overflow: hidden !important;
-      width: 100% !important;
-      height: 100% !important;
-      top: 0 !important;
-      left: 0 !important;
-    }
-    #root {
-      height: 100%;
-      overflow: hidden;
-    }
-
-    /* Fix 2 — allow Safari to treat taps as keyboard-triggering gestures */
-    input, textarea, [contenteditable] {
-      -webkit-user-select: text !important;
-      user-select: text !important;
-      touch-action: manipulation !important;
-      -webkit-tap-highlight-color: transparent;
-      /* ≥16px prevents iOS auto-zoom on focus */
-      font-size: max(16px, 1em) !important;
-    }
-    input[type="text"],
-    input[type="email"],
-    input[type="password"],
-    input[type="tel"],
-    input[type="search"],
-    textarea {
-      -webkit-appearance: none;
-      appearance: none;
-    }
-  `;
-  // Insert AFTER expo-reset so our rules win
-  const expoReset = document.getElementById('expo-reset');
-  if (expoReset && expoReset.nextSibling) {
-    document.head.insertBefore(style, expoReset.nextSibling);
-  } else {
-    document.head.appendChild(style);
-  }
-}
-
+import { useFonts } from 'expo-font';
+import { Ionicons } from '@expo/vector-icons';
 import useAuthStore       from './src/store/useAuthStore';
 import AuthNavigator      from './src/navigation/AuthNavigator';
 import AppNavigator       from './src/navigation/AppNavigator';
 import SplashScreen       from './src/screens/auth/SplashScreen';
 import ProfileSetupScreen from './src/screens/auth/ProfileSetupScreen';
 
+// ─── Resolve the real Ionicons TTF URL ────────────────────────────────────────
+//
+// Problem: Ionicons.font.ionicons is an asset-registry NUMBER (e.g. 4), not a URL.
+// expo-asset's Asset.fromModule(number).uri returns '' in production web builds
+// because selectAssetSource() has no dev-server URL and no Expo Go context —
+// it falls through every condition and returns { uri: '' }.
+// expo-font then creates:  @font-face { src: url() }
+// The browser fetches the page itself as a font, fails, uses a system fallback
+// that has no Ionicons glyphs → rectangles / missing icons forever.
+//
+// Fix: read the raw PackagerAsset descriptor from the registry directly and
+// build the URL as  httpServerLocation + '/' + name + '.' + type.
+// This is exactly the path that Expo's asset pipeline writes to disk and that
+// Vercel serves.  No Asset.fromModule() involved at all.
+//
+let _ioniconsUrl = null;
+try {
+  const assetId = Ionicons?.font?.ionicons;
+  if (typeof assetId === 'number') {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { getAssetByID } = require('@react-native/assets-registry/registry');
+    const meta = getAssetByID(assetId);
+    if (meta?.httpServerLocation && meta?.name && meta?.type) {
+      _ioniconsUrl = `${meta.httpServerLocation}/${meta.name}.${meta.type}`;
+    }
+  } else if (typeof assetId === 'string' && assetId) {
+    _ioniconsUrl = assetId;   // native / dev already gives a real path
+  }
+} catch (_) {}
+
+// ─── Web: preload + @font-face + iOS Safari keyboard fix ──────────────────────
+//
+// Everything here runs synchronously at module-load time, before React renders.
+//
+if (Platform.OS === 'web' && typeof document !== 'undefined') {
+
+  if (_ioniconsUrl) {
+    // 1. <link rel="preload"> — kicks off the 443 KB font download immediately,
+    //    before any CSS is evaluated, so the font is usually cached by the time
+    //    the @font-face rule is applied.
+    const preload = document.createElement('link');
+    preload.rel         = 'preload';
+    preload.href        = _ioniconsUrl;
+    preload.as          = 'font';
+    preload.type        = 'font/ttf';
+    preload.crossOrigin = 'anonymous';
+    document.head.insertBefore(preload, document.head.firstChild);
+
+    // 2. Inject @font-face into the exact <style> element that expo-font's
+    //    Font.isLoaded() / ExpoFontLoader.isLoaded() reads ('expo-generated-fonts').
+    //    Using font-display:auto matches what Font.loadAsync() would write, so the
+    //    dedup check (display === rule.style.fontDisplay) passes and it won't add
+    //    a second broken rule when useFonts fires.
+    const FONT_STYLE_ID = 'expo-generated-fonts';
+    let fontStyleEl = document.getElementById(FONT_STYLE_ID);
+    if (!fontStyleEl) {
+      fontStyleEl      = document.createElement('style');
+      fontStyleEl.id   = FONT_STYLE_ID;
+      fontStyleEl.type = 'text/css';
+      document.head.appendChild(fontStyleEl);
+    }
+    fontStyleEl.appendChild(document.createTextNode(
+      `@font-face{font-family:ionicons;src:url(${_ioniconsUrl}) format("truetype");font-display:auto}`,
+    ));
+  }
+
+  // 3. iOS Safari keyboard fixes + layout reset
+  const kbStyle = document.createElement('style');
+  kbStyle.id = 'rn-web-ios-keyboard-fix';
+  kbStyle.textContent = `
+    html, body {
+      height: 100%;
+      overflow: hidden !important;
+    }
+    #root {
+      height: 100%;
+      overflow: hidden;
+    }
+    input, textarea, [contenteditable] {
+      -webkit-user-select: text !important;
+      user-select: text !important;
+      touch-action: manipulation !important;
+      -webkit-tap-highlight-color: transparent;
+      font-size: max(16px, 1em) !important;
+      -webkit-appearance: none;
+      appearance: none;
+      pointer-events: auto !important;
+      position: relative;
+      z-index: 1;
+    }
+  `;
+  const expoReset = document.getElementById('expo-reset');
+  if (expoReset && expoReset.nextSibling) {
+    document.head.insertBefore(kbStyle, expoReset.nextSibling);
+  } else {
+    document.head.appendChild(kbStyle);
+  }
+}
+
+// ─── App ──────────────────────────────────────────────────────────────────────
+
 function App() {
   const { session, setupComplete, loading, init } = useAuthStore();
+
+  // On web, pass the resolved string URL instead of Ionicons.font (which contains
+  // a raw asset-registry number).  Passing the string bypasses the broken
+  // Asset.fromModule() path and lets expo-font find the @font-face we already
+  // injected above, so isLoaded() is true immediately and no re-render is needed.
+  // On native, expo-asset resolves numbers correctly so we use Ionicons.font as-is.
+  const fontMap = (Platform.OS === 'web' && _ioniconsUrl)
+    ? { ionicons: _ioniconsUrl }
+    : Ionicons.font;
+  const [fontsLoaded] = useFonts(fontMap);
 
   useEffect(() => {
     const unsub = init();
     return unsub;
   }, []);
 
-  if (loading) return <SplashScreen />;
+  // On web fontsLoaded is true from the first render (isLoaded() finds the
+  // @font-face we injected above).  The check still guards native cold-start.
+  if (loading || !fontsLoaded) return <SplashScreen />;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

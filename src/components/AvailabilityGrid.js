@@ -1,154 +1,70 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import colors from '../theme/colors';
-import { DAYS, PERIODS } from '../constants';
-
 /**
- * AvailabilityGrid
+ * AvailabilityGrid — the B1–B8 block picker.
  *
- * Props:
- *  availability  – array of { day, period } objects currently free
- *  onToggle      – (day, period) => void  — if provided, grid is editable
- *  highlightSlot – { day, period } | null — highlights one slot (for booking)
- *  onSelectSlot  – (day, period) => void  — called when a free cell is tapped in read-only mode
+ * Block schedule: no day dimension. Renders one Chip per block so the same
+ * block looks identical here, in profile setup, and in the booking flow.
+ *
+ * Props
+ *  availability  – array of { period } — the blocks that are free
+ *  onToggle      – (block) => void — makes every chip toggleable (edit mode)
+ *  highlightSlot – { period } | null — marks one chip as chosen
+ *  onSelectSlot  – (null, period) => void — free chips become selectable
+ *  emptyLabel    – shown instead of the grid when nothing is free and the grid
+ *                  is read-only, so "no blocks" doesn't look like a bug
  */
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import Chip from './ui/Chip';
+import EmptyState from './ui/EmptyState';
+import { space } from '../theme/layout';
+import { BLOCKS } from '../constants';
+
 export default function AvailabilityGrid({
   availability = [],
   onToggle,
   highlightSlot,
   onSelectSlot,
+  emptyLabel = 'No free blocks set yet',
 }) {
-  const isFree = (day, period) =>
-    availability.some((a) => a.day === day && a.period === period);
+  const isFree        = (b) => availability.some((a) => a.period === b);
+  const isHighlighted = (b) => highlightSlot?.period === b;
 
-  const isHighlighted = (day, period) =>
-    highlightSlot?.day === day && highlightSlot?.period === period;
+  const editable = !!onToggle;
+
+  // Read-only and nothing free → say so rather than rendering 8 inert chips.
+  if (!editable && !onSelectSlot && availability.length === 0) {
+    return <EmptyState icon="time-outline" title={emptyLabel} compact />;
+  }
 
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-      <View>
-        {/* Day headers */}
-        <View style={styles.headerRow}>
-          <View style={styles.periodLabel} />
-          {DAYS.map((d) => (
-            <View key={d} style={styles.dayHeader}>
-              <Text style={styles.dayText}>{d}</Text>
-            </View>
-          ))}
-        </View>
+    <View style={styles.row}>
+      {BLOCKS.map((b) => {
+        const free = isFree(b);
+        const hi   = isHighlighted(b);
 
-        {/* Period rows */}
-        {PERIODS.map((p) => (
-          <View key={p} style={styles.row}>
-            <View style={styles.periodLabel}>
-              <Text style={styles.periodText}>P{p}</Text>
-            </View>
-            {DAYS.map((d) => {
-              const free  = isFree(d, p);
-              const hi    = isHighlighted(d, p);
-              const editable = !!onToggle;
+        const onPress = editable
+          ? () => onToggle(b)
+          : free && onSelectSlot
+            ? () => onSelectSlot(null, b)
+            : undefined;
 
-              const cellStyle = [
-                styles.cell,
-                free && styles.cellFree,
-                hi   && styles.cellHighlight,
-              ];
-
-              if (editable) {
-                return (
-                  <TouchableOpacity
-                    key={d}
-                    style={cellStyle}
-                    onPress={() => onToggle(d, p)}
-                    activeOpacity={0.7}
-                  >
-                    {free && <Text style={styles.checkmark}>✓</Text>}
-                  </TouchableOpacity>
-                );
-              }
-
-              // Read-only: only free cells are tappable (to select a slot)
-              return (
-                <TouchableOpacity
-                  key={d}
-                  style={cellStyle}
-                  onPress={free && onSelectSlot ? () => onSelectSlot(d, p) : undefined}
-                  activeOpacity={free && onSelectSlot ? 0.7 : 1}
-                >
-                  {hi && <Text style={styles.checkmarkHi}>✓</Text>}
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        ))}
-
-        {/* Legend */}
-        <View style={styles.legend}>
-          <View style={[styles.legendDot, { backgroundColor: colors.greenMuted, borderColor: colors.green }]} />
-          <Text style={styles.legendText}>Free</Text>
-          <View style={[styles.legendDot, { backgroundColor: colors.gray100, borderColor: colors.gray200, marginLeft: 12 }]} />
-          <Text style={styles.legendText}>Unavailable</Text>
-        </View>
-      </View>
-    </ScrollView>
+        return (
+          <Chip
+            key={b}
+            label={`B${b}`}
+            minWidth={52}
+            onPress={onPress}
+            selected={hi || (editable && free)}
+            available={!editable && free}
+            disabled={!onPress}
+            accessibilityLabel={`Block ${b}${free ? ', free' : ', not free'}`}
+          />
+        );
+      })}
+    </View>
   );
 }
 
-const CELL_SIZE = 46;
-
 const styles = StyleSheet.create({
-  headerRow: { flexDirection: 'row', marginBottom: 4 },
-  periodLabel: {
-    width: 34,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dayHeader: {
-    width: CELL_SIZE,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 2,
-    paddingVertical: 4,
-  },
-  dayText: { fontSize: 12, fontWeight: '700', color: colors.gray500 },
-
-  row: { flexDirection: 'row', marginBottom: 4 },
-  periodText: { fontSize: 11, fontWeight: '700', color: colors.gray500 },
-
-  cell: {
-    width: CELL_SIZE,
-    height: CELL_SIZE,
-    borderRadius: 10,
-    marginHorizontal: 2,
-    backgroundColor: colors.gray100,
-    borderWidth: 1.5,
-    borderColor: colors.gray200,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cellFree: {
-    backgroundColor: colors.greenMuted,
-    borderColor: colors.green,
-  },
-  cellHighlight: {
-    backgroundColor: colors.green,
-    borderColor: colors.greenDark,
-  },
-  checkmark:   { fontSize: 16, color: colors.green, fontWeight: '700' },
-  checkmarkHi: { fontSize: 16, color: colors.white, fontWeight: '700' },
-
-  legend: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 10,
-    paddingLeft: 36,
-  },
-  legendDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 4,
-    borderWidth: 1.5,
-    marginRight: 5,
-  },
-  legendText: { fontSize: 12, color: colors.gray500, marginRight: 4 },
+  row: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.xs },
 });

@@ -1,18 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet,
-  SafeAreaView, StatusBar, ScrollView, Image,
-  ActivityIndicator, Linking,
+  View, Text, TouchableOpacity, StyleSheet,
+  SafeAreaView, StatusBar, ScrollView, Linking,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase, uploadAvatar } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
+import { radii, space, border, press, hit } from '../../theme/layout';
 import { heading } from '../../theme/fonts';
 import SubjectBadge from '../../components/SubjectBadge';
 import AvailabilityGrid from '../../components/AvailabilityGrid';
-import { SUBJECTS } from '../../constants';
+import {
+  Avatar, Button, Divider, EmptyState, ErrorBanner,
+  Field, RoleSelector, SubjectPicker,
+} from '../../components/ui';
 import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../../constants/legal';
 
 export default function ProfileScreen() {
@@ -24,14 +27,46 @@ export default function ProfileScreen() {
   const [bio, setBio]             = useState(profile?.bio ?? '');
   const [phone, setPhone]         = useState(profile?.phone ?? '');
   const [avatarUri, setAvatarUri] = useState(null);
+  const [saveError, setSaveError] = useState('');
 
-  const [availability, setAvailability]   = useState(profile?.availability ?? []);
-  const [savingAvail, setSavingAvail]     = useState(false);
+  const [availability, setAvailability] = useState(profile?.availability ?? []);
 
-  const isTutor   = profile?.role === 'tutor' || profile?.role === 'both';
-  const isStudent = profile?.role === 'student' || profile?.role === 'both';
+  // Subjects editor
+  const initSubjects = () =>
+    (profile?.subjects ?? []).map((s) => (typeof s === 'object' ? s.subject : s));
+  const initGradeMap = () =>
+    Object.fromEntries(
+      (profile?.subjects ?? [])
+        .filter((s) => typeof s === 'object' && s.grade)
+        .map((s) => [s.subject, s.grade]),
+    );
 
-  const initials = profile?.full_name?.split(' ').map((w) => w[0]).slice(0, 2).join('') ?? '?';
+  const [editingSubjects, setEditingSubjects]   = useState(false);
+  const [selectedSubjects, setSelectedSubjects] = useState(initSubjects);
+  const [gradeMap, setGradeMap]                 = useState(initGradeMap);
+  const [savingSubjects, setSavingSubjects]     = useState(false);
+  const [subjectError, setSubjectError]         = useState('');
+
+  // Re-sync subjects when profile refreshes
+  useEffect(() => {
+    setSelectedSubjects(initSubjects());
+    setGradeMap(initGradeMap());
+  }, [profile?.subjects]);
+
+  const [selectedRole, setSelectedRole] = useState(profile?.role ?? 'student');
+  const [savingRole, setSavingRole]     = useState(false);
+  const [roleError, setRoleError]       = useState('');
+  const roleChanged = selectedRole !== (profile?.role ?? 'student');
+
+  // Keep local role in sync whenever profile refreshes
+  useEffect(() => {
+    if (profile?.role) setSelectedRole(profile.role);
+  }, [profile?.role]);
+
+  const isTutor = profile?.role === 'tutor' || profile?.role === 'both';
+  const canTeach = selectedRole === 'tutor' || selectedRole === 'both';
+
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -44,8 +79,6 @@ export default function ProfileScreen() {
     });
     if (!result.canceled) setAvatarUri(result.assets[0].uri);
   };
-
-  const [saveError, setSaveError] = useState('');
 
   const handleSaveProfile = async () => {
     setSavingBio(true);
@@ -69,213 +102,332 @@ export default function ProfileScreen() {
     }
   };
 
-  const [confirmSignOut, setConfirmSignOut] = useState(false);
-
-  const toggleAvailability = async (day, period) => {
-    const exists = availability.some((a) => a.day === day && a.period === period);
-    const updated = exists
-      ? availability.filter((a) => !(a.day === day && a.period === period))
-      : [...availability, { day, period }];
-    setAvailability(updated);
-
-    // Persist to the correct table(s) based on role
-    if (isTutor) {
-      if (exists) {
-        await supabase.from('tutor_availability')
-          .delete().eq('tutor_id', userId).eq('day', day).eq('period', period);
-      } else {
-        await supabase.from('tutor_availability')
-          .insert({ tutor_id: userId, day, period });
-      }
+  const handleSaveRole = async () => {
+    setSavingRole(true);
+    setRoleError('');
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ role: selectedRole })
+        .eq('id', userId);
+      if (error) { setRoleError(error.message); return; }
+      await refreshProfile();
+    } catch (e) {
+      setRoleError(e?.message ?? 'Could not update role.');
+    } finally {
+      setSavingRole(false);
     }
-    if (isStudent) {
-      if (exists) {
-        await supabase.from('student_availability')
-          .delete().eq('student_id', userId).eq('day', day).eq('period', period);
-      } else {
-        await supabase.from('student_availability')
-          .insert({ student_id: userId, day, period });
+  };
+
+  const toggleSubject = (s) => {
+    setSelectedSubjects((prev) => {
+      if (prev.includes(s)) {
+        setGradeMap((g) => { const copy = { ...g }; delete copy[s]; return copy; });
+        return prev.filter((x) => x !== s);
       }
+      return [...prev, s];
+    });
+  };
+
+  const setGrade = (subject, val) =>
+    setGradeMap((prev) => ({ ...prev, [subject]: val }));
+
+  const handleSaveSubjects = async () => {
+    setSavingSubjects(true);
+    setSubjectError('');
+    try {
+      // Delete all existing subjects then re-insert
+      await supabase.from('tutor_subjects').delete().eq('tutor_id', userId);
+      if (selectedSubjects.length > 0) {
+        const { error } = await supabase.from('tutor_subjects').insert(
+          selectedSubjects.map((subject) => ({
+            tutor_id: userId,
+            subject,
+            grade: gradeMap[subject] || null,
+          })),
+        );
+        if (error) { setSubjectError(error.message); return; }
+      }
+      await refreshProfile();
+      setEditingSubjects(false);
+    } catch (e) {
+      setSubjectError(e?.message ?? 'Could not save subjects.');
+    } finally {
+      setSavingSubjects(false);
+    }
+  };
+
+  // Block schedule: toggle a block on/off (no day dimension).
+  // All roles use tutor_availability — student_availability table doesn't exist.
+  const toggleAvailability = async (block) => {
+    const exists = availability.some((a) => a.period === block);
+    setAvailability(exists
+      ? availability.filter((a) => a.period !== block)
+      : [...availability, { period: block }]);
+
+    if (exists) {
+      await supabase.from('tutor_availability')
+        .delete().eq('tutor_id', userId).eq('period', block);
+    } else {
+      await supabase.from('tutor_availability')
+        .insert({ tutor_id: userId, period: block });
     }
   };
 
   const avatarSource = avatarUri ?? profile?.avatar_url;
+  const savedSubjects = profile?.subjects ?? [];
 
-  const roleBadgeColor = {
-    student: colors.greenMuted,
-    tutor:   colors.redMuted,
-    both:    colors.gray100,
-  }[profile?.role ?? 'student'];
-
-  const roleBadgeTextColor = {
-    student: colors.green,
-    tutor:   colors.red,
-    both:    colors.gray700,
-  }[profile?.role ?? 'student'];
+  const editLink = (active, onPress, label) => (
+    <TouchableOpacity
+      onPress={onPress}
+      hitSlop={hit.slop}
+      activeOpacity={press.opacity}
+      accessibilityRole="button"
+      accessibilityLabel={`${active ? 'Cancel editing' : 'Edit'} ${label}`}
+    >
+      <Text style={styles.editLink}>{active ? 'Cancel' : 'Edit'}</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.red} />
+      <StatusBar barStyle="light-content" backgroundColor={colors.brand} />
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
+      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        {/* Hero */}
         <View style={styles.hero}>
-          <TouchableOpacity style={styles.avatarWrap} onPress={editing ? pickImage : undefined}>
-            {avatarSource ? (
-              <Image source={{ uri: avatarSource }} style={styles.heroAvatar} />
-            ) : (
-              <View style={styles.heroAvatarPlaceholder}>
-                <Text style={styles.heroInitials}>{initials}</Text>
-              </View>
-            )}
-            {editing && (
+          <TouchableOpacity
+            style={styles.avatarWrap}
+            onPress={editing ? pickImage : undefined}
+            disabled={!editing}
+            activeOpacity={editing ? press.opacity : 1}
+            hitSlop={hit.slop}
+            accessibilityRole={editing ? 'button' : 'image'}
+            accessibilityLabel={editing ? 'Change your profile photo' : 'Your profile photo'}
+          >
+            <View style={styles.avatarRing}>
+              <Avatar
+                uri={avatarSource}
+                name={profile?.full_name}
+                size={84}
+                color={colors.accent}
+              />
+            </View>
+            {editing ? (
               <View style={styles.cameraIcon}>
                 <Ionicons name="camera" size={16} color={colors.white} />
               </View>
-            )}
+            ) : null}
           </TouchableOpacity>
 
           <Text style={styles.heroName}>{profile?.full_name}</Text>
           <Text style={styles.heroEmail}>{profile?.email}</Text>
 
-          <View style={[styles.roleBadge, { backgroundColor: roleBadgeColor }]}>
-            <Text style={[styles.roleText, { color: roleBadgeTextColor }]}>
-              {(profile?.role ?? 'student').charAt(0).toUpperCase() + (profile?.role ?? 'student').slice(1)}
+          <View style={styles.roleBadge}>
+            <Text style={styles.roleBadgeText}>
+              {selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)}
             </Text>
           </View>
         </View>
 
-        {/* Bio & Phone */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Profile Info</Text>
-            <TouchableOpacity onPress={() => setEditing(!editing)}>
-              <Text style={styles.editLink}>{editing ? 'Cancel' : 'Edit'}</Text>
-            </TouchableOpacity>
+        <View style={styles.body}>
+          {/* Profile info */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Profile Info</Text>
+              {editLink(editing, () => { setEditing(!editing); setSaveError(''); }, 'profile info')}
+            </View>
+
+            <ErrorBanner message={saveError} />
+
+            {editing ? (
+              <>
+                <Field
+                  label="Bio"
+                  placeholder="Tell students about yourself…"
+                  multiline
+                  numberOfLines={3}
+                  value={bio}
+                  onChangeText={setBio}
+                />
+                <Field
+                  label="Phone"
+                  icon="call-outline"
+                  placeholder="(713) 555-0100"
+                  keyboardType="phone-pad"
+                  value={phone}
+                  onChangeText={setPhone}
+                />
+                <Button
+                  label="Save Changes"
+                  onPress={handleSaveProfile}
+                  loading={savingBio}
+                  fullWidth
+                />
+              </>
+            ) : (
+              <>
+                <Text style={styles.fieldLabel}>Bio</Text>
+                <Text style={styles.fieldValue}>{profile?.bio || 'No bio yet'}</Text>
+
+                <Text style={[styles.fieldLabel, styles.fieldLabelSpaced]}>Phone</Text>
+                <Text style={styles.fieldValue}>{profile?.phone || 'Not provided'}</Text>
+              </>
+            )}
           </View>
 
-          <Text style={styles.fieldLabel}>Bio</Text>
-          {editing ? (
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              multiline
-              numberOfLines={3}
-              value={bio}
-              onChangeText={setBio}
-              placeholder="Tell students about yourself…"
-              placeholderTextColor={colors.gray300}
-            />
-          ) : (
-            <Text style={styles.fieldValue}>{profile?.bio || 'No bio yet'}</Text>
-          )}
-
-          <Text style={[styles.fieldLabel, { marginTop: 14 }]}>Phone</Text>
-          {editing ? (
-            <TextInput
-              style={styles.input}
-              value={phone}
-              onChangeText={setPhone}
-              placeholder="(713) 555-0100"
-              placeholderTextColor={colors.gray300}
-              keyboardType="phone-pad"
-            />
-          ) : (
-            <Text style={styles.fieldValue}>{profile?.phone || 'Not provided'}</Text>
-          )}
-
-          {saveError ? (
-            <Text style={styles.saveErrorText}>{saveError}</Text>
-          ) : null}
-          {editing && (
-            <TouchableOpacity
-              style={[styles.saveBtn, savingBio && { opacity: 0.6 }]}
-              onPress={handleSaveProfile}
-              disabled={savingBio}
-            >
-              {savingBio
-                ? <ActivityIndicator color={colors.white} />
-                : <Text style={styles.saveBtnText}>Save Changes</Text>}
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* Subjects (tutors only) */}
-        {isTutor && (
+          {/* Role */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>My Subjects</Text>
-            <View style={styles.badgeRow}>
-              {(profile?.subjects ?? []).map((s) => (
-                <SubjectBadge
-                  key={typeof s === 'object' ? s.subject : s}
-                  subject={typeof s === 'object' ? s.subject : s}
-                  grade={typeof s === 'object' ? s.grade : undefined}
+            <Text style={styles.sectionTitle}>My Role</Text>
+            <Text style={styles.hint}>
+              You can be a student, a tutor, or both at the same time.
+            </Text>
+
+            <ErrorBanner message={roleError} />
+
+            <RoleSelector value={selectedRole} onChange={setSelectedRole} />
+
+            {roleChanged ? (
+              <Button
+                label="Save Role"
+                onPress={handleSaveRole}
+                loading={savingRole}
+                fullWidth
+                style={styles.sectionAction}
+              />
+            ) : null}
+          </View>
+
+          {/* Subjects (tutors / both) */}
+          {canTeach ? (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>My Subjects</Text>
+                {editLink(
+                  editingSubjects,
+                  () => { setEditingSubjects(!editingSubjects); setSubjectError(''); },
+                  'subjects',
+                )}
+              </View>
+
+              {editingSubjects ? (
+                <>
+                  <Text style={styles.hint}>
+                    Tap a category to expand it, then tap subjects to add or remove them.
+                  </Text>
+
+                  <ErrorBanner message={subjectError} />
+
+                  <SubjectPicker
+                    selected={selectedSubjects}
+                    onToggle={toggleSubject}
+                    grades={gradeMap}
+                    onGradeChange={setGrade}
+                  />
+
+                  <Button
+                    label="Save Subjects"
+                    onPress={handleSaveSubjects}
+                    loading={savingSubjects}
+                    fullWidth
+                    style={styles.sectionAction}
+                  />
+                </>
+              ) : savedSubjects.length ? (
+                <View style={styles.badgeRow}>
+                  {savedSubjects.map((s) => {
+                    const name  = typeof s === 'object' ? s.subject : s;
+                    const grade = typeof s === 'object' ? s.grade   : undefined;
+                    return <SubjectBadge key={name} subject={name} grade={grade} />;
+                  })}
+                </View>
+              ) : (
+                <EmptyState
+                  icon="book-outline"
+                  title="No subjects yet"
+                  body="Tap Edit to pick the classes you can help with — core classes, SAT and AP."
+                  compact
                 />
-              ))}
-              {(profile?.subjects ?? []).length === 0 && (
-                <Text style={styles.fieldValue}>None set yet</Text>
               )}
             </View>
-          </View>
-        )}
+          ) : null}
 
-        {/* Availability / Free Periods (all users) */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {isTutor ? 'My Availability' : 'My Free Periods'}
-          </Text>
-          <Text style={styles.availHint}>
-            {isTutor
-              ? 'Tap a cell to toggle when students can book you'
-              : 'Tap a cell to mark your free periods — tutors who share them rank higher in search'}
-          </Text>
-          <AvailabilityGrid
-            availability={availability}
-            onToggle={toggleAvailability}
-          />
-        </View>
-
-        {/* Account */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
-
-          {/* PP / ToS links */}
-          <View style={styles.legalRow}>
-            <TouchableOpacity onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}>
-              <Text style={styles.legalLink}>Privacy Policy</Text>
-            </TouchableOpacity>
-            <Text style={styles.legalSep}>·</Text>
-            <TouchableOpacity onPress={() => Linking.openURL(TERMS_OF_SERVICE_URL)}>
-              <Text style={styles.legalLink}>Terms of Service</Text>
-            </TouchableOpacity>
+          {/* Availability */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>
+              {isTutor ? 'My Availability' : 'My Free Blocks'}
+            </Text>
+            <Text style={styles.hint}>
+              {isTutor
+                ? 'Tap a block to toggle when students can book you'
+                : 'Tap a block to mark it free — tutors who share your blocks rank higher in search'}
+            </Text>
+            <AvailabilityGrid
+              availability={availability}
+              onToggle={toggleAvailability}
+            />
           </View>
 
-          <View style={styles.divider} />
+          {/* Account */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Account</Text>
 
-          {/* Sign out — inline confirm instead of Alert */}
-          {confirmSignOut ? (
-            <View style={styles.signOutConfirm}>
-              <Text style={styles.signOutConfirmText}>Sign out of your account?</Text>
-              <View style={styles.signOutConfirmBtns}>
-                <TouchableOpacity style={styles.cancelBtn} onPress={() => setConfirmSignOut(false)}>
-                  <Text style={styles.cancelBtnText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.confirmBtn} onPress={signOut}>
-                  <Text style={styles.confirmBtnText}>Sign Out</Text>
-                </TouchableOpacity>
-              </View>
+            <View style={styles.legalRow}>
+              <TouchableOpacity
+                onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
+                hitSlop={hit.slop}
+                activeOpacity={press.opacity}
+                accessibilityRole="link"
+              >
+                <Text style={styles.legalLink}>Privacy Policy</Text>
+              </TouchableOpacity>
+              <Text style={styles.legalSep}>·</Text>
+              <TouchableOpacity
+                onPress={() => Linking.openURL(TERMS_OF_SERVICE_URL)}
+                hitSlop={hit.slop}
+                activeOpacity={press.opacity}
+                accessibilityRole="link"
+              >
+                <Text style={styles.legalLink}>Terms of Service</Text>
+              </TouchableOpacity>
             </View>
-          ) : (
-            <TouchableOpacity
-              style={styles.signOutBtn}
-              onPress={() => setConfirmSignOut(true)}
-            >
-              <Ionicons name="log-out-outline" size={18} color={colors.red} />
-              <Text style={styles.signOutText}>Sign Out</Text>
-            </TouchableOpacity>
-          )}
+
+            <Divider />
+
+            {confirmSignOut ? (
+              <View>
+                <Text style={styles.signOutPrompt}>Sign out of your account?</Text>
+                <View style={styles.rowActions}>
+                  <Button
+                    label="Cancel"
+                    variant="neutral"
+                    size="sm"
+                    onPress={() => setConfirmSignOut(false)}
+                    style={styles.grow}
+                  />
+                  <Button
+                    label="Sign Out"
+                    variant="dangerSolid"
+                    size="sm"
+                    onPress={signOut}
+                    style={styles.grow}
+                  />
+                </View>
+              </View>
+            ) : (
+              <Button
+                label="Sign Out"
+                icon="log-out-outline"
+                variant="danger"
+                size="sm"
+                onPress={() => setConfirmSignOut(true)}
+                style={styles.signOutBtn}
+              />
+            )}
+          </View>
         </View>
 
-        <View style={{ height: 40 }} />
+        <View style={styles.bottomSpacer} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -284,87 +436,81 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.offWhite },
 
+  // ── Hero ──────────────────────────────────────────────────────────────────
   hero: {
-    backgroundColor: colors.red,
+    backgroundColor: colors.brand,
     alignItems: 'center',
-    paddingTop: 20,
-    paddingBottom: 28,
-    paddingHorizontal: 20,
+    paddingTop: space.xl,
+    paddingBottom: space.xxl,
+    paddingHorizontal: space.xl,
   },
-  avatarWrap: { position: 'relative', marginBottom: 12 },
-  heroAvatar: { width: 90, height: 90, borderRadius: 45, borderWidth: 3, borderColor: colors.white },
-  heroAvatarPlaceholder: {
-    width: 90, height: 90, borderRadius: 45,
-    backgroundColor: 'rgba(255,255,255,0.25)',
-    alignItems: 'center', justifyContent: 'center',
+  avatarWrap: { position: 'relative', marginBottom: space.md },
+  avatarRing: {
+    borderRadius: radii.pill,
+    borderWidth: 3,
+    borderColor: colors.white,
   },
-  heroInitials: { color: colors.white, fontSize: 30, fontWeight: '800' },
   cameraIcon: {
     position: 'absolute', bottom: 0, right: 0,
-    width: 30, height: 30, borderRadius: 15,
-    backgroundColor: colors.green,
+    width: 30, height: 30, borderRadius: radii.pill,
+    backgroundColor: colors.accent,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2, borderColor: colors.white,
+    borderWidth: border.control, borderColor: colors.white,
   },
-  heroName:  { color: colors.white, fontSize: 22, fontFamily: heading.lg.fontFamily, fontWeight: '800', marginBottom: 3 },
-  heroEmail: { color: colors.white, fontSize: 13, opacity: 0.8, marginBottom: 10 },
-  roleBadge: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20 },
-  roleText:  { fontSize: 13, fontWeight: '700' },
+  heroName:  { ...heading.lg, color: colors.white, fontSize: 22, marginBottom: 3 },
+  heroEmail: { color: colors.whiteAlpha[80], fontSize: 13, marginBottom: space.sm },
 
+  roleBadge: {
+    paddingHorizontal: space.md,
+    paddingVertical: space.xs,
+    borderRadius: radii.pill,
+    backgroundColor: colors.whiteAlpha[18],
+  },
+  roleBadgeText: { fontSize: 13, fontWeight: '700', color: colors.white },
+
+  // ── Sections ──────────────────────────────────────────────────────────────
+  body: { padding: space.lg, gap: space.md },
   section: {
     backgroundColor: colors.white,
-    marginTop: 10,
-    paddingHorizontal: 20,
-    paddingVertical: 18,
+    borderRadius: radii.lg,
+    padding: space.lg,
   },
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
-  sectionTitle:  { fontSize: 16, fontWeight: '800', color: colors.black },
-  editLink:      { fontSize: 14, color: colors.red, fontWeight: '600' },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: space.md,
+  },
+  sectionTitle:  { ...heading.md, fontSize: 16, color: colors.black },
+  sectionAction: { marginTop: space.lg },
+  editLink:      { fontSize: 14, color: colors.accent, fontWeight: '600' },
 
-  fieldLabel: { fontSize: 11, fontWeight: '700', color: colors.gray500, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 },
+  fieldLabel: {
+    fontSize: 13, fontWeight: '600',
+    color: colors.gray600, marginBottom: space.xs,
+  },
+  fieldLabelSpaced: { marginTop: space.md },
   fieldValue: { fontSize: 14, color: colors.gray700, lineHeight: 20 },
 
-  input: {
-    borderWidth: 1.5, borderColor: colors.gray200, borderRadius: 12,
-    paddingHorizontal: 14, paddingVertical: 11,
-    fontSize: 15, color: colors.black, backgroundColor: colors.offWhite,
+  hint: {
+    fontSize: 12, color: colors.gray500,
+    marginBottom: space.md, lineHeight: 17,
   },
-  textArea: { height: 80, textAlignVertical: 'top' },
 
-  saveBtn: {
-    backgroundColor: colors.red, borderRadius: 12,
-    paddingVertical: 13, alignItems: 'center', marginTop: 18,
+  badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+
+  // ── Account ───────────────────────────────────────────────────────────────
+  legalRow:  { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  legalLink: {
+    fontSize: 13, color: colors.accent,
+    fontWeight: '600', textDecorationLine: 'underline',
   },
-  saveBtnText: { color: colors.white, fontWeight: '800', fontSize: 15 },
+  legalSep: { fontSize: 13, color: colors.gray300 },
 
-  badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  availHint: { fontSize: 12, color: colors.gray400, marginBottom: 12 },
+  signOutPrompt: { fontSize: 14, color: colors.gray700, marginBottom: space.md },
+  signOutBtn:    { alignSelf: 'flex-start' },
+  rowActions:    { flexDirection: 'row', gap: space.sm },
+  grow:          { flex: 1 },
 
-  saveErrorText: { fontSize: 12, color: colors.error, marginTop: 8 },
-
-  legalRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
-  legalLink: { fontSize: 13, color: colors.green, fontWeight: '600', textDecorationLine: 'underline' },
-  legalSep:  { fontSize: 13, color: colors.gray300 },
-
-  divider: { height: 1, backgroundColor: colors.gray100, marginVertical: 12 },
-
-  signOutBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    paddingVertical: 6,
-  },
-  signOutText: { fontSize: 15, color: colors.red, fontWeight: '600' },
-
-  signOutConfirm: { paddingVertical: 6 },
-  signOutConfirmText: { fontSize: 14, color: colors.gray700, marginBottom: 12 },
-  signOutConfirmBtns: { flexDirection: 'row', gap: 10 },
-  cancelBtn: {
-    flex: 1, borderWidth: 1.5, borderColor: colors.gray200, borderRadius: 12,
-    paddingVertical: 10, alignItems: 'center',
-  },
-  cancelBtnText: { fontSize: 14, color: colors.gray600, fontWeight: '600' },
-  confirmBtn: {
-    flex: 1, backgroundColor: colors.red, borderRadius: 12,
-    paddingVertical: 10, alignItems: 'center',
-  },
-  confirmBtnText: { fontSize: 14, color: colors.white, fontWeight: '700' },
+  bottomSpacer: { height: space.huge },
 });

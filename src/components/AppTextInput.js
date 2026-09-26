@@ -10,9 +10,25 @@
  *
  * On native (iOS / Android): renders React Native <TextInput> as normal.
  */
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Platform, TextInput, StyleSheet } from 'react-native';
 import colors from '../theme/colors';
+import { fonts } from '../theme/fonts';
+
+// `placeholderTextColor` has no HTML equivalent, so on web it would silently
+// fall back to the browser default and not match native. One global rule fixes
+// every input at once.
+const PLACEHOLDER_CLASS = 'app-text-input';
+if (Platform.OS === 'web' && typeof document !== 'undefined') {
+  const ID = 'app-text-input-placeholder';
+  if (!document.getElementById(ID)) {
+    const el = document.createElement('style');
+    el.id = ID;
+    el.textContent =
+      `.${PLACEHOLDER_CLASS}::placeholder{color:${colors.gray400};opacity:1}`;
+    document.head.appendChild(el);
+  }
+}
 
 export default function AppTextInput({
   style,
@@ -62,6 +78,41 @@ export default function AppTextInput({
   }
 
   // ── Web: raw HTML element ─────────────────────────────────────────────────
+  const inputRef = useRef(null);
+
+  // iOS Safari only shows the keyboard when focus() is called synchronously
+  // inside a *native* touchend handler (not a synthetic React event).
+  // stopPropagation() on touchstart prevents React Native Web's document-level
+  // responder from capturing the touch and potentially calling preventDefault().
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+
+    const onTouchStart = (e) => {
+      // Stop RN Web's document-level responder from claiming this touch
+      e.stopPropagation();
+    };
+
+    const onTouchEnd = (e) => {
+      e.stopPropagation();
+      // preventDefault() stops the synthetic click/mousedown events that
+      // fire after a touch — those events can trigger RN Web parent handlers
+      // which steal focus and dismiss the keyboard.
+      // We call el.focus() explicitly so we don't need the browser default.
+      e.preventDefault();
+      el.focus();
+    };
+
+    // passive:false on touchend so preventDefault() is allowed
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchend',   onTouchEnd,   { passive: false });
+
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchend',   onTouchEnd);
+    };
+  }, []);
+
   const flat = StyleSheet.flatten(style) || {};
 
   const baseStyle = {
@@ -76,7 +127,15 @@ export default function AppTextInput({
     outline:         'none',
     background:      'transparent',
     width:           '100%',
-    fontFamily:      'inherit',
+    // Explicit, not 'inherit': inheriting picks up the serif heading font from
+    // an ancestor, so inputs rendered in serif while their labels were sans.
+    fontFamily:      flat.fontFamily ?? fonts.sans,
+    // textAlign is dropped by the whitelist otherwise — centered numeric
+    // inputs (grade fields) rely on it.
+    textAlign:       flat.textAlign ?? 'left',
+    // Disabled fields need to look disabled, not just refuse input.
+    cursor:          editable ? 'text' : 'not-allowed',
+    opacity:         editable ? 1 : 0.6,
     // Critical: override RN Web's user-select:none so Safari allows keyboard
     WebkitUserSelect: 'text',
     userSelect:      'text',
@@ -97,6 +156,8 @@ export default function AppTextInput({
     : 'off';
 
   const sharedProps = {
+    className: PLACEHOLDER_CLASS,
+    'aria-label': rest.accessibilityLabel,
     placeholder,
     value: value ?? '',
     onChange:        (e) => onChangeText?.(e.target.value),
@@ -113,6 +174,7 @@ export default function AppTextInput({
   if (multiline) {
     return (
       <textarea
+        ref={inputRef}
         {...sharedProps}
         rows={numberOfLines ?? 3}
         style={{
@@ -125,5 +187,5 @@ export default function AppTextInput({
     );
   }
 
-  return <input type={type} style={baseStyle} {...sharedProps} />;
+  return <input ref={inputRef} type={type} style={baseStyle} {...sharedProps} />;
 }

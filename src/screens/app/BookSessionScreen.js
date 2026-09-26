@@ -1,28 +1,30 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet,
-  SafeAreaView, StatusBar, ScrollView, ActivityIndicator, Image,
+  View, Text, TouchableOpacity, StyleSheet,
+  SafeAreaView, StatusBar, ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
+import { radii, space, border, press, hit } from '../../theme/layout';
 import { heading } from '../../theme/fonts';
-import SubjectBadge from '../../components/SubjectBadge';
+import {
+  Avatar, Button, Chip, EmptyState, ErrorBanner, Field,
+} from '../../components/ui';
 
 export default function BookSessionScreen({ route, navigation }) {
   const { tutor, slot } = route.params;
   const { profile }     = useAuthStore();
 
-  // subjects may be array of strings or { subject, grade } objects
+  // subjects may be an array of strings or of { subject, grade } objects
   const subjectList = (tutor.subjects ?? []).map((s) => (typeof s === 'object' ? s.subject : s));
-  const [subject, setSubject] = useState(subjectList[0] ?? null);
-  const [notes, setNotes]     = useState('');
-  const [loading, setLoading] = useState(false);
-  const [booked, setBooked]   = useState(false);
-  const [bookError, setBookError] = useState('');
 
-  const initials = tutor.full_name?.split(' ').map((w) => w[0]).slice(0, 2).join('') ?? '?';
+  const [subject, setSubject]     = useState(subjectList[0] ?? null);
+  const [notes, setNotes]         = useState('');
+  const [loading, setLoading]     = useState(false);
+  const [booked, setBooked]       = useState(false);
+  const [bookError, setBookError] = useState('');
 
   const handleBook = async () => {
     if (!subject) { setBookError('Please select a subject before continuing.'); return; }
@@ -32,7 +34,6 @@ export default function BookSessionScreen({ route, navigation }) {
       tutor_id:   tutor.id,
       student_id: profile.id,
       subject,
-      day:    slot.day,
       period: slot.period,
       notes:  notes || null,
       status: 'pending',
@@ -42,41 +43,45 @@ export default function BookSessionScreen({ route, navigation }) {
     setBooked(true);
   };
 
+  // ── Success state ───────────────────────────────────────────────────────────
   if (booked) {
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.successScreen}>
           <View style={styles.successCircle}>
-            <Ionicons name="checkmark" size={48} color={colors.white} />
+            <Ionicons name="checkmark" size={44} color={colors.white} />
           </View>
-          <Text style={styles.successTitle}>Session Requested!</Text>
+          <Text style={styles.successTitle}>Session Requested</Text>
           <Text style={styles.successSub}>
             Your request has been sent to {tutor.full_name}.{'\n'}
             They'll confirm it shortly.
           </Text>
+
           <View style={styles.confirmCard}>
-            <View style={styles.confirmRow}>
-              <Ionicons name="person-outline" size={15} color={colors.gray500} />
-              <Text style={styles.confirmText}>{tutor.full_name}</Text>
-            </View>
-            <View style={styles.confirmRow}>
-              <Ionicons name="book-outline" size={15} color={colors.gray500} />
-              <Text style={styles.confirmText}>{subject}</Text>
-            </View>
-            <View style={styles.confirmRow}>
-              <Ionicons name="calendar-outline" size={15} color={colors.gray500} />
-              <Text style={styles.confirmText}>{slot.day} · Period {slot.period}</Text>
-            </View>
+            {[
+              { icon: 'person-outline',   text: tutor.full_name },
+              { icon: 'book-outline',     text: subject },
+              { icon: 'calendar-outline', text: `Block ${slot.period}` },
+            ].map((row) => (
+              <View key={row.icon} style={styles.confirmRow}>
+                <Ionicons name={row.icon} size={15} color={colors.gray500} />
+                <Text style={styles.confirmText}>{row.text}</Text>
+              </View>
+            ))}
           </View>
-          <TouchableOpacity
-            style={styles.doneBtn}
+
+          <Button
+            label="View My Sessions"
             onPress={() => navigation.navigate('Sessions')}
-          >
-            <Text style={styles.doneBtnText}>View My Sessions</Text>
-          </TouchableOpacity>
+            fullWidth
+          />
           <TouchableOpacity
             style={styles.backLink}
             onPress={() => navigation.navigate('Search')}
+            hitSlop={hit.slop}
+            activeOpacity={press.opacity}
+            accessibilityRole="button"
+            accessibilityLabel="Find another tutor"
           >
             <Text style={styles.backLinkText}>Find another tutor</Text>
           </TouchableOpacity>
@@ -85,20 +90,26 @@ export default function BookSessionScreen({ route, navigation }) {
     );
   }
 
+  // ── Booking form ────────────────────────────────────────────────────────────
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.green} />
+      <StatusBar barStyle="light-content" backgroundColor={colors.brand} />
 
-      {/* Nav */}
       <View style={styles.navBar}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => navigation.goBack()}
+          hitSlop={hit.slop}
+          activeOpacity={press.opacity}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
           <Ionicons name="chevron-back" size={22} color={colors.white} />
           <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
+      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Book a Session</Text>
         </View>
@@ -106,14 +117,8 @@ export default function BookSessionScreen({ route, navigation }) {
         <View style={styles.card}>
           {/* Tutor summary */}
           <View style={styles.tutorRow}>
-            {tutor.avatar_url ? (
-              <Image source={{ uri: tutor.avatar_url }} style={styles.avatar} />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Text style={styles.avatarInitials}>{initials}</Text>
-              </View>
-            )}
-            <View>
+            <Avatar uri={tutor.avatar_url} name={tutor.full_name} size={52} />
+            <View style={styles.tutorMeta}>
               <Text style={styles.tutorName}>{tutor.full_name}</Text>
               <Text style={styles.tutorEmail}>{tutor.email}</Text>
             </View>
@@ -121,66 +126,63 @@ export default function BookSessionScreen({ route, navigation }) {
 
           {/* Slot summary */}
           <View style={styles.slotBanner}>
-            <Ionicons name="calendar" size={20} color={colors.green} />
-            <Text style={styles.slotText}>{slot.day} · Period {slot.period}</Text>
+            <Ionicons name="calendar" size={20} color={colors.accentDark} />
+            <Text style={styles.slotText}>Block {slot.period}</Text>
           </View>
+
+          <ErrorBanner message={bookError} />
 
           {/* Subject */}
           <Text style={styles.label}>Subject</Text>
-          <View style={styles.subjectRow}>
-            {subjectList.map((s) => (
-              <TouchableOpacity
-                key={s}
-                style={[styles.subjectOpt, subject === s && styles.subjectOptActive]}
-                onPress={() => setSubject(s)}
-              >
-                <Text style={[styles.subjectOptText, subject === s && styles.subjectOptTextActive]}>
-                  {s}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {subjectList.length ? (
+            <View style={styles.subjectRow}>
+              {subjectList.map((s) => (
+                <Chip
+                  key={s}
+                  label={s}
+                  selected={subject === s}
+                  showCheck
+                  onPress={() => setSubject(s)}
+                />
+              ))}
+            </View>
+          ) : (
+            <EmptyState
+              icon="book-outline"
+              title="This tutor hasn't listed any subjects"
+              body="Ask them to add subjects to their profile before booking."
+              compact
+            />
+          )}
 
-          {/* Notes */}
-          <Text style={[styles.label, { marginTop: 20 }]}>Notes (optional)</Text>
-          <TextInput
-            style={styles.notesInput}
+          <Field
+            label="Notes (optional)"
             placeholder="What topics do you need help with?"
-            placeholderTextColor={colors.gray300}
             multiline
             numberOfLines={3}
             value={notes}
             onChangeText={setNotes}
+            style={styles.notesField}
           />
 
           {/* Contact info */}
           <View style={styles.contactNote}>
             <Ionicons name="information-circle-outline" size={15} color={colors.gray500} />
             <Text style={styles.contactNoteText}>
-              After confirming, you and {tutor.full_name.split(' ')[0]} can contact each other at{' '}
-              <Text style={styles.emailHighlight}>{tutor.email}</Text>
+              After confirming, you and {tutor.full_name?.split(' ')[0]} can contact each
+              other at <Text style={styles.emailHighlight}>{tutor.email}</Text>
             </Text>
           </View>
 
-          {/* Inline error */}
-          {bookError ? (
-            <View style={styles.errorBanner}>
-              <Ionicons name="alert-circle" size={15} color={colors.white} />
-              <Text style={styles.errorBannerText}>{bookError}</Text>
-            </View>
-          ) : null}
-
-          {/* Submit */}
-          <TouchableOpacity
-            style={[styles.bookBtn, loading && styles.bookBtnDisabled]}
+          <Button
+            label="Send Request"
+            icon="checkmark-circle"
             onPress={handleBook}
-            disabled={loading}
-          >
-            {loading
-              ? <ActivityIndicator color={colors.white} />
-              : <><Ionicons name="checkmark-circle" size={18} color={colors.white} /><Text style={styles.bookBtnText}>Send Request</Text></>
-            }
-          </TouchableOpacity>
+            loading={loading}
+            disabled={!subject}
+            fullWidth
+            style={styles.submit}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -190,93 +192,88 @@ export default function BookSessionScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.offWhite },
 
-  navBar: { backgroundColor: colors.green, paddingHorizontal: 16, paddingVertical: 10 },
-  backBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  navBar:   { backgroundColor: colors.brand, paddingHorizontal: space.lg, paddingVertical: space.sm },
+  backBtn:  { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   backText: { color: colors.white, fontSize: 15, fontWeight: '600' },
 
   header: {
-    backgroundColor: colors.green,
-    paddingHorizontal: 20,
-    paddingBottom: 24,
+    backgroundColor: colors.brand,
+    paddingHorizontal: space.xl,
+    paddingBottom: space.xxl,
   },
-  headerTitle: { color: colors.white, fontSize: 26, fontFamily: heading.lg.fontFamily, fontWeight: '800' },
+  headerTitle: { ...heading.lg, color: colors.white, fontSize: 26 },
 
   card: {
-    backgroundColor: colors.white,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    padding: 24,
     flex: 1,
-    paddingBottom: 48,
+    backgroundColor: colors.white,
+    borderTopLeftRadius: radii.xxl,
+    borderTopRightRadius: radii.xxl,
+    padding: space.xxl,
+    paddingBottom: space.huge,
   },
 
-  tutorRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 18 },
-  avatar:   { width: 52, height: 52, borderRadius: 26 },
-  avatarPlaceholder: { width: 52, height: 52, borderRadius: 26, backgroundColor: colors.red, alignItems: 'center', justifyContent: 'center' },
-  avatarInitials: { color: colors.white, fontWeight: '800', fontSize: 18 },
+  tutorRow:   { flexDirection: 'row', alignItems: 'center', gap: space.md, marginBottom: space.lg },
+  tutorMeta:  { flex: 1 },
   tutorName:  { fontSize: 16, fontWeight: '800', color: colors.black },
   tutorEmail: { fontSize: 12, color: colors.gray500, marginTop: 2 },
 
   slotBanner: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    backgroundColor: colors.greenMuted,
-    borderRadius: 12, padding: 14, marginBottom: 22,
-    borderWidth: 1.5, borderColor: colors.green,
+    flexDirection: 'row', alignItems: 'center', gap: space.sm,
+    backgroundColor: colors.accentTint,
+    borderRadius: radii.md, padding: space.md, marginBottom: space.xl,
+    borderWidth: border.control, borderColor: colors.accent,
   },
-  slotText: { fontSize: 16, fontWeight: '700', color: colors.green },
+  slotText: { fontSize: 16, fontWeight: '700', color: colors.accentDark },
 
-  label: { fontSize: 12, fontWeight: '700', color: colors.gray600, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 },
-
-  subjectRow: { flexDirection: 'row', gap: 10 },
-  subjectOpt: {
-    flex: 1, paddingVertical: 12, borderRadius: 12,
-    borderWidth: 1.5, borderColor: colors.gray200,
-    backgroundColor: colors.offWhite, alignItems: 'center',
+  label: {
+    fontSize: 13, fontWeight: '600',
+    color: colors.gray600, marginBottom: space.sm,
   },
-  subjectOptActive:     { backgroundColor: colors.red, borderColor: colors.red },
-  subjectOptText:       { fontSize: 14, fontWeight: '600', color: colors.gray700 },
-  subjectOptTextActive: { color: colors.white, fontWeight: '800' },
+  subjectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
 
-  notesInput: {
-    borderWidth: 1.5, borderColor: colors.gray200, borderRadius: 14,
-    paddingHorizontal: 14, paddingVertical: 12,
-    fontSize: 15, color: colors.black,
-    backgroundColor: colors.offWhite,
-    height: 88, textAlignVertical: 'top',
-  },
+  notesField: { marginTop: space.xl },
 
   contactNote: {
-    flexDirection: 'row', gap: 8,
+    flexDirection: 'row', gap: space.sm,
     backgroundColor: colors.offWhite,
-    borderRadius: 10, padding: 12, marginTop: 20,
+    borderRadius: radii.md, padding: space.md,
   },
   contactNoteText: { flex: 1, fontSize: 12, color: colors.gray500, lineHeight: 18 },
-  emailHighlight:  { color: colors.red, fontWeight: '600' },
+  emailHighlight:  { color: colors.accent, fontWeight: '600' },
 
-  errorBanner: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: colors.error, borderRadius: 12,
-    padding: 12, marginTop: 18,
+  submit: { marginTop: space.xl },
+
+  // ── Success ───────────────────────────────────────────────────────────────
+  successScreen: {
+    flex: 1, alignItems: 'center', justifyContent: 'center',
+    paddingHorizontal: space.xxxl,
+    backgroundColor: colors.white,
   },
-  errorBannerText: { flex: 1, color: colors.white, fontSize: 13, fontWeight: '600' },
-
-  bookBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: colors.green, borderRadius: 14,
-    paddingVertical: 16, marginTop: 16,
+  successCircle: {
+    width: 88, height: 88, borderRadius: radii.pill,
+    backgroundColor: colors.accent,
+    alignItems: 'center', justifyContent: 'center',
+    marginBottom: space.xl,
   },
-  bookBtnDisabled: { opacity: 0.6 },
-  bookBtnText: { color: colors.white, fontWeight: '800', fontSize: 16 },
-
-  successScreen: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, backgroundColor: colors.white },
-  successCircle: { width: 90, height: 90, borderRadius: 45, backgroundColor: colors.green, alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
-  successTitle: { fontSize: 26, fontFamily: heading.lg.fontFamily, fontWeight: '800', color: colors.black, marginBottom: 10 },
-  successSub: { fontSize: 15, color: colors.gray500, lineHeight: 22, textAlign: 'center', marginBottom: 24 },
-  confirmCard: { backgroundColor: colors.offWhite, borderRadius: 14, padding: 16, width: '100%', gap: 10, marginBottom: 28 },
-  confirmRow:  { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  successTitle: { ...heading.lg, fontSize: 26, color: colors.black, marginBottom: space.sm },
+  successSub: {
+    fontSize: 15, color: colors.gray500,
+    lineHeight: 22, textAlign: 'center', marginBottom: space.xxl,
+  },
+  confirmCard: {
+    backgroundColor: colors.offWhite,
+    borderRadius: radii.lg,
+    padding: space.lg,
+    width: '100%',
+    gap: space.sm,
+    marginBottom: space.xxl,
+  },
+  confirmRow:  { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   confirmText: { fontSize: 14, color: colors.black, fontWeight: '600' },
-  doneBtn:     { backgroundColor: colors.green, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32, marginBottom: 14 },
-  doneBtnText: { color: colors.white, fontWeight: '800', fontSize: 15 },
-  backLink:    {},
-  backLinkText: { color: colors.red, fontWeight: '600', fontSize: 14, textDecorationLine: 'underline' },
+
+  backLink:     { marginTop: space.lg },
+  backLinkText: {
+    color: colors.accent, fontWeight: '600',
+    fontSize: 14, textDecorationLine: 'underline',
+  },
 });

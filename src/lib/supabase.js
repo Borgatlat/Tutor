@@ -47,30 +47,13 @@ export async function fetchMyProfile(userId) {
     .single();
   if (error) throw error;
 
-  const isTutor   = profile.role === 'tutor' || profile.role === 'both';
-  const isStudent = profile.role === 'student' || profile.role === 'both';
-
-  const [subjectsRes, tutorAvailRes, studentAvailRes] = await Promise.all([
+  // All roles store blocks in tutor_availability (student_availability doesn't exist)
+  const [subjectsRes, availRes] = await Promise.all([
     supabase.from('tutor_subjects').select('subject, grade').eq('tutor_id', userId),
-    isTutor
-      ? supabase.from('tutor_availability').select('day, period').eq('tutor_id', userId)
-      : Promise.resolve({ data: [] }),
-    isStudent
-      ? supabase.from('student_availability').select('day, period').eq('student_id', userId)
-      : Promise.resolve({ data: [] }),
+    supabase.from('tutor_availability').select('period').eq('tutor_id', userId),
   ]);
 
-  // Merge and deduplicate (relevant for "both" role users)
-  const seen = new Set();
-  const availability = [
-    ...(tutorAvailRes.data ?? []),
-    ...(studentAvailRes.data ?? []),
-  ].filter(({ day, period }) => {
-    const key = `${day}-${period}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+  const availability = availRes.data ?? [];
 
   return {
     ...profile,
@@ -83,15 +66,14 @@ export async function fetchMyProfile(userId) {
 export async function searchTutors({
   query = '',
   subject = null,
-  day = null,
-  period = null,
+  period = null,   // block number (B1=1 … B8=8)
   studentId = null,
   matchSchedule = false,
 }) {
   const { data, error } = await supabase.rpc('search_tutors', {
     query_name:     query         || '',
     filter_subject: subject       || null,
-    filter_day:     day           || null,
+    filter_day:     null,          // day dimension removed (block schedule)
     filter_period:  period        || null,
     student_id:     studentId     || null,
     match_schedule: matchSchedule || false,

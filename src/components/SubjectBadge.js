@@ -1,29 +1,54 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import colors from '../theme/colors';
+import { radii, space, border } from '../theme/layout';
 
-// Color coding: SAT = forest-green family, AP Math/CS = gold family, AP Science = teal, AP Humanities = slate
+// Badges are colored by department, not by difficulty — 'Algebra 2' and
+// 'AP Calculus BC' read as the same subject family at a glance. All five
+// families are green- or neutral-derived so nothing competes with the brand.
+const s = colors.subject;
+
+const DEPARTMENTS = [
+  {
+    bg: s.mathBg, text: s.mathText,
+    match: ['Algebra', 'Geometry', 'Precalculus', 'Calculus', 'Statistics',
+            'Computer Science', 'SAT Math'],
+  },
+  {
+    bg: s.scienceBg, text: s.scienceText,
+    match: ['Biology', 'Chemistry', 'Physics', 'Anatomy', 'Environmental'],
+  },
+  // Languages must come BEFORE English: 'AP Spanish Language' contains
+  // "Language", so an English-first order would mis-file every language AP.
+  {
+    bg: s.langBg, text: s.langText,
+    match: ['Spanish', 'Latin', 'French'],
+  },
+  {
+    bg: s.englishBg, text: s.englishText,
+    match: ['English', 'Literature', 'Language'],
+  },
+  {
+    bg: s.socialBg, text: s.socialText,
+    match: ['History', 'Government', 'Economics', 'Geography'],
+  },
+];
+
+// `subject` can be null when a session row is missing its join, so coerce
+// before matching rather than letting .includes() throw.
 const getSubjectColors = (subject) => {
-  if (subject === 'SAT Math')    return { bg: colors.redMuted,   text: colors.red };
-  if (subject === 'SAT English') return { bg: colors.greenMuted, text: colors.greenDark };
-  if (subject.startsWith('AP Calc') || subject.startsWith('AP Stat') || subject.startsWith('AP Computer')) {
-    return { bg: '#FEF9EC', text: '#92681A' }; // amber/gold
-  }
-  if (subject.startsWith('AP Chem') || subject.startsWith('AP Phys') || subject.startsWith('AP Bio')) {
-    return { bg: '#EDF7F4', text: '#1A6B4A' }; // teal
-  }
-  if (subject.startsWith('AP')) {
-    return { bg: '#F0EFF8', text: '#4A4580' }; // slate-purple for humanities
-  }
-  return { bg: colors.gray100, text: colors.gray600 };
+  const name = typeof subject === 'string' ? subject : '';
+  const dept = DEPARTMENTS.find((d) => d.match.some((m) => name.includes(m)));
+  return dept ?? { bg: colors.gray100, text: colors.gray600 };
 };
 
 export default function SubjectBadge({ subject, grade, small = false }) {
   const c = getSubjectColors(subject);
+
   return (
     <View style={[styles.badge, { backgroundColor: c.bg }, small && styles.small]}>
       <Text style={[styles.text, { color: c.text }, small && styles.smallText]}>
-        {subject}
+        {subject || 'Subject'}
       </Text>
       {grade ? (
         <View style={[styles.gradePill, { borderColor: c.text }]}>
@@ -38,17 +63,17 @@ const styles = StyleSheet.create({
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: space.md,
     paddingVertical: 6,
-    borderRadius: 20,
+    borderRadius: radii.pill,
     gap: 6,
   },
   text:      { fontSize: 13, fontWeight: '700' },
-  small:     { paddingHorizontal: 8, paddingVertical: 4 },
+  small:     { paddingHorizontal: space.sm, paddingVertical: space.xs },
   smallText: { fontSize: 11 },
   gradePill: {
-    borderWidth: 1,
-    borderRadius: 10,
+    borderWidth: border.hairline,
+    borderRadius: radii.sm,
     paddingHorizontal: 6,
     paddingVertical: 1,
   },

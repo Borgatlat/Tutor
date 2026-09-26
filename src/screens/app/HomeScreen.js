@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  SafeAreaView, StatusBar, Image,
+  SafeAreaView, StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase, searchTutors } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
+import { radii, space, border, press } from '../../theme/layout';
 import { heading } from '../../theme/fonts';
 import TutorCard from '../../components/TutorCard';
+import SkeletonCard from '../../components/SkeletonCard';
+import { Avatar, EmptyState, SectionHeader, StatusPill } from '../../components/ui';
 import { useResponsive } from '../../hooks/useResponsive';
 
 export default function HomeScreen({ navigation }) {
@@ -22,6 +25,7 @@ export default function HomeScreen({ navigation }) {
   const firstName = profile?.full_name?.split(' ')[0] ?? 'Crusader';
   const hour      = new Date().getHours();
   const greeting  = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const isTutor   = profile?.role === 'tutor' || profile?.role === 'both';
 
   useEffect(() => { loadTopTutors(); loadUpcomingSessions(); }, []);
 
@@ -47,201 +51,170 @@ export default function HomeScreen({ navigation }) {
     setUpcoming(data ?? []);
   };
 
-  const renderSessionRow = (s) => {
-    const other    = s.tutor_id === profile?.id ? s.student : s.tutor;
-    const initials = other?.full_name?.split(' ').map((w) => w[0]).slice(0, 2).join('') ?? '?';
+  const renderSessionRow = (s, i, arr) => {
+    const other = s.tutor_id === profile?.id ? s.student : s.tutor;
+
     return (
-      <View key={s.id} style={styles.sessionRow}>
-        {other?.avatar_url ? (
-          <Image source={{ uri: other.avatar_url }} style={styles.sessionAvatar} />
-        ) : (
-          <View style={[styles.sessionAvatarPlaceholder, { backgroundColor: s.tutor_id === profile?.id ? colors.green : colors.red }]}>
-            <Text style={styles.sessionInitials}>{initials}</Text>
-          </View>
-        )}
+      <View
+        key={s.id}
+        style={[styles.sessionRow, i === arr.length - 1 && styles.sessionRowLast]}
+      >
+        <Avatar
+          uri={other?.avatar_url}
+          name={other?.full_name}
+          size={40}
+          color={s.tutor_id === profile?.id ? colors.accent : colors.brand}
+          style={styles.sessionAvatar}
+        />
         <View style={styles.sessionInfo}>
-          <Text style={styles.sessionName}>{other?.full_name}</Text>
-          <Text style={styles.sessionDetail}>{s.subject} · {s.day} P{s.period}</Text>
+          <Text style={styles.sessionName} numberOfLines={1}>{other?.full_name}</Text>
+          <Text style={styles.sessionDetail}>{s.subject} · Block {s.period}</Text>
         </View>
-        <View style={[styles.statusPill, { backgroundColor: s.status === 'confirmed' ? colors.greenMuted : colors.gray100 }]}>
-          <Text style={[styles.statusPillText, { color: s.status === 'confirmed' ? colors.green : colors.gray500 }]}>
-            {s.status}
-          </Text>
-        </View>
+        <StatusPill status={s.status} />
       </View>
     );
   };
 
-  // ─── Desktop layout ──────────────────────────────────────────────────────────
-  if (isWide) {
-    return (
-      <SafeAreaView style={styles.safe}>
-        <StatusBar barStyle="light-content" backgroundColor={colors.red} />
-        <ScrollView showsVerticalScrollIndicator={false}>
+  // ── Content blocks, shared by both layouts ──────────────────────────────────
+  const promoBanner = (
+    <TouchableOpacity
+      style={styles.promo}
+      onPress={() => navigation.navigate('Search')}
+      activeOpacity={press.opacity}
+      accessibilityRole="button"
+      accessibilityLabel="Browse tutors for core classes, SAT and AP"
+    >
+      <View style={styles.promoText}>
+        <Text style={styles.promoLabel}>EVERY SUBJECT</Text>
+        <Text style={styles.promoTitle}>Core Classes, SAT & AP</Text>
+        <Text style={styles.promoSub}>
+          Algebra to AP Calc — help from fellow Crusaders
+        </Text>
+      </View>
+      <View style={styles.promoIcon}>
+        <Ionicons name="ribbon" size={30} color={colors.white} />
+      </View>
+    </TouchableOpacity>
+  );
 
-          {/* Hero */}
-          <View style={styles.hero}>
-            <View style={styles.heroRow}>
-              <View>
-                <Text style={styles.heroGreeting}>{greeting},</Text>
-                <Text style={styles.heroName}>{firstName} 👋</Text>
-              </View>
-              <TouchableOpacity style={styles.heroBadge} onPress={() => navigation.navigate('Profile')}>
-                {profile?.avatar_url
-                  ? <Image source={{ uri: profile.avatar_url }} style={styles.heroAvatar} />
-                  : <Ionicons name="person" size={22} color={colors.white} />
-                }
-              </TouchableOpacity>
+  const sessionsSection = upcomingSessions.length > 0 ? (
+    <View style={styles.section}>
+      <SectionHeader
+        title="Upcoming Sessions"
+        actionLabel="See all"
+        onAction={() => navigation.navigate('Sessions')}
+      />
+      {upcomingSessions.map(renderSessionRow)}
+    </View>
+  ) : null;
+
+  const tutorsSection = (
+    <View style={styles.section}>
+      <SectionHeader
+        title="Top Tutors"
+        actionLabel="Browse all"
+        onAction={() => navigation.navigate('Search')}
+      />
+
+      {loadingTutors ? (
+        <View style={isWide ? styles.grid : undefined}>
+          {[1, 2, 3, 4].slice(0, isWide ? 4 : 3).map((i) => (
+            <View key={i} style={isWide ? styles.gridItem : undefined}>
+              <SkeletonCard />
             </View>
-            <View style={styles.quickActions}>
-              <TouchableOpacity style={styles.qBtn} onPress={() => navigation.navigate('Search')}>
-                <Ionicons name="search" size={18} color={colors.redDark} />
-                <Text style={styles.qBtnText}>Find a Tutor</Text>
-              </TouchableOpacity>
-              {(profile?.role === 'tutor' || profile?.role === 'both') && (
-                <TouchableOpacity style={[styles.qBtn, styles.qBtnGreen]} onPress={() => navigation.navigate('Sessions')}>
-                  <Ionicons name="calendar" size={18} color={colors.green} />
-                  <Text style={[styles.qBtnText, { color: colors.green }]}>My Sessions</Text>
-                </TouchableOpacity>
-              )}
+          ))}
+        </View>
+      ) : topTutors.length === 0 ? (
+        <EmptyState
+          icon="people-outline"
+          title="No tutors yet"
+          body="Once Crusaders add the subjects they can teach, they'll show up here."
+          actionLabel="Browse search"
+          onAction={() => navigation.navigate('Search')}
+        />
+      ) : (
+        <View style={isWide ? styles.grid : undefined}>
+          {topTutors.map((t) => (
+            <View key={t.id} style={isWide ? styles.gridItem : undefined}>
+              <TutorCard
+                tutor={t}
+                onPress={() => navigation.navigate('TutorProfile', { tutor: t })}
+              />
             </View>
-          </View>
+          ))}
+        </View>
+      )}
+    </View>
+  );
 
-          {/* Two-column body */}
-          <View style={styles.desktopBody}>
-
-            {/* Left column */}
-            <View style={styles.desktopLeft}>
-              {/* SAT banner */}
-              <TouchableOpacity style={styles.satBanner} onPress={() => navigation.navigate('Search')}>
-                <View>
-                  <Text style={styles.satLabel}>NOW AVAILABLE</Text>
-                  <Text style={styles.satTitle}>SAT & AP Tutoring</Text>
-                  <Text style={styles.satSub}>Prep help from fellow Crusaders</Text>
-                </View>
-                <View style={styles.satIcon}>
-                  <Ionicons name="ribbon" size={32} color={colors.white} />
-                </View>
-              </TouchableOpacity>
-
-              {/* Upcoming sessions */}
-              {upcomingSessions.length > 0 && (
-                <View style={styles.section}>
-                  <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Upcoming Sessions</Text>
-                    <TouchableOpacity onPress={() => navigation.navigate('Sessions')}>
-                      <Text style={styles.seeAll}>See all</Text>
-                    </TouchableOpacity>
-                  </View>
-                  {upcomingSessions.map(renderSessionRow)}
-                </View>
-              )}
-            </View>
-
-            {/* Right column: Top Tutors grid */}
-            <View style={styles.desktopRight}>
-              <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                  <Text style={styles.sectionTitle}>Top Tutors</Text>
-                  <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-                    <Text style={styles.seeAll}>Browse all</Text>
-                  </TouchableOpacity>
-                </View>
-                {loadingTutors ? (
-                  <View style={styles.tutorGrid}>
-                    {[1, 2, 3, 4].map((i) => <View key={i} style={[styles.skeletonCard, styles.gridItem]} />)}
-                  </View>
-                ) : (
-                  <View style={styles.tutorGrid}>
-                    {topTutors.map((t) => (
-                      <View key={t.id} style={styles.gridItem}>
-                        <TutorCard tutor={t} onPress={() => navigation.navigate('TutorProfile', { tutor: t })} />
-                      </View>
-                    ))}
-                  </View>
-                )}
-              </View>
-            </View>
-
-          </View>
-          <View style={{ height: 32 }} />
-        </ScrollView>
-      </SafeAreaView>
-    );
-  }
-
-  // ─── Mobile layout (unchanged) ───────────────────────────────────────────────
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.red} />
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <StatusBar barStyle="light-content" backgroundColor={colors.brand} />
 
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Hero */}
         <View style={styles.hero}>
           <View style={styles.heroRow}>
-            <View>
+            <View style={styles.heroGreetingWrap}>
               <Text style={styles.heroGreeting}>{greeting},</Text>
-              <Text style={styles.heroName}>{firstName} 👋</Text>
+              <Text style={styles.heroName} numberOfLines={1}>{firstName}</Text>
             </View>
-            <TouchableOpacity style={styles.heroBadge} onPress={() => navigation.navigate('Profile')}>
-              {profile?.avatar_url
-                ? <Image source={{ uri: profile.avatar_url }} style={styles.heroAvatar} />
-                : <Ionicons name="person" size={22} color={colors.white} />
-              }
+
+            <TouchableOpacity
+              style={styles.heroBadge}
+              onPress={() => navigation.navigate('Profile')}
+              activeOpacity={press.opacity}
+              accessibilityRole="button"
+              accessibilityLabel="Open your profile"
+            >
+              {profile?.avatar_url ? (
+                <Avatar uri={profile.avatar_url} name={profile.full_name} size={44} />
+              ) : (
+                <Ionicons name="person" size={22} color={colors.white} />
+              )}
             </TouchableOpacity>
           </View>
+
           <View style={styles.quickActions}>
-            <TouchableOpacity style={styles.qBtn} onPress={() => navigation.navigate('Search')}>
-              <Ionicons name="search" size={18} color={colors.redDark} />
+            <TouchableOpacity
+              style={styles.qBtn}
+              onPress={() => navigation.navigate('Search')}
+              activeOpacity={press.opacity}
+              accessibilityRole="button"
+              accessibilityLabel="Find a tutor"
+            >
+              <Ionicons name="search" size={17} color={colors.brand} />
               <Text style={styles.qBtnText}>Find a Tutor</Text>
             </TouchableOpacity>
-            {(profile?.role === 'tutor' || profile?.role === 'both') && (
-              <TouchableOpacity style={[styles.qBtn, styles.qBtnGreen]} onPress={() => navigation.navigate('Sessions')}>
-                <Ionicons name="calendar" size={18} color={colors.green} />
-                <Text style={[styles.qBtnText, { color: colors.green }]}>My Sessions</Text>
+
+            {isTutor ? (
+              <TouchableOpacity
+                style={styles.qBtn}
+                onPress={() => navigation.navigate('Sessions')}
+                activeOpacity={press.opacity}
+                accessibilityRole="button"
+                accessibilityLabel="My sessions"
+              >
+                <Ionicons name="calendar" size={17} color={colors.brand} />
+                <Text style={styles.qBtnText}>My Sessions</Text>
               </TouchableOpacity>
-            )}
+            ) : null}
           </View>
         </View>
 
-        {upcomingSessions.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Upcoming Sessions</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Sessions')}>
-                <Text style={styles.seeAll}>See all</Text>
-              </TouchableOpacity>
-            </View>
-            {upcomingSessions.map(renderSessionRow)}
+        {/* One content tree — the wrapper switches between two columns and a
+            single stack, so the blocks themselves are never duplicated. */}
+        <View style={[styles.body, isWide && styles.bodyWide]}>
+          <View style={[styles.col, isWide && styles.colNarrow]}>
+            {promoBanner}
+            {sessionsSection}
           </View>
-        )}
-
-        <TouchableOpacity style={styles.satBanner} onPress={() => navigation.navigate('Search')}>
-          <View>
-            <Text style={styles.satLabel}>NOW AVAILABLE</Text>
-            <Text style={styles.satTitle}>SAT & AP Tutoring</Text>
-            <Text style={styles.satSub}>Prep help from fellow Crusaders</Text>
+          <View style={[styles.col, isWide && styles.colWide]}>
+            {tutorsSection}
           </View>
-          <View style={styles.satIcon}>
-            <Ionicons name="ribbon" size={32} color={colors.white} />
-          </View>
-        </TouchableOpacity>
-
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Top Tutors</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-              <Text style={styles.seeAll}>Browse all</Text>
-            </TouchableOpacity>
-          </View>
-          {loadingTutors
-            ? [1, 2, 3].map((i) => <View key={i} style={styles.skeletonCard} />)
-            : topTutors.map((t) => (
-                <TutorCard key={t.id} tutor={t} onPress={() => navigation.navigate('TutorProfile', { tutor: t })} />
-              ))
-          }
         </View>
 
-        <View style={{ height: 32 }} />
+        <View style={styles.bottomSpacer} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -250,49 +223,94 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.offWhite },
 
-  hero: { backgroundColor: colors.red, paddingHorizontal: 20, paddingTop: 16, paddingBottom: 28 },
-  heroRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  heroGreeting: { color: colors.white, opacity: 0.8, fontSize: 14 },
-  heroName:     { color: colors.white, fontSize: 26, fontFamily: heading.lg.fontFamily, fontWeight: '800' },
-  heroBadge: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center' },
-  heroAvatar: { width: 44, height: 44, borderRadius: 22 },
-
-  quickActions: { flexDirection: 'row', gap: 10 },
-  qBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.white, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 30 },
-  qBtnGreen: { backgroundColor: colors.greenMuted },
-  qBtnText: { fontWeight: '700', fontSize: 14, color: colors.redDark },
-
-  // Desktop two-column body
-  desktopBody:  { flexDirection: 'row', alignItems: 'flex-start', padding: 20, gap: 20 },
-  desktopLeft:  { flex: 1, gap: 16 },
-  desktopRight: { flex: 1.4 },
-  tutorGrid:    { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  gridItem:     { flex: 1, minWidth: 260 },
-
-  section: { backgroundColor: colors.white, marginTop: 10, paddingHorizontal: 18, paddingVertical: 18, borderRadius: 16 },
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
-  sectionTitle: { fontSize: 17, fontWeight: '800', color: colors.black },
-  seeAll:       { fontSize: 13, color: colors.redDark, fontWeight: '600' },
-
-  sessionRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.gray100 },
-  sessionAvatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
-  sessionAvatarPlaceholder: { width: 40, height: 40, borderRadius: 20, marginRight: 10, alignItems: 'center', justifyContent: 'center' },
-  sessionInitials: { color: colors.white, fontWeight: '700', fontSize: 13 },
-  sessionInfo: { flex: 1 },
-  sessionName: { fontSize: 14, fontWeight: '700', color: colors.black },
-  sessionDetail: { fontSize: 12, color: colors.gray500, marginTop: 1 },
-  statusPill: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
-  statusPillText: { fontSize: 11, fontWeight: '700' },
-
-  satBanner: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: colors.green,
-    marginHorizontal: 14, marginTop: 10, borderRadius: 18, padding: 20,
+  // ── Hero ──────────────────────────────────────────────────────────────────
+  hero: {
+    backgroundColor: colors.brand,
+    paddingHorizontal: space.xl,
+    paddingTop: space.lg,
+    paddingBottom: space.xxl,
   },
-  satLabel: { color: colors.white, fontSize: 10, fontWeight: '700', letterSpacing: 1.5, opacity: 0.8, marginBottom: 4 },
-  satTitle: { color: colors.white, fontSize: 20, fontWeight: '800', marginBottom: 2 },
-  satSub:   { color: colors.white, fontSize: 12, opacity: 0.85 },
-  satIcon:  { width: 56, height: 56, borderRadius: 28, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+  heroRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: space.xl,
+  },
+  heroGreetingWrap: { flex: 1, marginRight: space.md },
+  heroGreeting: { color: colors.whiteAlpha[80], fontSize: 14 },
+  heroName: {
+    ...heading.lg,
+    color: colors.white,
+    fontSize: 26,
+  },
+  heroBadge: {
+    width: 44, height: 44, borderRadius: radii.pill,
+    backgroundColor: colors.whiteAlpha[18],
+    alignItems: 'center', justifyContent: 'center',
+    overflow: 'hidden',
+  },
 
-  skeletonCard: { height: 90, backgroundColor: colors.gray100, borderRadius: 16, marginBottom: 12 },
+  quickActions: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
+  qBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: colors.white,
+    paddingHorizontal: space.lg, paddingVertical: space.sm,
+    borderRadius: radii.pill,
+  },
+  qBtnText: { fontWeight: '700', fontSize: 14, color: colors.brand },
+
+  // ── Body ──────────────────────────────────────────────────────────────────
+  body:     { padding: space.lg, gap: space.lg },
+  bodyWide: { flexDirection: 'row', alignItems: 'flex-start', padding: space.xl, gap: space.xl },
+  col:       { gap: space.lg },
+  colNarrow: { flex: 1 },
+  colWide:   { flex: 1.4 },
+
+  grid:     { flexDirection: 'row', flexWrap: 'wrap', gap: space.md },
+  gridItem: { flex: 1, minWidth: 260 },
+
+  section: {
+    backgroundColor: colors.white,
+    padding: space.lg,
+    borderRadius: radii.lg,
+  },
+
+  // ── Session rows ──────────────────────────────────────────────────────────
+  sessionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: space.md,
+    borderBottomWidth: border.hairline,
+    borderBottomColor: colors.gray200,
+  },
+  sessionRowLast: { borderBottomWidth: 0, paddingBottom: 0 },
+  sessionAvatar:  { marginRight: space.md },
+  sessionInfo:    { flex: 1, marginRight: space.sm },
+  sessionName:    { fontSize: 14, fontWeight: '700', color: colors.black },
+  sessionDetail:  { fontSize: 12, color: colors.gray500, marginTop: 1 },
+
+  // ── Promo banner ──────────────────────────────────────────────────────────
+  promo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.accent,
+    borderRadius: radii.lg,
+    padding: space.xl,
+    gap: space.md,
+  },
+  promoText:  { flex: 1 },
+  promoLabel: {
+    color: colors.whiteAlpha[80], fontSize: 10,
+    fontWeight: '700', letterSpacing: 1.5, marginBottom: space.xs,
+  },
+  promoTitle: { color: colors.white, fontSize: 19, fontWeight: '800', marginBottom: 2 },
+  promoSub:   { color: colors.whiteAlpha[80], fontSize: 12, lineHeight: 17 },
+  promoIcon: {
+    width: 56, height: 56, borderRadius: radii.pill,
+    backgroundColor: colors.whiteAlpha[18],
+    alignItems: 'center', justifyContent: 'center',
+  },
+
+  bottomSpacer: { height: space.xxxl },
 });

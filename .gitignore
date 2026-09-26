@@ -18,6 +18,10 @@ android/
 .env.local
 .env.production
 
+# Local Claude Code settings — may contain machine-local paths and secrets.
+# .claude/settings.json and launch.json are shared; settings.local.json is not.
+.claude/settings.local.json
+
 # macOS
 .DS_Store
 

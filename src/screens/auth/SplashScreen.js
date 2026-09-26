@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Platform } from 'react-native';
+import { View, Text, StyleSheet, Animated, Platform, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../../theme/colors';
+import { radii, space } from '../../theme/layout';
 import { heading } from '../../theme/fonts';
 
 const useNativeDriver = Platform.OS !== 'web';
@@ -13,7 +14,7 @@ export default function SplashScreen() {
   useEffect(() => {
     Animated.parallel([
       Animated.timing(opacity, { toValue: 1, duration: 700, useNativeDriver }),
-      Animated.spring(scale,  { toValue: 1, tension: 60, friction: 8, useNativeDriver }),
+      Animated.spring(scale,   { toValue: 1, tension: 60, friction: 8, useNativeDriver }),
     ]).start();
   }, []);
 
@@ -26,7 +27,14 @@ export default function SplashScreen() {
         <Text style={styles.school}>STRAKE JESUIT</Text>
         <Text style={styles.title}>Tutor{'\n'}Marketplace</Text>
         <Text style={styles.sub}>Crusaders helping Crusaders</Text>
-        <View style={styles.dot} />
+
+        {/* A real spinner — the old static dot read as a loading indicator but
+            never moved, so a slow session restore looked frozen. */}
+        <ActivityIndicator
+          color={colors.whiteAlpha[65]}
+          style={styles.spinner}
+          accessibilityLabel="Loading"
+        />
       </Animated.View>
     </View>
   );
@@ -35,48 +43,40 @@ export default function SplashScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.red,
+    backgroundColor: colors.brand,
     alignItems: 'center',
     justifyContent: 'center',
   },
   content: { alignItems: 'center' },
+
   iconWrap: {
     width: 100,
     height: 100,
-    borderRadius: 50,
-    backgroundColor: colors.green,
+    borderRadius: radii.pill,
+    backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 24,
+    marginBottom: space.xxl,
   },
   school: {
-    color: colors.white,
+    color: colors.whiteAlpha[80],
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 3,
-    opacity: 0.8,
-    marginBottom: 8,
+    marginBottom: space.sm,
   },
   title: {
+    ...heading.xl,
     color: colors.white,
     fontSize: 42,
-    fontFamily: heading.xl.fontFamily,
-    fontWeight: '800',
     textAlign: 'center',
     lineHeight: 48,
-    marginBottom: 12,
+    marginBottom: space.md,
   },
   sub: {
-    color: colors.white,
+    color: colors.whiteAlpha[80],
     fontSize: 15,
-    opacity: 0.75,
-    marginBottom: 32,
+    marginBottom: space.xxxl,
   },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.white,
-    opacity: 0.5,
-  },
+  spinner: { transform: [{ scale: 0.9 }] },
 });

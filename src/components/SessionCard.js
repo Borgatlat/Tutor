@@ -1,39 +1,45 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../theme/colors';
-import { cardShadow } from '../theme/shadows';
-import { SESSION_STATUS } from '../constants';
+import { space } from '../theme/layout';
+import Card from './ui/Card';
+import Avatar from './ui/Avatar';
+import Button from './ui/Button';
+import StatusPill from './ui/StatusPill';
 import SubjectBadge from './SubjectBadge';
 
-export default function SessionCard({ session, currentUserId, onConfirm, onCancel, onReview, onAddToCalendar, calendarAdded }) {
+export default function SessionCard({
+  session,
+  currentUserId,
+  onConfirm,
+  onCancel,
+  onReview,
+  onAddToCalendar,
+  calendarAdded,
+  busy = false,
+}) {
   const isTutor   = session.tutor_id === currentUserId;
   const otherUser = isTutor ? session.student : session.tutor;
-  const status    = SESSION_STATUS[session.status] ?? { label: session.status, color: colors.gray500 };
-
-  const initials = otherUser?.full_name
-    ?.split(' ').map((w) => w[0]).slice(0, 2).join('') ?? '?';
 
   return (
-    <View style={styles.card}>
+    <Card style={styles.card}>
       {/* Top row */}
       <View style={styles.top}>
-        {otherUser?.avatar_url ? (
-          <Image source={{ uri: otherUser.avatar_url }} style={styles.avatar} />
-        ) : (
-          <View style={[styles.avatarPlaceholder, { backgroundColor: isTutor ? colors.green : colors.red }]}>
-            <Text style={styles.initials}>{initials}</Text>
-          </View>
-        )}
+        <Avatar
+          uri={otherUser?.avatar_url}
+          name={otherUser?.full_name}
+          size={44}
+          color={isTutor ? colors.accent : colors.brand}
+          style={styles.avatar}
+        />
 
         <View style={styles.info}>
           <Text style={styles.name}>{otherUser?.full_name ?? 'Unknown'}</Text>
           <Text style={styles.role}>{isTutor ? 'Student' : 'Tutor'}</Text>
         </View>
 
-        <View style={[styles.statusBadge, { backgroundColor: `${status.color}22` }]}>
-          <Text style={[styles.statusText, { color: status.color }]}>{status.label}</Text>
-        </View>
+        <StatusPill status={session.status} />
       </View>
 
       {/* Details */}
@@ -41,7 +47,7 @@ export default function SessionCard({ session, currentUserId, onConfirm, onCance
         <SubjectBadge subject={session.subject} small />
         <View style={styles.detailItem}>
           <Ionicons name="calendar-outline" size={13} color={colors.gray500} />
-          <Text style={styles.detailText}>{session.day} · Period {session.period}</Text>
+          <Text style={styles.detailText}>Block {session.period}</Text>
         </View>
       </View>
 
@@ -49,97 +55,80 @@ export default function SessionCard({ session, currentUserId, onConfirm, onCance
         <Text style={styles.notes} numberOfLines={2}>{session.notes}</Text>
       ) : null}
 
-      {/* Actions */}
+      {/* Actions — `busy` disables them all so they can't be double-tapped
+          while the request is in flight. */}
       <View style={styles.actions}>
         {session.status === 'pending' && isTutor && (
           <>
-            <TouchableOpacity style={styles.confirmBtn} onPress={() => onConfirm?.(session.id)}>
-              <Text style={styles.confirmText}>Confirm</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.cancelBtn} onPress={() => onCancel?.(session.id)}>
-              <Text style={styles.cancelText}>Decline</Text>
-            </TouchableOpacity>
+            <Button
+              label="Confirm"
+              size="sm"
+              loading={busy}
+              onPress={() => onConfirm?.(session.id)}
+              style={styles.grow}
+            />
+            <Button
+              label="Decline"
+              size="sm"
+              variant="danger"
+              disabled={busy}
+              onPress={() => onCancel?.(session.id)}
+              style={styles.grow}
+            />
           </>
         )}
+
         {session.status === 'pending' && !isTutor && (
-          <TouchableOpacity style={styles.cancelBtn} onPress={() => onCancel?.(session.id)}>
-            <Text style={styles.cancelText}>Cancel Request</Text>
-          </TouchableOpacity>
+          <Button
+            label="Cancel Request"
+            size="sm"
+            variant="danger"
+            loading={busy}
+            onPress={() => onCancel?.(session.id)}
+            style={styles.grow}
+          />
         )}
+
         {session.status === 'confirmed' && (
-          <TouchableOpacity
-            style={[styles.calendarBtn, calendarAdded && styles.calendarBtnAdded]}
-            onPress={() => !calendarAdded && onAddToCalendar?.(session)}
-            activeOpacity={calendarAdded ? 1 : 0.7}
-          >
-            <Ionicons
-              name={calendarAdded ? 'checkmark-circle' : 'calendar-outline'}
-              size={14}
-              color={calendarAdded ? colors.green : colors.red}
-            />
-            <Text style={[styles.calendarBtnText, calendarAdded && styles.calendarBtnTextAdded]}>
-              {calendarAdded ? 'Added to Calendar' : 'Add to Calendar'}
-            </Text>
-          </TouchableOpacity>
+          <Button
+            label={calendarAdded ? 'Added to Calendar' : 'Add to Calendar'}
+            icon={calendarAdded ? 'checkmark-circle' : 'calendar-outline'}
+            size="sm"
+            variant={calendarAdded ? 'ghost' : 'secondary'}
+            disabled={calendarAdded}
+            onPress={() => onAddToCalendar?.(session)}
+          />
         )}
+
         {session.status === 'completed' && !isTutor && !session.reviewed && (
-          <TouchableOpacity style={styles.reviewBtn} onPress={() => onReview?.(session)}>
-            <Ionicons name="star-outline" size={14} color={colors.warning} />
-            <Text style={styles.reviewText}>Leave a Review</Text>
-          </TouchableOpacity>
+          <Button
+            label="Leave a Review"
+            icon="star-outline"
+            size="sm"
+            variant="secondary"
+            onPress={() => onReview?.(session)}
+          />
         )}
       </View>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.white,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    ...cardShadow,
-  },
-  top: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  avatar:            { width: 44, height: 44, borderRadius: 22, marginRight: 10 },
-  avatarPlaceholder: { width: 44, height: 44, borderRadius: 22, marginRight: 10, alignItems: 'center', justifyContent: 'center' },
-  initials:  { color: colors.white, fontWeight: '800', fontSize: 15 },
-  info:      { flex: 1 },
-  name:      { fontSize: 15, fontWeight: '700', color: colors.black },
-  role:      { fontSize: 12, color: colors.gray500, marginTop: 1 },
-  statusBadge:  { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
-  statusText:   { fontSize: 12, fontWeight: '700' },
+  card: { marginBottom: space.md },
 
-  details:    { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
-  detailItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  top:    { flexDirection: 'row', alignItems: 'center', marginBottom: space.md },
+  avatar: { marginRight: space.md },
+  info:   { flex: 1 },
+  name:   { fontSize: 15, fontWeight: '700', color: colors.black },
+  role:   { fontSize: 12, color: colors.gray500, marginTop: 1 },
+
+  details:    { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginBottom: space.sm },
+  detailItem: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   detailText: { fontSize: 12, color: colors.gray500 },
-  notes:      { fontSize: 13, color: colors.gray600, lineHeight: 18, marginBottom: 10 },
 
-  actions:    { flexDirection: 'row', gap: 8, marginTop: 4 },
-  confirmBtn: {
-    flex: 1, backgroundColor: colors.green, borderRadius: 10,
-    paddingVertical: 9, alignItems: 'center',
-  },
-  confirmText: { color: colors.white, fontWeight: '700', fontSize: 13 },
-  cancelBtn: {
-    flex: 1, borderWidth: 1.5, borderColor: colors.gray200, borderRadius: 10,
-    paddingVertical: 9, alignItems: 'center',
-  },
-  cancelText: { color: colors.gray500, fontWeight: '700', fontSize: 13 },
-  reviewBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 5,
-    borderWidth: 1.5, borderColor: colors.warning, borderRadius: 10,
-    paddingVertical: 9, paddingHorizontal: 14,
-  },
-  reviewText: { color: colors.warning, fontWeight: '700', fontSize: 13 },
+  notes: { fontSize: 13, color: colors.gray600, lineHeight: 18, marginBottom: space.sm },
 
-  calendarBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    borderWidth: 1.5, borderColor: colors.red, borderRadius: 10,
-    paddingVertical: 9, paddingHorizontal: 14,
-  },
-  calendarBtnAdded:    { borderColor: colors.green, backgroundColor: colors.greenMuted },
-  calendarBtnText:     { color: colors.red,   fontWeight: '700', fontSize: 13 },
-  calendarBtnTextAdded:{ color: colors.green, fontWeight: '700', fontSize: 13 },
+  actions: { flexDirection: 'row', gap: space.sm, marginTop: space.xs },
+  grow:    { flex: 1 },
 });

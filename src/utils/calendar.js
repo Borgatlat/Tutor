@@ -12,8 +12,8 @@
  */
 import { Platform } from 'react-native';
 
-// ─── School period start/end times (24-hour) ────────────────────────────────
-const PERIOD_TIMES = {
+// ─── Block start/end times (24-hour, based on Strake Jesuit block schedule) ──
+const BLOCK_TIMES = {
   1: { startH: 8,  startM: 0,  endH: 8,  endM: 50 },
   2: { startH: 9,  startM: 0,  endH: 9,  endM: 50 },
   3: { startH: 10, startM: 0,  endH: 10, endM: 50 },
@@ -24,31 +24,26 @@ const PERIOD_TIMES = {
   8: { startH: 15, startM: 0,  endH: 15, endM: 50 },
 };
 
-// Mon=1 … Fri=5 (matches Date.prototype.getDay() where 0=Sun)
-const DAY_INDEX = { Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5 };
-
 /**
- * Build the next Date that falls on `dayName` at `hour:minute`.
- * If today IS that weekday but the time has already passed, returns next week.
+ * Returns a Date for the next weekday (Mon–Fri) at hour:minute.
+ * If today is a weekday and the time hasn't passed yet, returns today.
  */
-function nextOccurrence(dayName, hour, minute) {
-  const target = DAY_INDEX[dayName];
-  if (target === undefined) return new Date();
-
-  const now   = new Date();
-  const today = now.getDay(); // 0-6
-
-  let daysAhead = target - today;
-  if (daysAhead < 0) daysAhead += 7;           // already passed this week
-  if (daysAhead === 0) {
-    const slotTime = new Date(now);
-    slotTime.setHours(hour, minute, 0, 0);
-    if (slotTime <= now) daysAhead = 7;          // push to next week
-  }
-
+function nextWeekdayAtTime(hour, minute) {
+  const now    = new Date();
   const result = new Date(now);
-  result.setDate(now.getDate() + daysAhead);
   result.setHours(hour, minute, 0, 0);
+
+  // If today is Sat(6) or Sun(0), or the time has already passed, advance
+  const day = now.getDay();
+  if (day === 0) {
+    result.setDate(result.getDate() + 1); // → Monday
+  } else if (day === 6) {
+    result.setDate(result.getDate() + 2); // → Monday
+  } else if (result <= now) {
+    // Weekday but time has passed — move to next weekday
+    const daysToAdd = day === 5 ? 3 : 1; // Friday → Monday, else +1
+    result.setDate(result.getDate() + daysToAdd);
+  }
   return result;
 }
 
@@ -90,7 +85,7 @@ async function addToNativeCalendar(session, otherName, times, startDate, endDate
   const notes = [
     session.notes ?? null,
     `Subject: ${session.subject}`,
-    `${session.day} · Period ${session.period}`,
+    `Block ${session.period}`,
     'Strake Jesuit Tutor Marketplace',
   ].filter(Boolean).join('\n');
 
@@ -141,7 +136,7 @@ function addToWebCalendar(session, otherName, startDate, endDate) {
   const description = [
     session.notes ?? null,
     `Subject: ${session.subject}`,
-    `${session.day} · Period ${session.period}`,
+    `Block ${session.period}`,
     'Strake Jesuit Tutor Marketplace',
   ].filter(Boolean).join('\\n');
 
@@ -203,13 +198,15 @@ function addToWebCalendar(session, otherName, startDate, endDate) {
  * @returns {{ success: boolean, error?: string }}
  */
 export async function addSessionToCalendar(session, otherName) {
-  const times = PERIOD_TIMES[session.period];
+  const times = BLOCK_TIMES[session.period];
   if (!times) {
-    return { success: false, error: `Unknown period: ${session.period}` };
+    return { success: false, error: `Unknown block: ${session.period}` };
   }
 
-  const startDate = nextOccurrence(session.day, times.startH, times.startM);
-  const endDate   = nextOccurrence(session.day, times.endH,   times.endM);
+  // Block schedule has no fixed day — schedule the event for the next weekday
+  // at the block's time so the calendar entry is still useful
+  const startDate = nextWeekdayAtTime(times.startH, times.startM);
+  const endDate   = nextWeekdayAtTime(times.endH,   times.endM);
 
   if (Platform.OS === 'web') {
     return addToWebCalendar(session, otherName, startDate, endDate);
@@ -223,13 +220,8 @@ export async function addSessionToCalendar(session, otherName) {
  * e.g. "Next Monday, Oct 14 · 9:00 – 9:50 AM"
  */
 export function getSessionTimeLabel(day, period) {
-  const times = PERIOD_TIMES[period];
+  const times = BLOCK_TIMES[period];
   if (!times) return '';
-
-  const date = nextOccurrence(day, times.startH, times.startM);
-  const dateStr = date.toLocaleDateString('en-US', {
-    weekday: 'long', month: 'short', day: 'numeric',
-  });
 
   const fmt = (h, m) => {
     const suffix = h >= 12 ? 'PM' : 'AM';
@@ -237,5 +229,5 @@ export function getSessionTimeLabel(day, period) {
     return `${h12}:${String(m).padStart(2, '0')} ${suffix}`;
   };
 
-  return `${dateStr} · ${fmt(times.startH, times.startM)} – ${fmt(times.endH, times.endM)}`;
+  return `Block ${period} · ${fmt(times.startH, times.startM)} – ${fmt(times.endH, times.endM)}`;
 }

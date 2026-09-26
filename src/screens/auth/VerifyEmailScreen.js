@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
-import {
-  View, Text, TouchableOpacity, StyleSheet,
-  SafeAreaView, ActivityIndicator,
-} from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import colors from '../../theme/colors';
+import { radii, space, border } from '../../theme/layout';
 import { heading } from '../../theme/fonts';
+import { Button, Divider, ErrorBanner } from '../../components/ui';
+
+const STEPS = [
+  { icon: 'mail-outline',             text: 'Open the confirmation email we sent you' },
+  { icon: 'finger-print-outline',     text: 'Tap the "Confirm your email" link' },
+  { icon: 'checkmark-circle-outline', text: "You'll be signed in automatically" },
+];
 
 export default function VerifyEmailScreen({ route }) {
   const { email } = route.params ?? {};
-  const [resending, setResending] = useState(false);
-  const [resent, setResent]       = useState(false);
+  const [resending, setResending]     = useState(false);
+  const [resent, setResent]           = useState(false);
   const [resendError, setResendError] = useState('');
 
   const handleResend = async () => {
@@ -30,8 +35,6 @@ export default function VerifyEmailScreen({ route }) {
 
   return (
     <SafeAreaView style={styles.safe}>
-
-      {/* Hero */}
       <View style={styles.hero}>
         <View style={styles.iconCircle}>
           <Ionicons name="mail-unread" size={36} color={colors.white} />
@@ -43,144 +46,109 @@ export default function VerifyEmailScreen({ route }) {
         </Text>
       </View>
 
-      {/* Card */}
       <View style={styles.card}>
-
-        {/* Steps */}
         <View style={styles.stepList}>
-          {[
-            { icon: 'mail-outline',             text: 'Open the confirmation email we sent you' },
-            { icon: 'finger-print-outline',     text: 'Tap the "Confirm your email" link' },
-            { icon: 'checkmark-circle-outline', text: "You'll be signed in automatically" },
-          ].map((s, i) => (
-            <View key={i} style={styles.step}>
+          {STEPS.map((s) => (
+            <View key={s.text} style={styles.step}>
               <View style={styles.stepIconWrap}>
-                <Ionicons name={s.icon} size={20} color={colors.red} />
+                <Ionicons name={s.icon} size={20} color={colors.accent} />
               </View>
               <Text style={styles.stepText}>{s.text}</Text>
             </View>
           ))}
         </View>
 
-        <View style={styles.divider} />
+        <Divider />
 
-        {/* Resent confirmation */}
-        {resent && (
+        {resent ? (
           <View style={styles.resentBanner}>
-            <Ionicons name="checkmark-circle" size={16} color="#1B4D2E" />
+            <Ionicons name="checkmark-circle" size={16} color={colors.accentDark} />
             <Text style={styles.resentText}>New link sent! Check your inbox.</Text>
-          </View>
-        )}
-
-        {resendError ? (
-          <View style={styles.errorBanner}>
-            <Ionicons name="alert-circle" size={16} color={colors.white} />
-            <Text style={styles.errorText}>{resendError}</Text>
           </View>
         ) : null}
 
+        <ErrorBanner message={resendError} />
+
         <Text style={styles.resendLabel}>Didn't get the email?</Text>
-        <TouchableOpacity
-          style={[styles.resendBtn, resending && { opacity: 0.6 }]}
+        <Button
+          label="Resend Confirmation Email"
+          icon="refresh"
           onPress={handleResend}
-          disabled={resending}
-        >
-          {resending
-            ? <ActivityIndicator color={colors.white} size="small" />
-            : (
-              <View style={styles.resendBtnInner}>
-                <Ionicons name="refresh" size={16} color={colors.white} />
-                <Text style={styles.resendBtnText}>Resend Confirmation Email</Text>
-              </View>
-            )}
-        </TouchableOpacity>
+          loading={resending}
+          fullWidth
+        />
 
         <Text style={styles.spamNote}>
           <Ionicons name="information-circle-outline" size={13} color={colors.gray400} />
           {' '}Check your spam / junk folder too
         </Text>
-
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.red },
+  safe: { flex: 1, backgroundColor: colors.brand },
 
   hero: {
-    backgroundColor: colors.red,
+    backgroundColor: colors.brand,
     alignItems: 'center',
-    paddingTop: 48,
-    paddingBottom: 40,
-    paddingHorizontal: 32,
+    paddingTop: space.huge,
+    paddingBottom: space.huge,
+    paddingHorizontal: space.xxxl,
   },
   iconCircle: {
-    width: 80, height: 80, borderRadius: 40,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    width: 80, height: 80, borderRadius: radii.pill,
+    backgroundColor: colors.whiteAlpha[18],
     alignItems: 'center', justifyContent: 'center',
-    marginBottom: 20,
-    borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)',
+    marginBottom: space.xl,
+    borderWidth: border.control, borderColor: colors.whiteAlpha[18],
   },
   heroTitle: {
+    ...heading.lg,
     color: colors.white, fontSize: 28,
-    fontFamily: heading.lg.fontFamily, fontWeight: '800',
-    marginBottom: 10, textAlign: 'center',
+    marginBottom: space.sm, textAlign: 'center',
   },
   heroSub: {
-    color: colors.white, opacity: 0.85,
+    color: colors.whiteAlpha[80],
     fontSize: 15, lineHeight: 24, textAlign: 'center',
   },
-  heroEmail: { fontWeight: '800', opacity: 1 },
+  heroEmail: { color: colors.white, fontWeight: '800' },
 
   card: {
     flex: 1,
     backgroundColor: colors.white,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    padding: 32,
-    paddingTop: 36,
+    borderTopLeftRadius: radii.xxl,
+    borderTopRightRadius: radii.xxl,
+    padding: space.xxxl,
   },
 
-  stepList: { gap: 18, marginBottom: 28 },
-  step: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  stepList: { gap: space.lg },
+  step: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   stepIconWrap: {
-    width: 40, height: 40, borderRadius: 20,
-    backgroundColor: colors.redMuted,
+    width: 40, height: 40, borderRadius: radii.pill,
+    backgroundColor: colors.accentTint,
     alignItems: 'center', justifyContent: 'center',
     flexShrink: 0,
   },
-  stepText: { flex: 1, fontSize: 15, color: colors.black, fontWeight: '500', lineHeight: 21 },
-
-  divider: { height: 1, backgroundColor: colors.gray100, marginBottom: 24 },
+  stepText: {
+    flex: 1, fontSize: 15, color: colors.black,
+    fontWeight: '500', lineHeight: 21,
+  },
 
   resentBanner: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: colors.redMuted,
-    borderRadius: 10, padding: 12, marginBottom: 16,
+    flexDirection: 'row', alignItems: 'center', gap: space.sm,
+    backgroundColor: colors.accentTint,
+    borderRadius: radii.md, padding: space.md, marginBottom: space.lg,
   },
-  resentText: { fontSize: 13, color: colors.red, fontWeight: '600' },
-
-  errorBanner: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: colors.error, borderRadius: 10,
-    padding: 12, marginBottom: 16,
-  },
-  errorText: { flex: 1, color: colors.white, fontSize: 13, fontWeight: '600' },
+  resentText: { fontSize: 13, color: colors.accentDark, fontWeight: '600' },
 
   resendLabel: {
     fontSize: 13, color: colors.gray500,
-    textAlign: 'center', marginBottom: 12,
+    textAlign: 'center', marginBottom: space.md,
   },
-  resendBtn: {
-    backgroundColor: colors.red, borderRadius: 14,
-    paddingVertical: 14, alignItems: 'center',
-  },
-  resendBtnInner: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  resendBtnText:  { color: colors.white, fontWeight: '700', fontSize: 15 },
-
   spamNote: {
     fontSize: 12, color: colors.gray400,
-    textAlign: 'center', marginTop: 16,
+    textAlign: 'center', marginTop: space.lg,
   },
 });

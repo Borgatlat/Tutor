@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+// Text imported above is used for emoji fallbacks
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { BottomTabBar }             from '@react-navigation/bottom-tabs';
 import { createStackNavigator }     from '@react-navigation/stack';
@@ -13,6 +14,8 @@ import SessionsScreen     from '../screens/app/SessionsScreen';
 import ProfileScreen      from '../screens/app/ProfileScreen';
 import { useResponsive, SIDEBAR_WIDTH } from '../hooks/useResponsive';
 import colors             from '../theme/colors';
+import { radii, space, border, press } from '../theme/layout';
+import { sidebarShadow }  from '../theme/shadows';
 
 const Tab   = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -38,11 +41,24 @@ function SearchStack() {
 }
 
 const TAB_META = [
-  { name: 'Home',     label: 'Home',     iconOff: 'home-outline',     iconOn: 'home'     },
-  { name: 'Search',   label: 'Search',   iconOff: 'search-outline',   iconOn: 'search'   },
-  { name: 'Sessions', label: 'Sessions', iconOff: 'calendar-outline', iconOn: 'calendar' },
-  { name: 'Profile',  label: 'Profile',  iconOff: 'person-outline',   iconOn: 'person'   },
+  { name: 'Home',     label: 'Home',     iconOff: 'home-outline',     iconOn: 'home',     emoji: '🏠' },
+  { name: 'Search',   label: 'Search',   iconOff: 'search-outline',   iconOn: 'search',   emoji: '🔍' },
+  { name: 'Sessions', label: 'Sessions', iconOff: 'calendar-outline', iconOn: 'calendar', emoji: '📅' },
+  { name: 'Profile',  label: 'Profile',  iconOff: 'person-outline',   iconOn: 'person',   emoji: '👤' },
 ];
+
+// Renders an Ionicons icon with an emoji fallback in case the font hasn't loaded yet.
+// The emoji is rendered behind the icon; once Ionicons loads it covers the emoji.
+function NavIcon({ name, size, color, emoji }) {
+  return (
+    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+      {/* Emoji fallback — visible only while the Ionicons font is loading */}
+      <Text style={{ position: 'absolute', fontSize: size * 0.7, lineHeight: size }}>{emoji}</Text>
+      {/* Ionicons — renders on top once the font loads */}
+      <Ionicons name={name} size={size} color={color} />
+    </View>
+  );
+}
 
 // ─── Desktop sidebar ──────────────────────────────────────────────────────────
 function DesktopSidebar({ state, navigation }) {
@@ -51,7 +67,7 @@ function DesktopSidebar({ state, navigation }) {
       {/* Brand */}
       <View style={styles.brand}>
         <View style={styles.brandIconWrap}>
-          <Ionicons name="school" size={22} color={colors.white} />
+          <NavIcon name="school" size={22} color={colors.white} emoji="🎓" />
         </View>
         <View>
           <Text style={styles.brandLine1}>STRAKE JESUIT</Text>
@@ -71,12 +87,16 @@ function DesktopSidebar({ state, navigation }) {
             key={route.key}
             style={[styles.navItem, isFocused && styles.navItemActive]}
             onPress={() => navigation.navigate(route.name)}
-            activeOpacity={0.8}
+            activeOpacity={press.opacity}
+            accessibilityRole="tab"
+            accessibilityLabel={meta.label}
+            accessibilityState={{ selected: isFocused }}
           >
-            <Ionicons
+            <NavIcon
               name={isFocused ? meta.iconOn : meta.iconOff}
               size={20}
-              color={isFocused ? colors.green : 'rgba(255,255,255,0.65)'}
+              color={isFocused ? colors.white : colors.whiteAlpha[65]}
+              emoji={meta.emoji}
             />
             <Text style={[styles.navLabel, isFocused && styles.navLabelActive]}>
               {meta.label}
@@ -104,12 +124,12 @@ export default function AppNavigator() {
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor:   colors.red,
+        tabBarActiveTintColor:   colors.accent,
         tabBarInactiveTintColor: colors.gray400,
         tabBarStyle: {
           backgroundColor: colors.white,
-          borderTopColor:  colors.gray100,
-          borderTopWidth:  1,
+          borderTopColor:  colors.gray200,
+          borderTopWidth:  border.hairline,
           paddingBottom:   10,
           paddingTop:      6,
           height:          68,
@@ -117,7 +137,14 @@ export default function AppNavigator() {
         tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginTop: 2 },
         tabBarIcon: ({ focused, color, size }) => {
           const meta = TAB_META.find((t) => t.name === route.name);
-          return <Ionicons name={focused ? meta.iconOn : meta.iconOff} size={size} color={color} />;
+          return (
+            <NavIcon
+              name={focused ? meta.iconOn : meta.iconOff}
+              size={size}
+              color={color}
+              emoji={meta.emoji}
+            />
+          );
         },
       })}
       sceneContainerStyle={isWide ? { marginLeft: SIDEBAR_WIDTH } : undefined}
@@ -134,9 +161,12 @@ export default function AppNavigator() {
 const styles = StyleSheet.create({
   sidebar: {
     width: SIDEBAR_WIDTH,
-    backgroundColor: colors.red,
-    paddingTop: 32,
-    paddingHorizontal: 14,
+    backgroundColor: colors.brand,
+    paddingTop: space.xxxl,
+    paddingHorizontal: space.md,
+    borderRightWidth: border.hairline,
+    borderRightColor: colors.brandDark,
+    ...sidebarShadow,
     ...Platform.select({
       web: {
         position: 'fixed',
@@ -144,31 +174,25 @@ const styles = StyleSheet.create({
         left: 0,
         bottom: 0,
         zIndex: 100,
-        borderRightWidth: 1,
-        borderRightColor: colors.redDark,
-        boxShadow: '2px 0 16px rgba(0,0,0,0.12)',
       },
-      default: {
-        borderRightWidth: 1,
-        borderRightColor: colors.redDark,
-      },
+      default: {},
     }),
   },
 
   brand: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: space.md,
     paddingHorizontal: 6,
-    paddingBottom: 24,
+    paddingBottom: space.xxl,
   },
   brandIconWrap: {
-    width: 40, height: 40, borderRadius: 12,
-    backgroundColor: colors.green,
+    width: 40, height: 40, borderRadius: radii.md,
+    backgroundColor: colors.accent,
     alignItems: 'center', justifyContent: 'center',
   },
   brandLine1: {
-    color: 'rgba(255,255,255,0.65)',
+    color: colors.whiteAlpha[65],
     fontSize: 9, fontWeight: '700', letterSpacing: 1.8,
   },
   brandLine2: {
@@ -178,22 +202,22 @@ const styles = StyleSheet.create({
 
   sidebarDivider: {
     height: 1,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    marginBottom: 14,
+    backgroundColor: colors.whiteAlpha[12],
+    marginBottom: space.md,
   },
 
   navItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 13,
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-    borderRadius: 12,
-    marginBottom: 4,
+    gap: space.md,
+    paddingHorizontal: space.md,
+    paddingVertical: space.md,
+    borderRadius: radii.md,
+    marginBottom: space.xs,
   },
   navItemActive: {
-    backgroundColor: 'rgba(255,255,255,0.13)',
+    backgroundColor: colors.whiteAlpha[18],
   },
-  navLabel:       { fontSize: 14, fontWeight: '600', color: 'rgba(255,255,255,0.65)' },
+  navLabel:       { fontSize: 14, fontWeight: '600', color: colors.whiteAlpha[65] },
   navLabelActive: { color: colors.white, fontWeight: '700' },
 });
