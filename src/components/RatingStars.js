@@ -3,8 +3,8 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../theme/colors';
 
-// colors.star is the ONLY place gold appears in the app — stars are a universal
-// convention, so they keep it. Everything else is green.
+// Stars use the school gold; the number uses a darker gold-brown so it still
+// passes text contrast.
 export default function RatingStars({ rating, count, size = 14, showCount = true }) {
   const rounded = Math.round(rating ?? 0);
   const hasRating = rating != null && Number(rating) > 0;
@@ -39,6 +39,6 @@ export default function RatingStars({ rating, count, size = 14, showCount = true
 
 const styles = StyleSheet.create({
   row:   { flexDirection: 'row', alignItems: 'center' },
-  val:   { fontWeight: '700', color: colors.black, marginLeft: 2 },
+  val:   { fontWeight: '700', color: colors.starText, marginLeft: 2 },
   count: { fontWeight: '400', color: colors.gray500 },
 });

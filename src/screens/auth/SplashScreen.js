@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Platform, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../../theme/colors';
-import { radii, space } from '../../theme/layout';
+import { radii, space, rule } from '../../theme/layout';
 import { heading } from '../../theme/fonts';
 
 const useNativeDriver = Platform.OS !== 'web';
@@ -22,9 +22,10 @@ export default function SplashScreen() {
     <View style={styles.container}>
       <Animated.View style={[styles.content, { opacity, transform: [{ scale }] }]}>
         <View style={styles.iconWrap}>
-          <Ionicons name="school" size={56} color={colors.white} />
+          <Ionicons name="school" size={44} color={colors.white} />
         </View>
         <Text style={styles.school}>STRAKE JESUIT</Text>
+        <View style={styles.rule} />
         <Text style={styles.title}>Tutor{'\n'}Marketplace</Text>
         <Text style={styles.sub}>Crusaders helping Crusaders</Text>
 
@@ -50,20 +51,25 @@ const styles = StyleSheet.create({
   content: { alignItems: 'center' },
 
   iconWrap: {
-    width: 100,
-    height: 100,
-    borderRadius: radii.pill,
-    backgroundColor: colors.accent,
+    width: 88,
+    height: 88,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: colors.whiteAlpha[30],
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: space.xxl,
   },
   school: {
-    color: colors.whiteAlpha[80],
-    fontSize: 12,
-    fontWeight: '700',
+    color: colors.white,
+    fontSize: 13,
+    fontWeight: '800',
     letterSpacing: 3,
-    marginBottom: space.sm,
+  },
+  rule: {
+    width: rule.width, height: rule.height,
+    backgroundColor: colors.gold,
+    marginTop: space.lg, marginBottom: space.lg,
   },
   title: {
     ...heading.xl,

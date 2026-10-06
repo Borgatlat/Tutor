@@ -14,19 +14,28 @@ export const space = {
   huge: 40,
 };
 
+// Crisp, institutional corners — matched to the school website's square
+// buttons and lightly-rounded cards.
 export const radii = {
-  sm:   8,    // small inner elements (grade pills, tiny tags)
-  md:   12,   // inputs, small buttons
-  lg:   16,   // cards, primary buttons
-  xl:   20,   // modals, large panels
-  xxl:  28,   // bottom sheets
-  pill: 999,  // chips, badges, avatars
+  xs:   3,    // status / date tags
+  sm:   4,    // buttons, inputs, chips
+  md:   4,    // small buttons, inline controls
+  lg:   6,    // cards, list panels
+  xl:   8,    // modals, large panels
+  xxl:  10,   // bottom sheets
+  pill: 999,  // avatars and round dots only
 };
 
 export const border = {
   hairline: 1,     // dividers, subtle outlines
-  control:  1.5,   // inputs, chips, outlined buttons
+  control:  1,     // inputs, chips, outlined buttons
+  focus:    2,     // focused input
+  rule:     3,     // gold accent rule / active tab marker
 };
+
+// The short gold rule that sits above section titles (like the site's
+// "Take the Next Steps" heading).
+export const rule = { width: 48, height: 3 };
 
 // One press feedback value for every touchable in the app.
 export const press = { opacity: 0.8 };

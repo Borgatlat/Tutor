@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    fontSize: 13, fontWeight: '600',
+    fontSize: 11, fontWeight: '600', letterSpacing: 1.6, textTransform: 'uppercase',
     color: colors.gray600, marginBottom: space.sm,
   },
   roles: { marginBottom: space.xxl },
@@ -211,9 +211,9 @@ const styles = StyleSheet.create({
     fontSize: 11, color: colors.gray500,
     textAlign: 'center', lineHeight: 17, marginTop: space.lg,
   },
-  legalLink: { color: colors.accent, fontWeight: '600', textDecorationLine: 'underline' },
+  legalLink: { color: colors.brand, fontWeight: '600', textDecorationLine: 'underline' },
 
   loginLink:       { alignItems: 'center', marginTop: space.xl },
   loginLinkText:   { fontSize: 13, color: colors.gray500 },
-  loginLinkStrong: { color: colors.accent, fontWeight: '700' },
+  loginLinkStrong: { color: colors.brand, fontWeight: '700' },
 });

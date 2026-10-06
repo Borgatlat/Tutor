@@ -7,6 +7,11 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { registerRootComponent } from 'expo';
 import { useFonts } from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
+import {
+  Montserrat_400Regular, Montserrat_500Medium, Montserrat_600SemiBold,
+  Montserrat_700Bold, Montserrat_800ExtraBold,
+} from '@expo-google-fonts/montserrat';
+import { applyFontFamily } from './src/theme/fonts';
 import useAuthStore       from './src/store/useAuthStore';
 import AuthNavigator      from './src/navigation/AuthNavigator';
 import AppNavigator       from './src/navigation/AppNavigator';
@@ -79,7 +84,17 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
     ));
   }
 
-  // 3. iOS Safari keyboard fixes + layout reset
+  // 3. Montserrat from Google Fonts — the exported page doesn't use
+  //    web/index.html, so the stylesheet is added here at load time.
+  if (!document.getElementById('montserrat-font')) {
+    const fontLink = document.createElement('link');
+    fontLink.id   = 'montserrat-font';
+    fontLink.rel  = 'stylesheet';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap';
+    document.head.appendChild(fontLink);
+  }
+
+  // 4. iOS Safari keyboard fixes + layout reset
   const kbStyle = document.createElement('style');
   kbStyle.id = 'rn-web-ios-keyboard-fix';
   kbStyle.textContent = `
@@ -112,6 +127,15 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
   }
 }
 
+// Montserrat everywhere. Web gets it from Google Fonts (web/index.html); native
+// registers one family per weight below.
+applyFontFamily();
+
+const MONTSERRAT = {
+  Montserrat_400Regular, Montserrat_500Medium, Montserrat_600SemiBold,
+  Montserrat_700Bold, Montserrat_800ExtraBold,
+};
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 function App() {
@@ -124,7 +148,7 @@ function App() {
   // On native, expo-asset resolves numbers correctly so we use Ionicons.font as-is.
   const fontMap = (Platform.OS === 'web' && _ioniconsUrl)
     ? { ionicons: _ioniconsUrl }
-    : Ionicons.font;
+    : { ...Ionicons.font, ...MONTSERRAT };
   const [fontsLoaded] = useFonts(fontMap);
 
   useEffect(() => {

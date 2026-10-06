@@ -12,5 +12,6 @@ export { default as IconButton }    from './IconButton';
 export { default as RoleSelector }  from './RoleSelector';
 export { default as SectionHeader } from './SectionHeader';
 export { default as Sheet }         from './Sheet';
+export { default as StatRow }       from './StatRow';
 export { default as StatusPill }    from './StatusPill';
 export { default as SubjectPicker } from './SubjectPicker';

@@ -7,8 +7,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
-import { radii, space, border, press, hit } from '../../theme/layout';
-import { heading } from '../../theme/fonts';
+import { radii, space, border, press, hit, rule } from '../../theme/layout';
+import { heading, label } from '../../theme/fonts';
 import {
   Avatar, Button, Chip, EmptyState, ErrorBanner, Field,
 } from '../../components/ui';
@@ -111,6 +111,7 @@ export default function BookSessionScreen({ route, navigation }) {
 
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
+          <View style={styles.headerRule} />
           <Text style={styles.headerTitle}>Book a Session</Text>
         </View>
 
@@ -194,39 +195,43 @@ const styles = StyleSheet.create({
 
   navBar:   { backgroundColor: colors.brand, paddingHorizontal: space.lg, paddingVertical: space.sm },
   backBtn:  { flexDirection: 'row', alignItems: 'center', gap: space.xs },
-  backText: { color: colors.white, fontSize: 15, fontWeight: '600' },
+  backText: { ...label.caps, color: colors.white, fontSize: 11, letterSpacing: 1.8 },
 
   header: {
     backgroundColor: colors.brand,
     paddingHorizontal: space.xl,
     paddingBottom: space.xxl,
   },
-  headerTitle: { ...heading.lg, color: colors.white, fontSize: 26 },
+  // Short gold rule above the screen title (school-site heading treatment).
+  headerRule: {
+    width: rule.width, height: rule.height,
+    backgroundColor: colors.gold,
+    marginBottom: space.md,
+  },
+  headerTitle: { ...heading.xl, color: colors.white, fontSize: 28 },
 
   card: {
     flex: 1,
     backgroundColor: colors.white,
-    borderTopLeftRadius: radii.xxl,
-    borderTopRightRadius: radii.xxl,
     padding: space.xxl,
     paddingBottom: space.huge,
   },
 
   tutorRow:   { flexDirection: 'row', alignItems: 'center', gap: space.md, marginBottom: space.lg },
   tutorMeta:  { flex: 1 },
-  tutorName:  { fontSize: 16, fontWeight: '800', color: colors.black },
+  tutorName:  { fontSize: 16, fontWeight: '700', color: colors.black },
   tutorEmail: { fontSize: 12, color: colors.gray500, marginTop: 2 },
 
   slotBanner: {
     flexDirection: 'row', alignItems: 'center', gap: space.sm,
-    backgroundColor: colors.accentTint,
-    borderRadius: radii.md, padding: space.md, marginBottom: space.xl,
-    borderWidth: border.control, borderColor: colors.accent,
+    backgroundColor: colors.brandTint,
+    borderRadius: radii.sm, padding: space.md, marginBottom: space.xl,
+    borderLeftWidth: border.rule, borderLeftColor: colors.gold,
   },
-  slotText: { fontSize: 16, fontWeight: '700', color: colors.accentDark },
+  slotText: { fontSize: 16, fontWeight: '800', color: colors.brand },
 
   label: {
-    fontSize: 13, fontWeight: '600',
+    ...label.caps, fontSize: 11, letterSpacing: 1.6,
     color: colors.gray600, marginBottom: space.sm,
   },
   subjectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
@@ -236,7 +241,7 @@ const styles = StyleSheet.create({
   contactNote: {
     flexDirection: 'row', gap: space.sm,
     backgroundColor: colors.offWhite,
-    borderRadius: radii.md, padding: space.md,
+    borderRadius: radii.sm, padding: space.md,
   },
   contactNoteText: { flex: 1, fontSize: 12, color: colors.gray500, lineHeight: 18 },
   emailHighlight:  { color: colors.accent, fontWeight: '600' },
@@ -251,7 +256,7 @@ const styles = StyleSheet.create({
   },
   successCircle: {
     width: 88, height: 88, borderRadius: radii.pill,
-    backgroundColor: colors.accent,
+    backgroundColor: colors.brand,
     alignItems: 'center', justifyContent: 'center',
     marginBottom: space.xl,
   },
@@ -263,6 +268,8 @@ const styles = StyleSheet.create({
   confirmCard: {
     backgroundColor: colors.offWhite,
     borderRadius: radii.lg,
+    borderTopWidth: border.rule,
+    borderTopColor: colors.gold,
     padding: space.lg,
     width: '100%',
     gap: space.sm,

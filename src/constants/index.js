@@ -97,10 +97,11 @@ export const ROLES = [
 ];
 
 export const SESSION_STATUS = {
-  pending:   { label: 'Pending',   color: colors.pending, tint: colors.pendingTint },
-  confirmed: { label: 'Confirmed', color: colors.accent,  tint: colors.accentTint  },
-  cancelled: { label: 'Cancelled', color: colors.gray500, tint: colors.gray100     },
-  completed: { label: 'Completed', color: colors.gray500, tint: colors.gray100     },
+  // Solid tags, like the school site's maroon date labels.
+  pending:   { label: 'Pending',   color: colors.white,   tint: colors.maroon },
+  confirmed: { label: 'Confirmed', color: colors.white,   tint: colors.brand  },
+  cancelled: { label: 'Cancelled', color: colors.gray600, tint: colors.cream  },
+  completed: { label: 'Completed', color: colors.gray600, tint: colors.cream  },
 };
 
 export const SCHOOL_EMAIL_DOMAIN = '@mail.strakejesuit.org';

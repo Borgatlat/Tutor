@@ -64,7 +64,7 @@ export default function TutorCard({ tutor, onPress }) {
         <Ionicons
           name="time-outline"
           size={13}
-          color={freeCount > 0 ? colors.accent : colors.gray400}
+          color={freeCount > 0 ? colors.brand : colors.gray400}
         />
         <Text style={[styles.availText, freeCount === 0 && styles.availTextEmpty]}>
           {freeCount > 0
@@ -80,6 +80,8 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.white,
     borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.lineSoft,
     padding: space.lg,
     marginBottom: space.md,
     ...cardShadow,
@@ -88,21 +90,25 @@ const styles = StyleSheet.create({
   top:    { flexDirection: 'row', alignItems: 'center', marginBottom: space.md },
   avatar: { marginRight: space.md },
   info:   { flex: 1 },
-  name:     { fontSize: 16, fontWeight: '800', color: colors.black, marginBottom: 3 },
-  sessions: { fontSize: 11, color: colors.gray400, marginTop: 2 },
+  name:     { fontSize: 16, fontWeight: '700', color: colors.black, marginBottom: 3 },
+  sessions: { fontSize: 11, color: colors.gray500, marginTop: 2 },
 
   badgeRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginBottom: space.sm },
   more: {
     paddingHorizontal: space.sm,
     paddingVertical: space.xs,
-    borderRadius: radii.pill,
+    borderRadius: radii.xs,
     backgroundColor: colors.gray100,
   },
   moreText: { fontSize: 11, fontWeight: '700', color: colors.gray500 },
 
   bio: { fontSize: 13, color: colors.gray600, lineHeight: 19, marginBottom: space.sm },
 
-  availRow:       { flexDirection: 'row', alignItems: 'center', gap: space.xs },
-  availText:      { fontSize: 12, color: colors.accent, fontWeight: '600' },
+  availRow: {
+    flexDirection: 'row', alignItems: 'center', gap: space.xs,
+    paddingTop: space.sm, marginTop: space.xs,
+    borderTopWidth: 1, borderTopColor: colors.lineSoft,
+  },
+  availText:      { fontSize: 11, color: colors.brand, fontWeight: '600', letterSpacing: 0.8, textTransform: 'uppercase' },
   availTextEmpty: { color: colors.gray400 },
 });

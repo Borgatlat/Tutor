@@ -2,8 +2,8 @@
  * Button — the only button in the app.
  *
  * Variants:
- *   primary   filled accent green — the main action on a screen
- *   secondary accent outline on white — a real but lesser action
+ *   primary   filled Strake green — the main action on a screen
+ *   secondary stone outline on white, green label — a real but lesser action
  *   ghost     no border, accent text — tertiary / inline
  *   danger    error outline — destructive, offered alongside a safer option
  *   dangerSolid filled error — the confirming tap in a destructive dialog
@@ -17,6 +17,7 @@ import { Text, TouchableOpacity, ActivityIndicator, StyleSheet, View } from 'rea
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../../theme/colors';
 import { radii, space, border, press, control } from '../../theme/layout';
+import { label as labelPreset } from '../../theme/fonts';
 
 export default function Button({
   label,
@@ -37,8 +38,8 @@ export default function Button({
   const contentColor =
       filled                 ? colors.white
     : variant === 'danger'   ? colors.error
-    : variant === 'neutral'  ? colors.gray600
-    : colors.accent;
+    : variant === 'neutral'  ? colors.gray700
+    : colors.brand;
   const spinnerColor = filled ? colors.white : contentColor;
 
   return (
@@ -83,25 +84,25 @@ export default function Button({
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: radii.lg,
+    borderRadius: radii.sm,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
   },
   sizeMd: { height: control.height,      paddingHorizontal: space.xl },
-  sizeSm: { height: control.heightSmall, paddingHorizontal: space.lg, borderRadius: radii.md },
+  sizeSm: { height: control.heightSmall, paddingHorizontal: space.lg },
 
   fullWidth: { alignSelf: 'stretch' },
 
   content: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
 
   primary: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.brand,
   },
   secondary: {
     backgroundColor: colors.white,
     borderWidth: border.control,
-    borderColor: colors.accent,
+    borderColor: colors.line,
   },
   ghost: {
     backgroundColor: 'transparent',
@@ -117,11 +118,12 @@ const styles = StyleSheet.create({
   neutral: {
     backgroundColor: colors.white,
     borderWidth: border.control,
-    borderColor: colors.gray200,
+    borderColor: colors.line,
   },
 
   off: { opacity: 0.5 },
 
-  label:   { fontSize: 15, fontWeight: '700' },
-  labelSm: { fontSize: 13 },
+  // Tracked capitals, like the school site's "APPLY TO SJ" buttons.
+  label:   { ...labelPreset.caps, fontSize: 12, letterSpacing: 2 },
+  labelSm: { fontSize: 11, letterSpacing: 1.6 },
 });

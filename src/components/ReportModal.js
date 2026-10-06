@@ -170,6 +170,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderTopLeftRadius: radii.xxl,
     borderTopRightRadius: radii.xxl,
+    borderTopWidth: 4,
+    borderTopColor: colors.brand,
     paddingHorizontal: space.xxl,
     paddingTop: space.md,
     maxHeight: '85%',
@@ -177,7 +179,7 @@ const styles = StyleSheet.create({
   },
   handle: {
     width: 40, height: 4, borderRadius: radii.pill,
-    backgroundColor: colors.gray200,
+    backgroundColor: colors.line,
     alignSelf: 'center', marginBottom: space.xl,
   },
 
@@ -190,7 +192,7 @@ const styles = StyleSheet.create({
   userName: { fontWeight: '700', color: colors.black },
 
   label: {
-    fontSize: 13, fontWeight: '600',
+    fontSize: 11, fontWeight: '600', letterSpacing: 1.6, textTransform: 'uppercase',
     color: colors.gray600, marginBottom: space.sm,
   },
 
@@ -211,7 +213,7 @@ const styles = StyleSheet.create({
   },
   doneCircle: {
     width: 72, height: 72, borderRadius: radii.pill,
-    backgroundColor: colors.accent,
+    backgroundColor: colors.brand,
     alignItems: 'center', justifyContent: 'center',
     marginBottom: space.xl,
   },

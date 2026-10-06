@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', gap: space.sm, marginTop: space.xl,
   },
   legalLink: {
-    fontSize: 11, color: colors.accent,
+    fontSize: 11, color: colors.brand,
     fontWeight: '600', textDecorationLine: 'underline',
   },
   legalSep: { fontSize: 11, color: colors.gray300 },

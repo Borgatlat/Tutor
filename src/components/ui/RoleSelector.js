@@ -53,14 +53,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: space.lg,
     paddingHorizontal: space.sm,
-    borderRadius: radii.md,
+    borderRadius: radii.sm,
     borderWidth: border.control,
-    borderColor: colors.gray200,
+    borderColor: colors.line,
     backgroundColor: colors.white,
   },
   cardActive: {
-    borderColor: colors.accent,
-    backgroundColor: colors.accentTint,
+    borderColor: colors.brand,
+    backgroundColor: colors.brandTint,
+    // Gold marker on the chosen option, echoing the active tab.
+    borderTopWidth: border.rule,
+    borderTopColor: colors.gold,
+    paddingTop: space.lg - 2,
   },
 
   icon: {
@@ -69,13 +73,13 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     marginBottom: space.sm,
   },
-  iconActive: { backgroundColor: colors.accent },
+  iconActive: { backgroundColor: colors.brand },
 
-  label:       { fontSize: 13, fontWeight: '700', color: colors.gray700 },
-  labelActive: { color: colors.accentDark },
+  label:       { fontSize: 11, fontWeight: '700', letterSpacing: 1.4, textTransform: 'uppercase', color: colors.gray700 },
+  labelActive: { color: colors.brand },
   desc: {
     fontSize: 10, color: colors.gray500,
     textAlign: 'center', marginTop: 2, lineHeight: 14,
   },
-  descActive: { color: colors.accentDark },
+  descActive: { color: colors.brand },
 });

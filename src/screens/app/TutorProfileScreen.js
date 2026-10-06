@@ -7,15 +7,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
-import { radii, space, border, press, hit } from '../../theme/layout';
+import { radii, space, border, press, hit, rule } from '../../theme/layout';
 import { modalShadow } from '../../theme/shadows';
-import { heading } from '../../theme/fonts';
+import { heading, label } from '../../theme/fonts';
 import SubjectBadge from '../../components/SubjectBadge';
 import RatingStars from '../../components/RatingStars';
 import AvailabilityGrid from '../../components/AvailabilityGrid';
 import ReportModal from '../../components/ReportModal';
 import {
   Avatar, Button, EmptyState, IconButton, initialsOf,
+  StatRow,
 } from '../../components/ui';
 import { useResponsive } from '../../hooks/useResponsive';
 
@@ -113,27 +114,22 @@ export default function TutorProfileScreen({ route, navigation }) {
               uri={tutor.avatar_url}
               name={tutor.full_name}
               size={82}
-              color={colors.accent}
+              color={colors.accentLight}
             />
           </View>
+          <View style={styles.heroRule} />
           <Text style={styles.heroName}>{tutor.full_name}</Text>
           <Text style={styles.heroEmail}>{tutor.email}</Text>
           {tutor.phone ? <Text style={styles.heroPhone}>{tutor.phone}</Text> : null}
           <RatingStars rating={tutor.avg_rating} count={tutor.review_count} size={15} />
         </View>
 
-        {/* Stats bar */}
+        {/* "At a glance" stats, as on the school site */}
         <View style={styles.statsBar}>
-          {stats.map((s, i) => (
-            <React.Fragment key={s.lbl}>
-              {i > 0 ? <View style={styles.statDivider} /> : null}
-              <View style={styles.statItem}>
-                <Ionicons name={s.icon} size={18} color={colors.accent} />
-                <Text style={styles.statVal}>{s.val}</Text>
-                <Text style={styles.statLbl}>{s.lbl}</Text>
-              </View>
-            </React.Fragment>
-          ))}
+          <StatRow
+            title="At a glance"
+            stats={stats.map((s) => ({ value: String(s.val), label: s.lbl }))}
+          />
         </View>
 
         {/* Body: two columns on desktop, stacked on mobile */}
@@ -277,9 +273,9 @@ const styles = StyleSheet.create({
     paddingVertical: space.sm,
   },
   backBtn:    { flexDirection: 'row', alignItems: 'center', gap: space.xs },
-  backText:   { color: colors.white, fontSize: 15, fontWeight: '600' },
+  backText:   { ...label.caps, color: colors.white, fontSize: 11, letterSpacing: 1.8 },
   navActions: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  navBtn:     { backgroundColor: colors.whiteAlpha[18] },
+  navBtn:     { borderWidth: 1, borderColor: colors.whiteAlpha[30] },
 
   // ── Hero ──────────────────────────────────────────────────────────────────
   hero: {
@@ -294,22 +290,24 @@ const styles = StyleSheet.create({
     borderColor: colors.white,
     marginBottom: space.md,
   },
-  heroName:  { ...heading.lg, color: colors.white, fontSize: 22, marginBottom: 3 },
+  heroRule: {
+    width: rule.width, height: rule.height,
+    backgroundColor: colors.gold,
+    marginBottom: space.md,
+  },
+  heroName:  { ...heading.xl, color: colors.white, fontSize: 26, marginBottom: space.xs },
   heroEmail: { color: colors.whiteAlpha[80], fontSize: 13, marginBottom: 2 },
   heroPhone: { color: colors.whiteAlpha[65], fontSize: 13, marginBottom: space.sm },
 
   // ── Stats ─────────────────────────────────────────────────────────────────
   statsBar: {
-    flexDirection: 'row',
     backgroundColor: colors.white,
-    paddingVertical: space.lg,
+    paddingHorizontal: space.xl,
+    paddingTop: space.xl,
+    paddingBottom: space.xl,
     borderBottomWidth: border.hairline,
     borderBottomColor: colors.gray200,
   },
-  statItem:    { flex: 1, alignItems: 'center', gap: 3 },
-  statVal:     { ...heading.md, fontSize: 18, color: colors.black },
-  statLbl:     { fontSize: 11, color: colors.gray500 },
-  statDivider: { width: 1, backgroundColor: colors.gray200 },
 
   // ── Body ──────────────────────────────────────────────────────────────────
   body:     { padding: space.lg, gap: space.md },
@@ -320,9 +318,14 @@ const styles = StyleSheet.create({
   section: {
     backgroundColor: colors.white,
     borderRadius: radii.lg,
-    padding: space.lg,
+    borderWidth: 1,
+    borderColor: colors.lineSoft,
+    padding: space.xl,
   },
-  sectionTitle: { ...heading.md, fontSize: 16, color: colors.black, marginBottom: space.sm },
+  sectionTitle: {
+    ...label.caps, fontSize: 11, letterSpacing: 2,
+    color: colors.gray500, marginBottom: space.md,
+  },
   sectionHint:  { fontSize: 12, color: colors.gray500, marginBottom: space.sm },
   bio:          { fontSize: 14, color: colors.gray700, lineHeight: 22 },
   badgeRow:     { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
@@ -330,7 +333,7 @@ const styles = StyleSheet.create({
   // ── Reviews ───────────────────────────────────────────────────────────────
   reviewCard: {
     backgroundColor: colors.offWhite,
-    borderRadius: radii.md,
+    borderRadius: radii.sm,
     padding: space.md,
     marginBottom: space.sm,
   },

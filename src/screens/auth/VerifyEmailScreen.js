@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import colors from '../../theme/colors';
-import { radii, space, border } from '../../theme/layout';
+import { radii, space, border, rule } from '../../theme/layout';
 import { heading } from '../../theme/fonts';
 import { Button, Divider, ErrorBanner } from '../../components/ui';
 
@@ -37,8 +37,9 @@ export default function VerifyEmailScreen({ route }) {
     <SafeAreaView style={styles.safe}>
       <View style={styles.hero}>
         <View style={styles.iconCircle}>
-          <Ionicons name="mail-unread" size={36} color={colors.white} />
+          <Ionicons name="mail-unread" size={32} color={colors.white} />
         </View>
+        <View style={styles.rule} />
         <Text style={styles.heroTitle}>Confirm Your Email</Text>
         <Text style={styles.heroSub}>
           We sent a confirmation link to{'\n'}
@@ -51,7 +52,7 @@ export default function VerifyEmailScreen({ route }) {
           {STEPS.map((s) => (
             <View key={s.text} style={styles.step}>
               <View style={styles.stepIconWrap}>
-                <Ionicons name={s.icon} size={20} color={colors.accent} />
+                <Ionicons name={s.icon} size={20} color={colors.brand} />
               </View>
               <Text style={styles.stepText}>{s.text}</Text>
             </View>
@@ -62,7 +63,7 @@ export default function VerifyEmailScreen({ route }) {
 
         {resent ? (
           <View style={styles.resentBanner}>
-            <Ionicons name="checkmark-circle" size={16} color={colors.accentDark} />
+            <Ionicons name="checkmark-circle" size={16} color={colors.brand} />
             <Text style={styles.resentText}>New link sent! Check your inbox.</Text>
           </View>
         ) : null}
@@ -98,11 +99,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.xxxl,
   },
   iconCircle: {
-    width: 80, height: 80, borderRadius: radii.pill,
-    backgroundColor: colors.whiteAlpha[18],
+    width: 72, height: 72, borderRadius: radii.sm,
     alignItems: 'center', justifyContent: 'center',
-    marginBottom: space.xl,
-    borderWidth: border.control, borderColor: colors.whiteAlpha[18],
+    borderWidth: border.control, borderColor: colors.whiteAlpha[30],
+  },
+  rule: {
+    width: rule.width, height: rule.height,
+    backgroundColor: colors.gold,
+    marginTop: space.xxl, marginBottom: space.lg,
   },
   heroTitle: {
     ...heading.lg,
@@ -118,16 +122,14 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     backgroundColor: colors.white,
-    borderTopLeftRadius: radii.xxl,
-    borderTopRightRadius: radii.xxl,
     padding: space.xxxl,
   },
 
   stepList: { gap: space.lg },
   step: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   stepIconWrap: {
-    width: 40, height: 40, borderRadius: radii.pill,
-    backgroundColor: colors.accentTint,
+    width: 40, height: 40, borderRadius: radii.sm,
+    backgroundColor: colors.brandTint,
     alignItems: 'center', justifyContent: 'center',
     flexShrink: 0,
   },
@@ -138,10 +140,10 @@ const styles = StyleSheet.create({
 
   resentBanner: {
     flexDirection: 'row', alignItems: 'center', gap: space.sm,
-    backgroundColor: colors.accentTint,
-    borderRadius: radii.md, padding: space.md, marginBottom: space.lg,
+    backgroundColor: colors.brandTint,
+    borderRadius: radii.sm, padding: space.md, marginBottom: space.lg,
   },
-  resentText: { fontSize: 13, color: colors.accentDark, fontWeight: '600' },
+  resentText: { fontSize: 13, color: colors.brand, fontWeight: '600' },
 
   resendLabel: {
     fontSize: 13, color: colors.gray500,

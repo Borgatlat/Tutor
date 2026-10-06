@@ -21,7 +21,7 @@ export default function Divider({ label, style }) {
 const styles = StyleSheet.create({
   plain: {
     height: 1,
-    backgroundColor: colors.gray200,
+    backgroundColor: colors.line,
     marginVertical: space.xl,
   },
   row: {
@@ -30,6 +30,6 @@ const styles = StyleSheet.create({
     gap: space.md,
     marginVertical: space.xl,
   },
-  line:  { flex: 1, height: 1, backgroundColor: colors.gray200 },
-  label: { fontSize: 13, color: colors.gray400 },
+  line:  { flex: 1, height: 1, backgroundColor: colors.line },
+  label: { fontSize: 11, fontWeight: '600', letterSpacing: 1.6, textTransform: 'uppercase', color: colors.gray500 },
 });

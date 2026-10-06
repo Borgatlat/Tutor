@@ -7,8 +7,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { searchTutors } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
-import { radii, space, border, press, hit } from '../../theme/layout';
-import { heading } from '../../theme/fonts';
+import { radii, space, border, press, hit, rule } from '../../theme/layout';
+import { heading, label } from '../../theme/fonts';
 import AppTextInput from '../../components/AppTextInput';
 import TutorCard from '../../components/TutorCard';
 import SkeletonCard from '../../components/SkeletonCard';
@@ -164,6 +164,7 @@ export default function SearchScreen({ navigation }) {
 
       {/* Header */}
       <View style={styles.header}>
+        <View style={styles.headerRule} />
         <Text style={styles.headerTitle}>Find a Tutor</Text>
         <Text style={styles.headerSub}>Core classes · SAT · AP</Text>
       </View>
@@ -251,11 +252,17 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.brand,
     paddingHorizontal: space.xl,
-    paddingTop: space.sm,
+    paddingTop: space.lg,
     paddingBottom: space.xl,
   },
-  headerTitle: { ...heading.lg, color: colors.white, fontSize: 26 },
-  headerSub:   { color: colors.whiteAlpha[80], fontSize: 12, marginTop: 2 },
+  // Short gold rule above the screen title (school-site heading treatment).
+  headerRule: {
+    width: rule.width, height: rule.height,
+    backgroundColor: colors.gold,
+    marginBottom: space.md,
+  },
+  headerTitle: { ...heading.xl, color: colors.white, fontSize: 28 },
+  headerSub:   { ...label.caps, color: colors.whiteAlpha[65], fontSize: 10, letterSpacing: 2.2, marginTop: space.xs },
 
   searchRow: {
     flexDirection: 'row', alignItems: 'center',
@@ -265,19 +272,19 @@ const styles = StyleSheet.create({
   },
   searchWrap: {
     flex: 1, flexDirection: 'row', alignItems: 'center',
-    backgroundColor: colors.offWhite,
-    borderRadius: radii.md,
+    backgroundColor: colors.white,
+    borderRadius: radii.sm,
     paddingHorizontal: space.md,
-    borderWidth: border.control, borderColor: colors.gray200,
+    borderWidth: border.control, borderColor: colors.line,
   },
   searchIcon:  { marginRight: space.sm },
   searchInput: { flex: 1, fontSize: 15, color: colors.black, paddingVertical: space.md },
 
   filterToggle: {
-    width: 48, height: 48, borderRadius: radii.md,
-    backgroundColor: colors.gray100,
+    width: 48, height: 48, borderRadius: radii.sm,
+    backgroundColor: colors.white,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: border.control, borderColor: colors.gray200,
+    borderWidth: border.control, borderColor: colors.line,
   },
   filterToggleActive: { backgroundColor: colors.accent, borderColor: colors.accent },
 
@@ -291,8 +298,12 @@ const styles = StyleSheet.create({
 
   // Desktop two-panel
   wideBody: { flex: 1, flexDirection: 'row' },
+  // flexGrow/flexShrink 0: a ScrollView grows by default on web, which
+  // stretched this panel across the page and squeezed the results.
   sidebar: {
-    width: 280,
+    width: 300,
+    flexGrow: 0,
+    flexShrink: 0,
     backgroundColor: colors.white,
     borderRightWidth: border.hairline, borderRightColor: colors.gray200,
   },
@@ -306,7 +317,7 @@ const styles = StyleSheet.create({
   },
 
   filterLabel: {
-    fontSize: 13, fontWeight: '600',
+    ...label.caps, fontSize: 11, letterSpacing: 1.6,
     color: colors.gray600, marginBottom: space.sm,
   },
   filterLabelSpaced: { marginTop: space.lg },
@@ -320,7 +331,7 @@ const styles = StyleSheet.create({
   },
 
   metaText: {
-    fontSize: 13, color: colors.gray500,
+    ...label.caps, fontSize: 10, letterSpacing: 2, color: colors.gray500,
     paddingHorizontal: space.lg, paddingTop: space.md, paddingBottom: space.xs,
   },
 

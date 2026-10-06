@@ -1,8 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-// Text imported above is used for emoji fallbacks
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { BottomTabBar }             from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets }        from 'react-native-safe-area-context';
 import { createStackNavigator }     from '@react-navigation/stack';
 import { Ionicons }                 from '@expo/vector-icons';
 
@@ -41,20 +40,18 @@ function SearchStack() {
 }
 
 const TAB_META = [
-  { name: 'Home',     label: 'Home',     iconOff: 'home-outline',     iconOn: 'home',     emoji: '🏠' },
-  { name: 'Search',   label: 'Search',   iconOff: 'search-outline',   iconOn: 'search',   emoji: '🔍' },
-  { name: 'Sessions', label: 'Sessions', iconOff: 'calendar-outline', iconOn: 'calendar', emoji: '📅' },
-  { name: 'Profile',  label: 'Profile',  iconOff: 'person-outline',   iconOn: 'person',   emoji: '👤' },
+  { name: 'Home',     label: 'Home',     iconOff: 'home-outline',     iconOn: 'home' },
+  { name: 'Search',   label: 'Search',   iconOff: 'search-outline',   iconOn: 'search' },
+  { name: 'Sessions', label: 'Sessions', iconOff: 'calendar-outline', iconOn: 'calendar' },
+  { name: 'Profile',  label: 'Profile',  iconOff: 'person-outline',   iconOn: 'person' },
 ];
 
-// Renders an Ionicons icon with an emoji fallback in case the font hasn't loaded yet.
-// The emoji is rendered behind the icon; once Ionicons loads it covers the emoji.
-function NavIcon({ name, size, color, emoji }) {
+// Ionicons only. The old emoji fallback sat behind the glyph and showed through
+// its transparent areas even after the font loaded; App.js already waits for
+// the icon font before rendering, so the fallback isn't needed.
+function NavIcon({ name, size, color }) {
   return (
     <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-      {/* Emoji fallback — visible only while the Ionicons font is loading */}
-      <Text style={{ position: 'absolute', fontSize: size * 0.7, lineHeight: size }}>{emoji}</Text>
-      {/* Ionicons — renders on top once the font loads */}
       <Ionicons name={name} size={size} color={color} />
     </View>
   );
@@ -67,7 +64,7 @@ function DesktopSidebar({ state, navigation }) {
       {/* Brand */}
       <View style={styles.brand}>
         <View style={styles.brandIconWrap}>
-          <NavIcon name="school" size={22} color={colors.white} emoji="🎓" />
+          <NavIcon name="school" size={22} color={colors.white} />
         </View>
         <View>
           <Text style={styles.brandLine1}>STRAKE JESUIT</Text>
@@ -96,9 +93,52 @@ function DesktopSidebar({ state, navigation }) {
               name={isFocused ? meta.iconOn : meta.iconOff}
               size={20}
               color={isFocused ? colors.white : colors.whiteAlpha[65]}
-              emoji={meta.emoji}
             />
             <Text style={[styles.navLabel, isFocused && styles.navLabelActive]}>
+              {meta.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
+
+// ─── Mobile tab bar ───────────────────────────────────────────────────────────
+// White bar with tracked-caps labels; the active tab gets a gold marker along
+// its top edge, like the active item on the school site's nav.
+function MobileTabBar({ state, navigation }) {
+  const insets = useSafeAreaInsets();
+
+  return (
+    <View style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, space.sm) }]}>
+      {state.routes.map((route, index) => {
+        const isFocused = state.index === index;
+        const meta = TAB_META.find((t) => t.name === route.name);
+        if (!meta) return null;
+
+        const onPress = () => {
+          const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+          if (!isFocused && !event.defaultPrevented) navigation.navigate(route.name);
+        };
+
+        const tint = isFocused ? colors.brand : colors.gray500;
+        return (
+          <TouchableOpacity
+            key={route.key}
+            style={[styles.tabItem, isFocused && styles.tabItemActive]}
+            onPress={onPress}
+            activeOpacity={press.opacity}
+            accessibilityRole="tab"
+            accessibilityLabel={meta.label}
+            accessibilityState={{ selected: isFocused }}
+          >
+            <NavIcon
+              name={isFocused ? meta.iconOn : meta.iconOff}
+              size={22}
+              color={tint}
+            />
+            <Text style={[styles.tabLabel, { color: tint }, isFocused && styles.tabLabelActive]}>
               {meta.label}
             </Text>
           </TouchableOpacity>
@@ -112,7 +152,7 @@ function DesktopSidebar({ state, navigation }) {
 function CustomTabBar(props) {
   const { isWide } = useResponsive();
   if (isWide) return <DesktopSidebar {...props} />;
-  return <BottomTabBar {...props} />;
+  return <MobileTabBar {...props} />;
 }
 
 // ─── Navigator ────────────────────────────────────────────────────────────────
@@ -124,28 +164,6 @@ export default function AppNavigator() {
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor:   colors.accent,
-        tabBarInactiveTintColor: colors.gray400,
-        tabBarStyle: {
-          backgroundColor: colors.white,
-          borderTopColor:  colors.gray200,
-          borderTopWidth:  border.hairline,
-          paddingBottom:   10,
-          paddingTop:      6,
-          height:          68,
-        },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginTop: 2 },
-        tabBarIcon: ({ focused, color, size }) => {
-          const meta = TAB_META.find((t) => t.name === route.name);
-          return (
-            <NavIcon
-              name={focused ? meta.iconOn : meta.iconOff}
-              size={size}
-              color={color}
-              emoji={meta.emoji}
-            />
-          );
-        },
       })}
       sceneContainerStyle={isWide ? { marginLeft: SIDEBAR_WIDTH } : undefined}
     >
@@ -187,17 +205,17 @@ const styles = StyleSheet.create({
     paddingBottom: space.xxl,
   },
   brandIconWrap: {
-    width: 40, height: 40, borderRadius: radii.md,
-    backgroundColor: colors.accent,
+    width: 40, height: 40, borderRadius: radii.sm,
+    borderWidth: 1, borderColor: colors.whiteAlpha[30],
     alignItems: 'center', justifyContent: 'center',
   },
   brandLine1: {
-    color: colors.whiteAlpha[65],
-    fontSize: 9, fontWeight: '700', letterSpacing: 1.8,
+    color: colors.white,
+    fontSize: 12, fontWeight: '800', letterSpacing: 0.6,
   },
   brandLine2: {
-    color: colors.white,
-    fontSize: 17, fontWeight: '800', marginTop: 1,
+    color: colors.whiteAlpha[65],
+    fontSize: 11, fontWeight: '500', marginTop: 1,
   },
 
   sidebarDivider: {
@@ -212,12 +230,42 @@ const styles = StyleSheet.create({
     gap: space.md,
     paddingHorizontal: space.md,
     paddingVertical: space.md,
-    borderRadius: radii.md,
+    borderRadius: radii.sm,
+    borderLeftWidth: border.rule,
+    borderLeftColor: 'transparent',
     marginBottom: space.xs,
   },
+  // Gold marker on the left edge of the current section.
   navItemActive: {
-    backgroundColor: colors.whiteAlpha[18],
+    backgroundColor: colors.whiteAlpha[12],
+    borderLeftColor: colors.gold,
   },
-  navLabel:       { fontSize: 14, fontWeight: '600', color: colors.whiteAlpha[65] },
+  navLabel: {
+    fontSize: 12, fontWeight: '600', letterSpacing: 1.6, textTransform: 'uppercase',
+    color: colors.whiteAlpha[65],
+  },
   navLabelActive: { color: colors.white, fontWeight: '700' },
+
+  // ── Mobile tab bar ────────────────────────────────────────────────────────
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: colors.white,
+    borderTopWidth: border.hairline,
+    borderTopColor: colors.gray200,
+  },
+  tabItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 3,
+    paddingTop: space.sm,
+    minHeight: 56,
+    borderTopWidth: border.rule,
+    borderTopColor: 'transparent',
+  },
+  tabItemActive: { borderTopColor: colors.gold },
+  tabLabel: {
+    fontSize: 10, fontWeight: '600', letterSpacing: 1.4, textTransform: 'uppercase',
+  },
+  tabLabelActive: { fontWeight: '700' },
 });

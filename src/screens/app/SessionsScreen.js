@@ -7,9 +7,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
-import { radii, space, border, press, hit } from '../../theme/layout';
+import { radii, space, border, press, hit, rule } from '../../theme/layout';
 import { sheetShadow } from '../../theme/shadows';
-import { heading } from '../../theme/fonts';
+import { heading, label } from '../../theme/fonts';
 import SessionCard from '../../components/SessionCard';
 import {
   Button, EmptyState, ErrorBanner, Field, Sheet,
@@ -155,6 +155,7 @@ export default function SessionsScreen({ navigation }) {
       <StatusBar barStyle="light-content" backgroundColor={colors.brand} />
 
       <View style={styles.header}>
+        <View style={styles.headerRule} />
         <Text style={styles.headerTitle}>My Sessions</Text>
       </View>
 
@@ -334,10 +335,16 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.brand,
     paddingHorizontal: space.xl,
-    paddingTop: space.sm,
-    paddingBottom: space.lg,
+    paddingTop: space.lg,
+    paddingBottom: space.xl,
   },
-  headerTitle: { ...heading.lg, color: colors.white, fontSize: 26 },
+  // Short gold rule above the screen title (school-site heading treatment).
+  headerRule: {
+    width: rule.width, height: rule.height,
+    backgroundColor: colors.gold,
+    marginBottom: space.md,
+  },
+  headerTitle: { ...heading.xl, color: colors.white, fontSize: 28 },
 
   tabBar: {
     flexDirection: 'row',
@@ -345,10 +352,14 @@ const styles = StyleSheet.create({
     borderBottomWidth: border.hairline,
     borderBottomColor: colors.gray200,
   },
-  tab:       { flex: 1, paddingVertical: space.lg, alignItems: 'center' },
-  tabActive: { borderBottomWidth: 2, borderBottomColor: colors.accent },
-  tabText:       { fontSize: 14, fontWeight: '600', color: colors.gray400 },
-  tabTextActive: { color: colors.accent, fontWeight: '800' },
+  // Gold underline on the active tab, matching the bottom nav marker.
+  tab: {
+    flex: 1, paddingVertical: space.lg, alignItems: 'center',
+    borderBottomWidth: border.rule, borderBottomColor: 'transparent',
+  },
+  tabActive:     { borderBottomColor: colors.gold },
+  tabText:       { ...label.caps, fontSize: 11, letterSpacing: 1.8, color: colors.gray500 },
+  tabTextActive: { color: colors.brand, fontWeight: '700' },
 
   loader: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
@@ -384,7 +395,9 @@ const styles = StyleSheet.create({
     left: space.xl,
     right: space.xl,
     backgroundColor: colors.brand,
-    borderRadius: radii.md,
+    borderRadius: radii.sm,
+    borderLeftWidth: border.rule,
+    borderLeftColor: colors.gold,
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.sm,

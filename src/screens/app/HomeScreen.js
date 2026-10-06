@@ -7,8 +7,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase, searchTutors } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
-import { radii, space, border, press } from '../../theme/layout';
-import { heading } from '../../theme/fonts';
+import { radii, space, border, press, rule } from '../../theme/layout';
+import { heading, label } from '../../theme/fonts';
 import TutorCard from '../../components/TutorCard';
 import SkeletonCard from '../../components/SkeletonCard';
 import { Avatar, EmptyState, SectionHeader, StatusPill } from '../../components/ui';
@@ -63,7 +63,7 @@ export default function HomeScreen({ navigation }) {
           uri={other?.avatar_url}
           name={other?.full_name}
           size={40}
-          color={s.tutor_id === profile?.id ? colors.accent : colors.brand}
+          color={s.tutor_id === profile?.id ? colors.accentLight : colors.brand}
           style={styles.sessionAvatar}
         />
         <View style={styles.sessionInfo}>
@@ -84,15 +84,13 @@ export default function HomeScreen({ navigation }) {
       accessibilityRole="button"
       accessibilityLabel="Browse tutors for core classes, SAT and AP"
     >
-      <View style={styles.promoText}>
-        <Text style={styles.promoLabel}>EVERY SUBJECT</Text>
-        <Text style={styles.promoTitle}>Core Classes, SAT & AP</Text>
-        <Text style={styles.promoSub}>
-          Algebra to AP Calc — help from fellow Crusaders
-        </Text>
-      </View>
-      <View style={styles.promoIcon}>
-        <Ionicons name="ribbon" size={30} color={colors.white} />
+      <View style={styles.promoRule} />
+      <Text style={styles.promoTitle}>Core Classes, SAT & AP</Text>
+      <Text style={styles.promoSub}>
+        Algebra to AP Calc — help from fellow Crusaders.
+      </Text>
+      <View style={styles.promoCta}>
+        <Text style={styles.promoCtaText}>Browse tutors</Text>
       </View>
     </TouchableOpacity>
   );
@@ -100,6 +98,7 @@ export default function HomeScreen({ navigation }) {
   const sessionsSection = upcomingSessions.length > 0 ? (
     <View style={styles.section}>
       <SectionHeader
+        ruled
         title="Upcoming Sessions"
         actionLabel="See all"
         onAction={() => navigation.navigate('Sessions')}
@@ -111,6 +110,7 @@ export default function HomeScreen({ navigation }) {
   const tutorsSection = (
     <View style={styles.section}>
       <SectionHeader
+        ruled
         title="Top Tutors"
         actionLabel="Browse all"
         onAction={() => navigation.navigate('Search')}
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
   hero: {
     backgroundColor: colors.brand,
     paddingHorizontal: space.xl,
-    paddingTop: space.lg,
+    paddingTop: space.xl,
     paddingBottom: space.xxl,
   },
   heroRow: {
@@ -237,15 +237,20 @@ const styles = StyleSheet.create({
     marginBottom: space.xl,
   },
   heroGreetingWrap: { flex: 1, marginRight: space.md },
-  heroGreeting: { color: colors.whiteAlpha[80], fontSize: 14 },
+  heroGreeting: {
+    ...label.caps,
+    fontSize: 10, letterSpacing: 2.4,
+    color: colors.whiteAlpha[65],
+    marginBottom: space.xs,
+  },
   heroName: {
-    ...heading.lg,
+    ...heading.xl,
     color: colors.white,
-    fontSize: 26,
+    fontSize: 30,
   },
   heroBadge: {
     width: 44, height: 44, borderRadius: radii.pill,
-    backgroundColor: colors.whiteAlpha[18],
+    borderWidth: 1, borderColor: colors.whiteAlpha[30],
     alignItems: 'center', justifyContent: 'center',
     overflow: 'hidden',
   },
@@ -254,10 +259,10 @@ const styles = StyleSheet.create({
   qBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     backgroundColor: colors.white,
-    paddingHorizontal: space.lg, paddingVertical: space.sm,
-    borderRadius: radii.pill,
+    paddingHorizontal: space.lg, paddingVertical: space.md,
+    borderRadius: radii.sm,
   },
-  qBtnText: { fontWeight: '700', fontSize: 14, color: colors.brand },
+  qBtnText: { ...label.caps, fontSize: 11, letterSpacing: 1.8, color: colors.brand },
 
   // ── Body ──────────────────────────────────────────────────────────────────
   body:     { padding: space.lg, gap: space.lg },
@@ -271,8 +276,10 @@ const styles = StyleSheet.create({
 
   section: {
     backgroundColor: colors.white,
-    padding: space.lg,
+    padding: space.xl,
     borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.lineSoft,
   },
 
   // ── Session rows ──────────────────────────────────────────────────────────
@@ -281,7 +288,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: space.md,
     borderBottomWidth: border.hairline,
-    borderBottomColor: colors.gray200,
+    borderBottomColor: colors.lineSoft,
   },
   sessionRowLast: { borderBottomWidth: 0, paddingBottom: 0 },
   sessionAvatar:  { marginRight: space.md },
@@ -290,27 +297,28 @@ const styles = StyleSheet.create({
   sessionDetail:  { fontSize: 12, color: colors.gray500, marginTop: 1 },
 
   // ── Promo banner ──────────────────────────────────────────────────────────
+  // Green band with the gold rule — the site's "Take the Next Steps" panel.
   promo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.accent,
+    backgroundColor: colors.brandDark,
     borderRadius: radii.lg,
-    padding: space.xl,
-    gap: space.md,
+    padding: space.xxl,
   },
-  promoText:  { flex: 1 },
-  promoLabel: {
-    color: colors.whiteAlpha[80], fontSize: 10,
-    fontWeight: '700', letterSpacing: 1.5, marginBottom: space.xs,
+  promoRule: {
+    width: rule.width, height: rule.height,
+    backgroundColor: colors.gold,
+    marginBottom: space.lg,
   },
-  promoTitle: { color: colors.white, fontSize: 19, fontWeight: '800', marginBottom: 2 },
-  promoSub:   { color: colors.whiteAlpha[80], fontSize: 12, lineHeight: 17 },
-  promoIcon: {
-    width: 56, height: 56, borderRadius: radii.pill,
-    backgroundColor: colors.whiteAlpha[18],
-    alignItems: 'center', justifyContent: 'center',
+  promoTitle: { ...heading.lg, color: colors.white, fontSize: 22, marginBottom: space.sm },
+  promoSub:   { color: colors.whiteAlpha[80], fontSize: 14, lineHeight: 22 },
+  promoCta: {
+    alignSelf: 'flex-start',
+    marginTop: space.lg,
+    backgroundColor: colors.white,
+    borderRadius: radii.sm,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.md,
   },
+  promoCtaText: { ...label.caps, fontSize: 11, letterSpacing: 2, color: colors.brand },
 
   bottomSpacer: { height: space.xxxl },
 });
