@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../theme/colors';
+import { formatSessionDate } from '../utils/schoolDays';
 import { space } from '../theme/layout';
 import Card from './ui/Card';
 import Avatar from './ui/Avatar';
@@ -47,7 +48,11 @@ export default function SessionCard({
         <SubjectBadge subject={session.subject} small />
         <View style={styles.detailItem}>
           <Ionicons name="calendar-outline" size={13} color={colors.gray500} />
-          <Text style={styles.detailText}>Block {session.period}</Text>
+          <Text style={styles.detailText}>
+            {session.session_date
+              ? `${formatSessionDate(session.session_date)} · Block ${session.period}`
+              : `Block ${session.period}`}
+          </Text>
         </View>
       </View>
 
@@ -55,7 +60,7 @@ export default function SessionCard({
         <Text style={styles.notes} numberOfLines={2}>{session.notes}</Text>
       ) : null}
 
-      {/* Actions — `busy` disables them all so they can't be double-tapped
+      {/* Actions - `busy` disables them all so they can't be double-tapped
           while the request is in flight. */}
       <View style={styles.actions}>
         {session.status === 'pending' && isTutor && (

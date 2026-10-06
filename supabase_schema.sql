@@ -1,5 +1,5 @@
 -- ============================================================
--- STRAKE JESUIT TUTOR MARKETPLACE — Complete Supabase Schema
+-- STRAKE JESUIT TUTOR MARKETPLACE - Complete Supabase Schema
 -- ============================================================
 -- Paste this entire file into:
 --   Supabase Dashboard → SQL Editor → New query → Run
@@ -155,7 +155,7 @@ create policy "reviews: insert own"
 
 
 -- ─────────────────────────────────────────────────────────────
--- 6. TRIGGERS — keep denormalised stats up to date
+-- 6. TRIGGERS - keep denormalised stats up to date
 -- ─────────────────────────────────────────────────────────────
 
 -- 6a. Update avg_rating + review_count when a review is added/deleted
@@ -232,7 +232,7 @@ create policy "avatars: update own"
 
 
 -- ─────────────────────────────────────────────────────────────
--- 9. AUTO-CONFIRM school emails (optional — remove if you want
+-- 9. AUTO-CONFIRM school emails (optional - remove if you want
 --    manual review of every sign-up)
 -- ─────────────────────────────────────────────────────────────
 -- The app enforces @mail.strakejesuit.org on the client.
@@ -266,7 +266,7 @@ create index if not exists student_avail_student_idx on public.student_availabil
 -- ─────────────────────────────────────────────────────────────
 -- Also add period constraint to tutor_availability for consistency
 -- ─────────────────────────────────────────────────────────────
--- (Safe to run even if constraint already exists — caught by the
+-- (Safe to run even if constraint already exists - caught by the
 --  "if not exists" pattern on the table above)
 
 

@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
   SafeAreaView, StatusBar, ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
+import { toUserMessage } from '../../utils/errors';
+import {
+  upcomingSchoolDays, toDateKey, dateChipParts, formatSessionDate,
+} from '../../utils/schoolDays';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { radii, space, border, press, hit } from '../../theme/layout';
@@ -20,6 +24,11 @@ export default function BookSessionScreen({ route, navigation }) {
   // subjects may be an array of strings or of { subject, grade } objects
   const subjectList = (tutor.subjects ?? []).map((s) => (typeof s === 'object' ? s.subject : s));
 
+  // A booking is a date plus a block. Default to the next school day so the
+  // common case ("as soon as possible") needs no extra tap.
+  const schoolDays = useMemo(() => upcomingSchoolDays(15), []);
+  const [date, setDate]           = useState(schoolDays[0]);
+
   const [subject, setSubject]     = useState(subjectList[0] ?? null);
   const [notes, setNotes]         = useState('');
   const [loading, setLoading]     = useState(false);
@@ -28,18 +37,36 @@ export default function BookSessionScreen({ route, navigation }) {
 
   const handleBook = async () => {
     if (!subject) { setBookError('Please select a subject before continuing.'); return; }
+    if (!date)    { setBookError('Please pick a day before continuing.'); return; }
     setLoading(true);
     setBookError('');
-    const { error } = await supabase.from('sessions').insert({
+    const base = {
       tutor_id:   tutor.id,
       student_id: profile.id,
       subject,
-      period: slot.period,
-      notes:  notes || null,
-      status: 'pending',
-    });
+      period:     slot.period,
+      notes:      notes || null,
+      status:     'pending',
+    };
+
+    let { error } = await supabase
+      .from('sessions')
+      .insert({ ...base, session_date: toDateKey(date) });
+
+    // 42703 = column does not exist, meaning
+    // supabase/migrations/0001_sessions_date.sql has not been run yet and the
+    // table still has the old `day` column. Fall back so booking works either
+    // way; once the migration is applied this branch never runs.
+    if (error?.code === '42703') {
+      const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const retry = await supabase
+        .from('sessions')
+        .insert({ ...base, day: DOW[date.getDay()] });
+      error = retry.error;
+    }
+
     setLoading(false);
-    if (error) { setBookError(error.message); return; }
+    if (error) { setBookError(toUserMessage(error, "We couldn't book that session. Please try again.")); return; }
     setBooked(true);
   };
 
@@ -61,7 +88,7 @@ export default function BookSessionScreen({ route, navigation }) {
             {[
               { icon: 'person-outline',   text: tutor.full_name },
               { icon: 'book-outline',     text: subject },
-              { icon: 'calendar-outline', text: `Block ${slot.period}` },
+              { icon: 'calendar-outline', text: `${formatSessionDate(date)} · Block ${slot.period}` },
             ].map((row) => (
               <View key={row.icon} style={styles.confirmRow}>
                 <Ionicons name={row.icon} size={15} color={colors.gray500} />
@@ -127,8 +154,38 @@ export default function BookSessionScreen({ route, navigation }) {
           {/* Slot summary */}
           <View style={styles.slotBanner}>
             <Ionicons name="calendar" size={20} color={colors.accentDark} />
-            <Text style={styles.slotText}>Block {slot.period}</Text>
+            <Text style={styles.slotText}>
+              {formatSessionDate(date)} · Block {slot.period}
+            </Text>
           </View>
+
+          {/* Day picker - weekdays only, the next three school weeks */}
+          <Text style={styles.label}>Day</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.dayRow}
+          >
+            {schoolDays.map((d) => {
+              const key      = toDateKey(d);
+              const active   = toDateKey(date) === key;
+              const { dow, day } = dateChipParts(d);
+              return (
+                <TouchableOpacity
+                  key={key}
+                  style={[styles.dayChip, active && styles.dayChipActive]}
+                  onPress={() => setDate(d)}
+                  activeOpacity={press.opacity}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  accessibilityLabel={formatSessionDate(d)}
+                >
+                  <Text style={[styles.dayDow, active && styles.dayTextActive]}>{dow}</Text>
+                  <Text style={[styles.dayNum, active && styles.dayTextActive]}>{day}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
 
           <ErrorBanner message={bookError} />
 

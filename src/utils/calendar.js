@@ -11,6 +11,7 @@
  * Users can edit the event after it's created if the times differ.
  */
 import { Platform } from 'react-native';
+import { fromDateKey, formatSessionDate } from './schoolDays';
 
 // ─── Block start/end times (24-hour, based on Strake Jesuit block schedule) ──
 const BLOCK_TIMES = {
@@ -24,9 +25,20 @@ const BLOCK_TIMES = {
   8: { startH: 15, startM: 0,  endH: 15, endM: 50 },
 };
 
+/** The booked date at hour:minute. Falls back to the next weekday if absent. */
+function sessionDateAtTime(sessionDate, hour, minute) {
+  const base = fromDateKey(sessionDate);
+  if (base) {
+    const d = new Date(base);
+    d.setHours(hour, minute, 0, 0);
+    return d;
+  }
+  return nextWeekdayAtTime(hour, minute);
+}
+
 /**
- * Returns a Date for the next weekday (Mon–Fri) at hour:minute.
- * If today is a weekday and the time hasn't passed yet, returns today.
+ * Returns a Date for the next weekday (Mon-Fri) at hour:minute.
+ * Only a fallback now that sessions carry a real date.
  */
 function nextWeekdayAtTime(hour, minute) {
   const now    = new Date();
@@ -40,7 +52,7 @@ function nextWeekdayAtTime(hour, minute) {
   } else if (day === 6) {
     result.setDate(result.getDate() + 2); // → Monday
   } else if (result <= now) {
-    // Weekday but time has passed — move to next weekday
+    // Weekday but time has passed - move to next weekday
     const daysToAdd = day === 5 ? 3 : 1; // Friday → Monday, else +1
     result.setDate(result.getDate() + daysToAdd);
   }
@@ -203,10 +215,10 @@ export async function addSessionToCalendar(session, otherName) {
     return { success: false, error: `Unknown block: ${session.period}` };
   }
 
-  // Block schedule has no fixed day — schedule the event for the next weekday
-  // at the block's time so the calendar entry is still useful
-  const startDate = nextWeekdayAtTime(times.startH, times.startM);
-  const endDate   = nextWeekdayAtTime(times.endH,   times.endM);
+  // The session carries its own date now, so the calendar entry lands on the
+  // day that was actually booked.
+  const startDate = sessionDateAtTime(session.session_date, times.startH, times.startM);
+  const endDate   = sessionDateAtTime(session.session_date, times.endH,   times.endM);
 
   if (Platform.OS === 'web') {
     return addToWebCalendar(session, otherName, startDate, endDate);
@@ -219,7 +231,7 @@ export async function addSessionToCalendar(session, otherName) {
  * Returns a human-readable summary of when the next occurrence will be.
  * e.g. "Next Monday, Oct 14 · 9:00 – 9:50 AM"
  */
-export function getSessionTimeLabel(day, period) {
+export function getSessionTimeLabel(sessionDate, period) {
   const times = BLOCK_TIMES[period];
   if (!times) return '';
 
@@ -229,5 +241,7 @@ export function getSessionTimeLabel(day, period) {
     return `${h12}:${String(m).padStart(2, '0')} ${suffix}`;
   };
 
-  return `Block ${period} · ${fmt(times.startH, times.startM)} – ${fmt(times.endH, times.endM)}`;
+  const when = formatSessionDate(sessionDate);
+  const time = `${fmt(times.startH, times.startM)} - ${fmt(times.endH, times.endM)}`;
+  return when ? `${when} · Block ${period} · ${time}` : `Block ${period} · ${time}`;
 }

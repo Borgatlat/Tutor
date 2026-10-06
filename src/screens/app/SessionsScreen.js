@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
+import { toUserMessage } from '../../utils/errors';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { radii, space, border, press, hit } from '../../theme/layout';
@@ -27,7 +28,7 @@ export default function SessionsScreen({ navigation }) {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading]   = useState(true);
 
-  // Which session has a request in flight — disables that card's actions so
+  // Which session has a request in flight - disables that card's actions so
   // Confirm/Decline can't be double-tapped.
   const [busyId, setBusyId] = useState(null);
 
@@ -42,7 +43,7 @@ export default function SessionsScreen({ navigation }) {
   const [submitting, setSubmitting]       = useState(false);
   const [reviewError, setReviewError]     = useState('');
 
-  // Calendar — tracks which session IDs have been added
+  // Calendar - tracks which session IDs have been added
   const [calendarAdded, setCalendarAdded] = useState(new Set());
   const [toast, setToast]                 = useState(null); // { message, isError }
   const toastOpacity = useRef(new Animated.Value(0)).current;
@@ -64,7 +65,7 @@ export default function SessionsScreen({ navigation }) {
     const { success, error } = await addSessionToCalendar(session, otherName);
     if (success) {
       setCalendarAdded((prev) => new Set([...prev, session.id]));
-      const timeLabel = getSessionTimeLabel(session.day, session.period);
+      const timeLabel = getSessionTimeLabel(session.session_date, session.period);
       const msg = Platform.OS === 'web'
         ? `Calendar file downloaded · ${timeLabel}`
         : `Added to calendar · ${timeLabel}`;
@@ -88,7 +89,9 @@ export default function SessionsScreen({ navigation }) {
       .select('*, tutor:profiles!sessions_tutor_id_fkey(id,full_name,avatar_url,email), student:profiles!sessions_student_id_fkey(id,full_name,avatar_url,email)')
       .or(`tutor_id.eq.${profile.id},student_id.eq.${profile.id}`)
       .in('status', statuses)
-      .order('created_at', { ascending: tab !== 'Upcoming' });
+      // Upcoming reads soonest-first; history reads most-recent-first.
+      .order('session_date', { ascending: tab === 'Upcoming' })
+      .order('period',       { ascending: true });
 
     if (error && __DEV__) console.warn('[SessionsScreen] loadSessions:', error);
 
@@ -110,8 +113,16 @@ export default function SessionsScreen({ navigation }) {
 
   const handleConfirm = async (sessionId) => {
     setBusyId(sessionId);
-    await supabase.from('sessions').update({ status: 'confirmed' }).eq('id', sessionId);
+    const { error } = await supabase
+      .from('sessions').update({ status: 'confirmed' }).eq('id', sessionId);
     setBusyId(null);
+    // Without this a rejected update just re-rendered the old row, so the tutor
+    // tapped Confirm and nothing happened, with nothing explaining why.
+    if (error) {
+      showToast(toUserMessage(error, "We couldn't confirm that session."), true);
+      return;
+    }
+    showToast('Session confirmed');
     loadSessions();
   };
 
@@ -120,9 +131,15 @@ export default function SessionsScreen({ navigation }) {
   const confirmCancel = async () => {
     if (!cancelConfirmId) return;
     setCancelling(true);
-    await supabase.from('sessions').update({ status: 'cancelled' }).eq('id', cancelConfirmId);
+    const { error } = await supabase
+      .from('sessions').update({ status: 'cancelled' }).eq('id', cancelConfirmId);
     setCancelling(false);
     setCancelConfirmId(null);
+    if (error) {
+      showToast(toUserMessage(error, "We couldn't cancel that session."), true);
+      return;
+    }
+    showToast('Session cancelled');
     loadSessions();
   };
 
@@ -145,7 +162,11 @@ export default function SessionsScreen({ navigation }) {
       comment:     comment || null,
     });
     setSubmitting(false);
-    if (error) { setReviewError(error.message); return; }
+    // 23505 here means the one-review-per-session unique index fired.
+    if (error) {
+      setReviewError(toUserMessage(error, "You've already reviewed this session."));
+      return;
+    }
     closeReview();
     loadSessions();
   };
