@@ -60,7 +60,7 @@ export default function TutorProfileScreen({ route, navigation }) {
     { icon: 'book-outline',             val: subjects.length,          lbl: 'Subjects' },
     {
       icon: 'star-outline',
-      val: tutor.avg_rating ? Number(tutor.avg_rating).toFixed(1) : '—',
+      val: tutor.avg_rating ? Number(tutor.avg_rating).toFixed(1) : '-',
       lbl: 'Rating',
     },
   ];

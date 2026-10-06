@@ -1,5 +1,5 @@
 /**
- * Card — the one elevated surface in the app.
+ * Card - the one elevated surface in the app.
  *
  * Every card-shaped thing should use this so radius, padding and elevation
  * stay identical. `padded={false}` for cards that manage their own insets

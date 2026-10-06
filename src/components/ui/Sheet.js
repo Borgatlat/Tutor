@@ -1,5 +1,5 @@
 /**
- * Sheet — the bottom-sheet modal.
+ * Sheet - the bottom-sheet modal.
  *
  * Wraps the dim overlay + rounded top corners + drag handle that were written
  * out separately in ReportModal and twice in SessionsScreen, each with its own

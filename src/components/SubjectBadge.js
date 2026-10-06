@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import colors from '../theme/colors';
 import { radii, space, border } from '../theme/layout';
 
-// Badges are colored by department, not by difficulty — 'Algebra 2' and
+// Badges are colored by department, not by difficulty - 'Algebra 2' and
 // 'AP Calculus BC' read as the same subject family at a glance. All five
 // families are green- or neutral-derived so nothing competes with the brand.
 const s = colors.subject;

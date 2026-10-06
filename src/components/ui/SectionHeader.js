@@ -1,5 +1,5 @@
 /**
- * SectionHeader — title on the left, optional action link on the right.
+ * SectionHeader - title on the left, optional action link on the right.
  *
  * Replaces the several hand-rolled "row with a title and a See all" headers
  * that each had their own font size and margin.

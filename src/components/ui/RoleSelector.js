@@ -1,5 +1,5 @@
 /**
- * RoleSelector — the student / tutor / both picker.
+ * RoleSelector - the student / tutor / both picker.
  *
  * Shared by SignUpScreen and ProfileSetupScreen. The old ProfileSetup version
  * used a pink (#FFF5F5) active background left over from the pre-rebrand red
@@ -26,7 +26,7 @@ export default function RoleSelector({ value, onChange, style }) {
             onPress={() => onChange(r.key)}
             activeOpacity={press.opacity}
             accessibilityRole="radio"
-            accessibilityLabel={`${r.label} — ${r.description}`}
+            accessibilityLabel={`${r.label}: ${r.description}`}
             accessibilityState={{ selected: active }}
           >
             <View style={[styles.icon, active && styles.iconActive]}>

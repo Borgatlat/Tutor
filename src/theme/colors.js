@@ -1,5 +1,5 @@
 // ─── Strake Jesuit Palette ────────────────────────────────────────────────────
-// brand*  → dark forest green   (heroes, nav, headers — the primary voice)
+// brand*  → dark forest green   (heroes, nav, headers - the primary voice)
 // accent* → medium forest green (buttons, badges, active/selected states)
 // star    → gold, reserved exclusively for rating stars
 //
@@ -8,13 +8,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default {
-  // Primary brand — dark forest green
+  // Primary brand - dark forest green
   brand:      '#1B4D2E',   // hero / header backgrounds, sidebar
   brandDark:  '#123320',   // pressed state
   brandLight: '#2D6B44',   // hover state
   brandTint:  '#E8F0EC',   // tinted chip / section backgrounds
 
-  // Accent — medium forest green
+  // Accent - medium forest green
   accent:      '#2E7D52',  // primary buttons, selected chips, links
   accentDark:  '#1F5C3A',  // pressed
   accentLight: '#3D9E68',  // hover + focus ring
@@ -35,7 +35,7 @@ export default {
   gray700: '#333840',
   black:   '#111214',
 
-  // White overlays — for text/icons on brand-colored surfaces
+  // White overlays - for text/icons on brand-colored surfaces
   whiteAlpha: {
     12: 'rgba(255,255,255,0.12)',   // dividers
     18: 'rgba(255,255,255,0.18)',   // active nav background
@@ -44,8 +44,8 @@ export default {
   },
 
   // Semantic
-  star:        '#C9A547',  // rating stars ONLY — not a general accent
-  pending:     '#8A7A4D',  // "waiting" status — warm neutral, not gold
+  star:        '#C9A547',  // rating stars ONLY - not a general accent
+  pending:     '#8A7A4D',  // "waiting" status - warm neutral, not gold
   pendingTint: '#F3F0E6',
   error:       '#C0392B',
   errorMuted:  '#FEF2F2',

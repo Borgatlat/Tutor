@@ -1,5 +1,5 @@
 /**
- * SubjectPicker — collapsible subject selector, shared by ProfileSetupScreen
+ * SubjectPicker - collapsible subject selector, shared by ProfileSetupScreen
  * and ProfileScreen so the picker looks and behaves identically in both.
  *
  * There are 9 categories (5 core + SAT + 3 AP groups), which is far too many
@@ -7,11 +7,11 @@
  * something already selected, so returning users land on their own subjects.
  *
  * Props
- *   selected       string[] | string | null       — chosen subject name(s)
+ *   selected       string[] | string | null       - chosen subject name(s)
  *   onToggle       (subject) => void
- *   grades         { [subject]: string } | null   — omit to hide grade inputs
+ *   grades         { [subject]: string } | null   - omit to hide grade inputs
  *   onGradeChange  (subject, value) => void
- *   allLabel       string                         — renders a leading "clear"
+ *   allLabel       string                         - renders a leading "clear"
  *                  chip (search filter use); omit for the multi-select editor
  *   onSelectAll    () => void
  */
@@ -114,7 +114,7 @@ export default function SubjectPicker({
         <View style={styles.gradeSection}>
           <Text style={styles.gradeHeading}>Your grade or score</Text>
           <Text style={styles.gradeHint}>
-            Optional — shown on your profile so students know your strength in each subject.
+            Optional. Shown on your profile so students know your strength in each subject.
           </Text>
 
           {picked.map((subject) => (

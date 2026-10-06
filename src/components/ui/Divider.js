@@ -1,5 +1,5 @@
 /**
- * Divider — a rule, optionally with centered text ("or", "New here?").
+ * Divider - a rule, optionally with centered text ("or", "New here?").
  */
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';

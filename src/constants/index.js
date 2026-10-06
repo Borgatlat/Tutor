@@ -2,7 +2,7 @@ import colors from '../theme/colors';
 
 export const BLOCKS = [1, 2, 3, 4, 5, 6, 7, 8];
 
-// Core classes lead the list — most students take these, so they should be the
+// Core classes lead the list - most students take these, so they should be the
 // first thing in the picker. AP entries keep their 'AP ' prefix, which is what
 // lets SubjectBadge tell 'US History' apart from 'AP US History'.
 export const SUBJECT_CATEGORIES = {

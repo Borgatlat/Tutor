@@ -5,7 +5,7 @@
  *   iOS Safari only shows the keyboard when focus is triggered by a direct
  *   touchend on the actual <input> DOM node. React Native Web's responder
  *   system intercepts that touch and calls .focus() via JS, which Safari
- *   treats as a programmatic (non-gesture) focus and ignores — keyboard
+ *   treats as a programmatic (non-gesture) focus and ignores - keyboard
  *   never appears. A raw <input> element has no such indirection.
  *
  * On native (iOS / Android): renders React Native <TextInput> as normal.
@@ -96,7 +96,7 @@ export default function AppTextInput({
     const onTouchEnd = (e) => {
       e.stopPropagation();
       // preventDefault() stops the synthetic click/mousedown events that
-      // fire after a touch — those events can trigger RN Web parent handlers
+      // fire after a touch - those events can trigger RN Web parent handlers
       // which steal focus and dismiss the keyboard.
       // We call el.focus() explicitly so we don't need the browser default.
       e.preventDefault();
@@ -130,7 +130,7 @@ export default function AppTextInput({
     // Explicit, not 'inherit': inheriting picks up the serif heading font from
     // an ancestor, so inputs rendered in serif while their labels were sans.
     fontFamily:      flat.fontFamily ?? fonts.sans,
-    // textAlign is dropped by the whitelist otherwise — centered numeric
+    // textAlign is dropped by the whitelist otherwise - centered numeric
     // inputs (grade fields) rely on it.
     textAlign:       flat.textAlign ?? 'left',
     // Disabled fields need to look disabled, not just refuse input.

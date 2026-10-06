@@ -26,7 +26,7 @@ function Shimmer({ style }) {
 }
 
 // Geometry here must match TutorCard exactly (radius, padding, margin, shadow,
-// avatar size) — otherwise the card visibly jumps when real data arrives.
+// avatar size) - otherwise the card visibly jumps when real data arrives.
 export default function SkeletonCard() {
   return (
     <View style={styles.card} accessibilityLabel="Loading tutor">

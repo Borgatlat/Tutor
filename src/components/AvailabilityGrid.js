@@ -1,14 +1,14 @@
 /**
- * AvailabilityGrid — the B1–B8 block picker.
+ * AvailabilityGrid - the B1–B8 block picker.
  *
  * Block schedule: no day dimension. Renders one Chip per block so the same
  * block looks identical here, in profile setup, and in the booking flow.
  *
  * Props
- *  availability  – array of { period } — the blocks that are free
- *  onToggle      – (block) => void — makes every chip toggleable (edit mode)
- *  highlightSlot – { period } | null — marks one chip as chosen
- *  onSelectSlot  – (null, period) => void — free chips become selectable
+ *  availability  – array of { period } - the blocks that are free
+ *  onToggle      – (block) => void - makes every chip toggleable (edit mode)
+ *  highlightSlot – { period } | null - marks one chip as chosen
+ *  onSelectSlot  – (null, period) => void - free chips become selectable
  *  emptyLabel    – shown instead of the grid when nothing is free and the grid
  *                  is read-only, so "no blocks" doesn't look like a bug
  */

@@ -1,6 +1,6 @@
 // ─── Layout scales ────────────────────────────────────────────────────────────
 // Use these instead of literal numbers. If a value you want isn't on a scale,
-// pick the nearest one — that's the point of having a scale.
+// pick the nearest one - that's the point of having a scale.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const space = {

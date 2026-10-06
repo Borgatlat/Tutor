@@ -1,5 +1,5 @@
 /**
- * StatusPill — renders a session status from SESSION_STATUS.
+ * StatusPill - renders a session status from SESSION_STATUS.
  *
  * Reads the `tint` defined alongside each status rather than appending an
  * alpha suffix to the hex string, which only worked for 6-digit hex values

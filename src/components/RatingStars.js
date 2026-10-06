@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../theme/colors';
 
-// colors.star is the ONLY place gold appears in the app — stars are a universal
+// colors.star is the ONLY place gold appears in the app - stars are a universal
 // convention, so they keep it. Everything else is green.
 export default function RatingStars({ rating, count, size = 14, showCount = true }) {
   const rounded = Math.round(rating ?? 0);
@@ -29,7 +29,7 @@ export default function RatingStars({ rating, count, size = 14, showCount = true
 
       {showCount && (
         <Text style={[styles.val, { fontSize: size }]}>
-          {hasRating ? ` ${Number(rating).toFixed(1)}` : ' —'}
+          {hasRating ? ` ${Number(rating).toFixed(1)}` : ' -'}
           {count != null && <Text style={styles.count}> ({count})</Text>}
         </Text>
       )}

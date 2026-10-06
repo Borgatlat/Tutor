@@ -1,5 +1,5 @@
 /**
- * Avatar — photo with an initials fallback.
+ * Avatar - photo with an initials fallback.
  *
  * The "image, or a colored circle with up to two initials" block was written
  * out five separate times with four different sizes and two different fallback

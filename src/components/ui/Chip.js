@@ -1,12 +1,12 @@
 /**
- * Chip — one pill primitive for every selectable token in the app:
+ * Chip - one pill primitive for every selectable token in the app:
  * availability blocks (B1–B8), subject picker entries, report reasons.
  *
  * States:
  *   idle       not selected, tappable
  *   available  highlighted as "free"/eligible but not chosen (accent outline)
  *   selected   chosen (solid accent)
- *   disabled   visibly inert — dimmed, no press feedback
+ *   disabled   visibly inert - dimmed, no press feedback
  */
 import React from 'react';
 import { Text, TouchableOpacity, StyleSheet, View } from 'react-native';

@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 
-// Emits a cross-platform elevation. Both branches must always be present —
+// Emits a cross-platform elevation. Both branches must always be present -
 // a web-only branch means no shadow on native, and vice versa.
 const s = (h, blur, opacity) =>
   Platform.select({

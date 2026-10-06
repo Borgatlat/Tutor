@@ -1,5 +1,5 @@
 /**
- * Field — label + input + error, with the focus state the app was missing.
+ * Field - label + input + error, with the focus state the app was missing.
  *
  * Owning `focused` here is the whole point: AppTextInput's web path sets
  * `outline: none`, so without this there is no focus indication at all on web.

@@ -28,7 +28,7 @@ export default function SplashScreen() {
         <Text style={styles.title}>Tutor{'\n'}Marketplace</Text>
         <Text style={styles.sub}>Crusaders helping Crusaders</Text>
 
-        {/* A real spinner — the old static dot read as a loading indicator but
+        {/* A real spinner - the old static dot read as a loading indicator but
             never moved, so a slow session restore looked frozen. */}
         <ActivityIndicator
           color={colors.whiteAlpha[65]}

@@ -1,13 +1,13 @@
 /**
- * Button — the only button in the app.
+ * Button - the only button in the app.
  *
  * Variants:
- *   primary   filled accent green — the main action on a screen
- *   secondary accent outline on white — a real but lesser action
- *   ghost     no border, accent text — tertiary / inline
- *   danger    error outline — destructive, offered alongside a safer option
- *   dangerSolid filled error — the confirming tap in a destructive dialog
- *   neutral   gray outline — "keep it" / dismiss
+ *   primary   filled accent green - the main action on a screen
+ *   secondary accent outline on white - a real but lesser action
+ *   ghost     no border, accent text - tertiary / inline
+ *   danger    error outline - destructive, offered alongside a safer option
+ *   dangerSolid filled error - the confirming tap in a destructive dialog
+ *   neutral   gray outline - "keep it" / dismiss
  *
  * `loading` swaps the label for a spinner and disables the press, so callers
  * never have to hand-roll the double-tap guard.

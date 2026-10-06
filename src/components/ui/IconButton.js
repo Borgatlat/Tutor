@@ -1,5 +1,5 @@
 /**
- * IconButton — an icon-only control that is actually reachable.
+ * IconButton - an icon-only control that is actually reachable.
  *
  * Icon-only buttons need two things a bare <TouchableOpacity><Ionicons/> gives
  * you neither of: an accessibilityLabel (a screen reader otherwise announces

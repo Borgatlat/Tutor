@@ -52,9 +52,9 @@ const TAB_META = [
 function NavIcon({ name, size, color, emoji }) {
   return (
     <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-      {/* Emoji fallback — visible only while the Ionicons font is loading */}
+      {/* Emoji fallback - visible only while the Ionicons font is loading */}
       <Text style={{ position: 'absolute', fontSize: size * 0.7, lineHeight: size }}>{emoji}</Text>
-      {/* Ionicons — renders on top once the font loads */}
+      {/* Ionicons - renders on top once the font loads */}
       <Ionicons name={name} size={size} color={color} />
     </View>
   );
