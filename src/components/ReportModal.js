@@ -1,5 +1,5 @@
 /**
- * ReportModal — Apple App Store guideline 5.1.1 / 1.2
+ * ReportModal - Apple App Store guideline 5.1.1 / 1.2
  * Required for any app with user-generated content.
  * Lets signed-in users report inappropriate users and block them.
  */
@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import { Modal, View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
+import { toUserMessage } from '../utils/errors';
 import useAuthStore from '../store/useAuthStore';
 import colors from '../theme/colors';
 import { radii, space } from '../theme/layout';
@@ -54,7 +55,7 @@ export default function ReportModal({ visible, onClose, reportedUser }) {
       details: details || null,
     });
     setSubmitting(false);
-    if (err) { setError(err.message); return; }
+    if (err) { setError(toUserMessage(err, "We couldn't send that report. Please try again.")); return; }
     setDone('reported');
   };
 
@@ -66,7 +67,7 @@ export default function ReportModal({ visible, onClose, reportedUser }) {
       blocked_id: reportedUser.id,
     }, { onConflict: 'blocker_id,blocked_id' });
     setBlocking(false);
-    if (err) { setError(err.message); return; }
+    if (err) { setError(toUserMessage(err, "We couldn't send that report. Please try again.")); return; }
     setDone('blocked');
   };
 

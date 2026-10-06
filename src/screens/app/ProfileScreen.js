@@ -6,7 +6,9 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase, uploadAvatar } from '../../lib/supabase';
+import { toUserMessage } from '../../utils/errors';
 import useAuthStore from '../../store/useAuthStore';
+import useToastStore from '../../store/useToastStore';
 import colors from '../../theme/colors';
 import { radii, space, border, press, hit } from '../../theme/layout';
 import { heading } from '../../theme/fonts';
@@ -20,6 +22,7 @@ import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../../constants/legal'
 
 export default function ProfileScreen() {
   const { profile, session, signOut, refreshProfile } = useAuthStore();
+  const showToast = useToastStore((s) => s.show);
   const userId = session?.user?.id;
 
   const [editing, setEditing]     = useState(false);
@@ -93,10 +96,10 @@ export default function ProfileScreen() {
         ...(avatarUrl && { avatar_url: avatarUrl }),
       }).eq('id', userId);
 
-      if (updateError) { setSaveError(updateError.message); }
+      if (updateError) { setSaveError(toUserMessage(updateError, "We couldn't save your changes.")); }
       else { await refreshProfile(); setEditing(false); }
     } catch (e) {
-      setSaveError(e?.message ?? 'Could not save changes.');
+      setSaveError(toUserMessage(e, "We couldn't save your changes."));
     } finally {
       setSavingBio(false);
     }
@@ -110,10 +113,10 @@ export default function ProfileScreen() {
         .from('profiles')
         .update({ role: selectedRole })
         .eq('id', userId);
-      if (error) { setRoleError(error.message); return; }
+      if (error) { setRoleError(toUserMessage(error, "We couldn't update your role.")); return; }
       await refreshProfile();
     } catch (e) {
-      setRoleError(e?.message ?? 'Could not update role.');
+      setRoleError(toUserMessage(e, "We couldn't update your role."));
     } finally {
       setSavingRole(false);
     }
@@ -137,7 +140,12 @@ export default function ProfileScreen() {
     setSubjectError('');
     try {
       // Delete all existing subjects then re-insert
-      await supabase.from('tutor_subjects').delete().eq('tutor_id', userId);
+      const { error: clearError } =
+        await supabase.from('tutor_subjects').delete().eq('tutor_id', userId);
+      if (clearError) {
+        setSubjectError(toUserMessage(clearError, "We couldn't save your subjects."));
+        return;
+      }
       if (selectedSubjects.length > 0) {
         const { error } = await supabase.from('tutor_subjects').insert(
           selectedSubjects.map((subject) => ({
@@ -146,31 +154,38 @@ export default function ProfileScreen() {
             grade: gradeMap[subject] || null,
           })),
         );
-        if (error) { setSubjectError(error.message); return; }
+        if (error) { setSubjectError(toUserMessage(error, "We couldn't save your subjects.")); return; }
       }
       await refreshProfile();
       setEditingSubjects(false);
     } catch (e) {
-      setSubjectError(e?.message ?? 'Could not save subjects.');
+      setSubjectError(toUserMessage(e, "We couldn't save your subjects."));
     } finally {
       setSavingSubjects(false);
     }
   };
 
   // Block schedule: toggle a block on/off (no day dimension).
-  // All roles use tutor_availability — student_availability table doesn't exist.
+  // All roles use tutor_availability - student_availability table doesn't exist.
   const toggleAvailability = async (block) => {
     const exists = availability.some((a) => a.period === block);
     setAvailability(exists
       ? availability.filter((a) => a.period !== block)
       : [...availability, { period: block }]);
 
-    if (exists) {
-      await supabase.from('tutor_availability')
-        .delete().eq('tutor_id', userId).eq('period', block);
-    } else {
-      await supabase.from('tutor_availability')
-        .insert({ tutor_id: userId, period: block });
+    const { error } = exists
+      ? await supabase.from('tutor_availability')
+          .delete().eq('tutor_id', userId).eq('period', block)
+      : await supabase.from('tutor_availability')
+          .insert({ tutor_id: userId, period: block });
+
+    // The toggle above is optimistic. Without this the block stays lit after a
+    // failed write and the student believes their availability was saved.
+    if (error) {
+      setAvailability(prev => (exists
+        ? [...prev, { period: block }]
+        : prev.filter((a) => a.period !== block)));
+      showToast(toUserMessage(error, "We couldn't update your free blocks."), 'error');
     }
   };
 
@@ -345,7 +360,7 @@ export default function ProfileScreen() {
                 <EmptyState
                   icon="book-outline"
                   title="No subjects yet"
-                  body="Tap Edit to pick the classes you can help with — core classes, SAT and AP."
+                  body="Tap Edit to pick the classes you can help with: core classes, SAT and AP."
                   compact
                 />
               )}
@@ -360,7 +375,7 @@ export default function ProfileScreen() {
             <Text style={styles.hint}>
               {isTutor
                 ? 'Tap a block to toggle when students can book you'
-                : 'Tap a block to mark it free — tutors who share your blocks rank higher in search'}
+                : 'Tap a block to mark it free. Tutors who share your blocks rank higher in search'}
             </Text>
             <AvailabilityGrid
               availability={availability}

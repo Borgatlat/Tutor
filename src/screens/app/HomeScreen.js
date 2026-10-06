@@ -5,6 +5,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase, searchTutors } from '../../lib/supabase';
+import { shareInvite } from '../../utils/invite';
+import useToastStore from '../../store/useToastStore';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { radii, space, border, press } from '../../theme/layout';
@@ -16,6 +18,7 @@ import { useResponsive } from '../../hooks/useResponsive';
 
 export default function HomeScreen({ navigation }) {
   const { profile } = useAuthStore();
+  const showToast = useToastStore((st) => st.show);
   const { isWide } = useResponsive();
 
   const [topTutors, setTopTutors]         = useState([]);
@@ -49,6 +52,16 @@ export default function HomeScreen({ navigation }) {
       .in('status', ['pending', 'confirmed'])
       .limit(3);
     setUpcoming(data ?? []);
+  };
+
+  const handleInvite = async () => {
+    const { ok, method } = await shareInvite();
+    if (method === 'copied') {
+      showToast(
+        ok ? 'Invite link copied. Send it to a friend!' : "We couldn't copy the link.",
+        ok ? 'success' : 'error',
+      );
+    }
   };
 
   const renderSessionRow = (s, i, arr) => {
@@ -88,7 +101,7 @@ export default function HomeScreen({ navigation }) {
         <Text style={styles.promoLabel}>EVERY SUBJECT</Text>
         <Text style={styles.promoTitle}>Core Classes, SAT & AP</Text>
         <Text style={styles.promoSub}>
-          Algebra to AP Calc — help from fellow Crusaders
+          Algebra to AP Calc, with help from fellow Crusaders
         </Text>
       </View>
       <View style={styles.promoIcon}>
@@ -128,9 +141,11 @@ export default function HomeScreen({ navigation }) {
         <EmptyState
           icon="people-outline"
           title="No tutors yet"
-          body="Once Crusaders add the subjects they can teach, they'll show up here."
-          actionLabel="Browse search"
-          onAction={() => navigation.navigate('Search')}
+          body="Nobody has signed up to tutor yet. Be the first, or bring a friend who'd be good at it."
+          actionLabel="Become a tutor"
+          onAction={() => navigation.navigate('Profile')}
+          secondaryActionLabel="Invite a friend to tutor"
+          onSecondaryAction={handleInvite}
         />
       ) : (
         <View style={isWide ? styles.grid : undefined}>
@@ -202,7 +217,7 @@ export default function HomeScreen({ navigation }) {
           </View>
         </View>
 
-        {/* One content tree — the wrapper switches between two columns and a
+        {/* One content tree - the wrapper switches between two columns and a
             single stack, so the blocks themselves are never duplicated. */}
         <View style={[styles.body, isWide && styles.bodyWide]}>
           <View style={[styles.col, isWide && styles.colNarrow]}>

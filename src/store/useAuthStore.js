@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { supabase, fetchMyProfile } from '../lib/supabase';
 
-// ─── NO persist middleware — setupComplete comes from Supabase, not local storage ───
+// ─── NO persist middleware - setupComplete comes from Supabase, not local storage ───
 // Local storage can't be trusted because of hydration race conditions.
 // The source of truth is profiles.setup_complete in the database.
 
@@ -10,6 +10,17 @@ const useAuthStore = create((set, get) => ({
   profile:       null,
   loading:       true,
   setupComplete: false,
+
+  // True while OnboardingScreen is mid-flight. signUp() produces a session
+  // immediately, which would otherwise make App.js swap AuthNavigator out and
+  // unmount the wizard before it has written subjects/availability. While this
+  // is set, App.js keeps rendering the auth stack regardless of session.
+  onboarding:    false,
+
+  // True from the moment Supabase reports PASSWORD_RECOVERY until a new
+  // password is saved. A recovery link signs the user in for real, so without
+  // this App.js would drop them into the app and never ask for a password.
+  recovery:      false,
 
   /** Called once on app mount */
   init: () => {
@@ -23,12 +34,20 @@ const useAuthStore = create((set, get) => ({
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
         set({ session });
+
+        // Arrives when the user lands back from a reset link (web reads the
+        // token from the URL because detectSessionInUrl is on).
+        if (event === 'PASSWORD_RECOVERY') set({ recovery: true });
+
         if (session?.user) {
           get().loadProfile(session.user.id);
         } else {
-          set({ profile: null, loading: false, setupComplete: false });
+          set({
+            profile: null, loading: false,
+            setupComplete: false, onboarding: false, recovery: false,
+          });
         }
       }
     );
@@ -64,7 +83,7 @@ const useAuthStore = create((set, get) => ({
 
       set({ profile, loading: false, setupComplete: alreadySetup });
     } catch {
-      // Profile row doesn't exist yet — create from signup metadata
+      // Profile row doesn't exist yet - create from signup metadata
       try {
         const { data: { user } } = await supabase.auth.getUser();
         const meta = user?.user_metadata ?? {};
@@ -91,7 +110,7 @@ const useAuthStore = create((set, get) => ({
     if (userId) await get().loadProfile(userId);
   },
 
-  /** Called by ProfileSetupScreen after saving — marks the DB row AND local state */
+  /** Called by ProfileSetupScreen after saving - marks the DB row AND local state */
   completeSetup: async () => {
     const userId = get().session?.user?.id;
     // Persist the flag to Supabase so it survives any reload / device change
@@ -110,8 +129,12 @@ const useAuthStore = create((set, get) => ({
 
   signOut: async () => {
     await supabase.auth.signOut();
-    set({ session: null, profile: null, setupComplete: false });
+    set({ session: null, profile: null, setupComplete: false, onboarding: false, recovery: false });
   },
+
+  setOnboarding: (onboarding) => set({ onboarding }),
+
+  setRecovery: (recovery) => set({ recovery }),
 
   setProfile: (profile) => set({ profile }),
 }));

@@ -3,7 +3,9 @@ import { View, Text, TouchableOpacity, StyleSheet, Linking } from 'react-native'
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { supabase } from '../../lib/supabase';
+import { supabase, emailRedirectTo } from '../../lib/supabase';
+import { toUserMessage } from '../../utils/errors';
+import useToastStore from '../../store/useToastStore';
 import colors from '../../theme/colors';
 import { space, hit, press } from '../../theme/layout';
 import { heading } from '../../theme/fonts';
@@ -12,13 +14,6 @@ import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../../constants/legal'
 import {
   AuthShell, Button, ErrorBanner, Field, IconButton, RoleSelector,
 } from '../../components/ui';
-
-const FEATURES = [
-  { icon: 'people-outline',            text: 'Peer-to-peer tutoring from Crusaders' },
-  { icon: 'book-outline',              text: 'All subjects — core classes, AP, SAT & more' },
-  { icon: 'time-outline',              text: 'Schedule around your free periods' },
-  { icon: 'shield-checkmark-outline',  text: 'Strake Jesuit email required' },
-];
 
 const schema = z.object({
   full_name: z.string().min(2, 'Enter your full name'),
@@ -37,6 +32,7 @@ export default function SignUpScreen({ navigation }) {
   const [loading, setLoading]         = useState(false);
   const [showPw, setShowPw]           = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const showToast                     = useToastStore((s) => s.show);
 
   const { control, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
@@ -48,20 +44,48 @@ export default function SignUpScreen({ navigation }) {
     setSubmitError('');
     try {
       const cleanEmail = email.toLowerCase().trim();
-      const { error } = await supabase.auth.signUp({
+      const firstName  = full_name.trim().split(/\s+/)[0];
+
+      const { data, error } = await supabase.auth.signUp({
         email: cleanEmail,
         password,
-        options: { data: { full_name, role } },
+        options: { data: { full_name, role }, emailRedirectTo: emailRedirectTo() },
       });
-      if (error) { setSubmitError(error.message); return; }
-      navigation.navigate('VerifyEmail', { email: cleanEmail });
+      if (error) {
+        setSubmitError(toUserMessage(error, "We couldn't create your account. Please try again."));
+        return;
+      }
+
+      // Email confirmation OFF in Supabase → signUp already returns a session.
+      // onAuthStateChange picks it up and App.js routes to ProfileSetup.
+      if (data?.session) {
+        showToast(`Account created. Welcome, ${firstName}!`);
+        return;
+      }
+
+      // No session came back. Sign in directly rather than parking the user on
+      // a "check your email" screen, so verification never gates a new account.
+      const { data: signInData, error: signInError } =
+        await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+
+      if (signInData?.session) {
+        showToast(`Account created. Welcome, ${firstName}!`);
+        return;
+      }
+
+      // Supabase is still enforcing confirmation (Auth → Providers → Email →
+      // "Confirm email"). Nothing the client can do; send them to VerifyEmail.
+      if (/confirm/i.test(signInError?.message ?? '')) {
+        navigation.navigate('VerifyEmail', { email: cleanEmail });
+        return;
+      }
+
+      setSubmitError(
+        toUserMessage(signInError, 'Account created, but sign-in failed. Try signing in.'),
+      );
     } catch (e) {
       if (__DEV__) console.error('[SignUp]', e);
-      setSubmitError(
-        e?.message?.includes('fetch')
-          ? 'Cannot reach the server. Check your internet connection.'
-          : (e?.message ?? 'Something went wrong. Please try again.'),
-      );
+      setSubmitError(toUserMessage(e, "We couldn't create your account. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -71,7 +95,6 @@ export default function SignUpScreen({ navigation }) {
     <AuthShell
       title={'Join the\nCommunity'}
       subtitle="Connect with fellow Crusaders as a tutor, a student, or both."
-      features={FEATURES}
       headerRight={
         <IconButton
           icon="chevron-back"

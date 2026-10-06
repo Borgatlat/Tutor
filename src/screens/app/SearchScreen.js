@@ -5,6 +5,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { searchTutors } from '../../lib/supabase';
+import { toUserMessage } from '../../utils/errors';
+import { shareInvite } from '../../utils/invite';
+import useToastStore from '../../store/useToastStore';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { radii, space, border, press, hit } from '../../theme/layout';
@@ -13,13 +16,14 @@ import AppTextInput from '../../components/AppTextInput';
 import TutorCard from '../../components/TutorCard';
 import SkeletonCard from '../../components/SkeletonCard';
 import {
-  Chip, EmptyState, IconButton, SubjectPicker,
+  Chip, EmptyState, ErrorBanner, IconButton, SubjectPicker,
 } from '../../components/ui';
 import { BLOCKS } from '../../constants';
 import { useResponsive } from '../../hooks/useResponsive';
 
 export default function SearchScreen({ navigation }) {
   const { profile } = useAuthStore();
+  const showToast = useToastStore((st) => st.show);
   const { isWide, columns } = useResponsive();
   const isStudent = profile?.role === 'student' || profile?.role === 'both';
 
@@ -30,11 +34,15 @@ export default function SearchScreen({ navigation }) {
   const [results, setResults]             = useState([]);
   const [loading, setLoading]             = useState(true);
   const [showFilters, setShowFilters]     = useState(false);
+  // Without this a failed RPC rendered the same "no tutors" empty state as a
+  // genuinely empty app, so a network blip looked like "nobody signed up yet".
+  const [searchError, setSearchError]     = useState('');
 
   const debounceRef = React.useRef(null);
 
   const runSearch = useCallback(async (q, s, b, match) => {
     setLoading(true);
+    setSearchError('');
     try {
       const data = await searchTutors({
         query: q, subject: s, period: b,
@@ -44,6 +52,8 @@ export default function SearchScreen({ navigation }) {
       setResults(data);
     } catch (e) {
       if (__DEV__) console.warn('[SearchScreen]', e.message);
+      setSearchError(toUserMessage(e, "We couldn't load tutors just now."));
+      setResults([]);
     } finally {
       setLoading(false);
     }
@@ -59,8 +69,30 @@ export default function SearchScreen({ navigation }) {
     debounceRef.current = setTimeout(() => runSearch(text, subject, block, matchSchedule), 300);
   };
 
-  const clearFilters = () => { setSubject(null); setBlock(null); setMatchSchedule(false); };
+  const clearFilters = () => {
+    setSubject(null); setBlock(null); setMatchSchedule(false);
+    // The typed query is a filter too; leaving it behind made "Clear filters"
+    // look broken when it was the query doing the filtering.
+    setQuery('');
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    runSearch('', null, null, false);
+  };
   const hasFilters = !!subject || block != null || matchSchedule;
+  // Narrowed by anything at all - the CTA used to ignore the query.
+  const isNarrowed = hasFilters || !!query;
+
+  const goBecomeTutor = () => navigation.navigate('Profile');
+
+  const handleInvite = async () => {
+    const { ok, method } = await shareInvite();
+    // The share sheet is its own confirmation; a silent clipboard write is not.
+    if (method === 'copied') {
+      showToast(
+        ok ? 'Invite link copied. Send it to a friend!' : "We couldn't copy the link.",
+        ok ? 'success' : 'error',
+      );
+    }
+  };
 
   // ── Filter panel ────────────────────────────────────────────────────────────
   const filters = (containerStyle) => (
@@ -113,6 +145,8 @@ export default function SearchScreen({ navigation }) {
   ) : null;
 
   const results_ = (
+    <>
+    <ErrorBanner message={searchError} style={styles.searchError} />
     <FlatList
       key={columns}
       data={loading ? [1, 2, 3, 4] : results}
@@ -122,19 +156,27 @@ export default function SearchScreen({ navigation }) {
       contentContainerStyle={styles.list}
       showsVerticalScrollIndicator={false}
       ListEmptyComponent={
-        !loading ? (
+        loading ? null : isNarrowed ? (
           <EmptyState
             icon="search-outline"
-            title="No tutors found"
-            body={
-              hasFilters || query
-                ? 'Try adjusting your search or clearing some filters.'
-                : 'No Crusaders have listed subjects yet. Check back soon.'
-            }
-            actionLabel={hasFilters ? 'Clear filters' : undefined}
-            onAction={hasFilters ? clearFilters : undefined}
+            title="No tutors match that"
+            body="Try a different subject or block, or clear what you've set."
+            actionLabel="Clear search"
+            onAction={clearFilters}
           />
-        ) : null
+        ) : (
+          /* Nothing typed, nothing filtered, still nothing here: the app is
+             genuinely empty. Recruit rather than dead-end. */
+          <EmptyState
+            icon="people-outline"
+            title="No tutors yet"
+            body="Nobody has signed up to tutor yet. Be the first, or bring a friend who'd be good at it."
+            actionLabel="Become a tutor"
+            onAction={goBecomeTutor}
+            secondaryActionLabel="Invite a friend to tutor"
+            onSecondaryAction={handleInvite}
+          />
+        )
       }
       renderItem={({ item }) => (
         <View style={columns > 1 ? styles.gridItem : undefined}>
@@ -149,6 +191,7 @@ export default function SearchScreen({ navigation }) {
         </View>
       )}
     />
+    </>
   );
 
   const metaLine = !loading ? (
@@ -318,6 +361,8 @@ const styles = StyleSheet.create({
     fontSize: 13, color: colors.accent,
     fontWeight: '600', textDecorationLine: 'underline',
   },
+
+  searchError: { marginHorizontal: space.xl, marginTop: space.md },
 
   metaText: {
     fontSize: 13, color: colors.gray500,

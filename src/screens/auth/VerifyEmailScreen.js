@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
+import { toUserMessage } from '../../utils/errors';
 import colors from '../../theme/colors';
 import { radii, space, border } from '../../theme/layout';
 import { heading } from '../../theme/fonts';
@@ -24,10 +25,10 @@ export default function VerifyEmailScreen({ route }) {
     setResendError('');
     try {
       const { error } = await supabase.auth.resend({ type: 'signup', email });
-      if (error) { setResendError(error.message); return; }
+      if (error) { setResendError(toUserMessage(error, "We couldn't resend the email. Try again shortly.")); return; }
       setResent(true);
     } catch (e) {
-      setResendError(e?.message ?? 'Could not resend. Try again.');
+      setResendError(toUserMessage(e, "We couldn't resend the email. Try again shortly."));
     } finally {
       setResending(false);
     }

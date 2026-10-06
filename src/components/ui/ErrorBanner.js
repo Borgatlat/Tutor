@@ -1,5 +1,5 @@
 /**
- * ErrorBanner — the one submit-error treatment.
+ * ErrorBanner - the one submit-error treatment.
  *
  * Always render this at the TOP of a form, above the fields. Placing it next
  * to the submit button puts it off-screen on a long form, so the user never

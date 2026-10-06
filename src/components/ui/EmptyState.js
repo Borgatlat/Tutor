@@ -1,5 +1,5 @@
 /**
- * EmptyState — icon + title + optional body and action.
+ * EmptyState - icon + title + optional body and action.
  *
  * Use this anywhere a list can be empty, so "no data" always reads as a
  * deliberate state rather than a blank area that looks broken.
@@ -17,9 +17,16 @@ export default function EmptyState({
   body,
   actionLabel,
   onAction,
+  // Optional second action, for empty states that offer a real choice rather
+  // than one obvious next step (e.g. "be the first tutor" OR "invite a friend").
+  secondaryActionLabel,
+  onSecondaryAction,
   compact = false,
   style,
 }) {
+  const hasPrimary   = !!(actionLabel && onAction);
+  const hasSecondary = !!(secondaryActionLabel && onSecondaryAction);
+
   return (
     <View style={[styles.wrap, compact && styles.compact, style]}>
       <View style={[styles.iconWrap, compact && styles.iconWrapCompact]}>
@@ -29,13 +36,23 @@ export default function EmptyState({
       <Text style={[styles.title, compact && styles.titleCompact]}>{title}</Text>
       {body ? <Text style={styles.body}>{body}</Text> : null}
 
-      {actionLabel && onAction ? (
+      {hasPrimary ? (
         <Button
           label={actionLabel}
           onPress={onAction}
-          variant="secondary"
+          variant={hasSecondary ? 'primary' : 'secondary'}
           size="sm"
           style={styles.action}
+        />
+      ) : null}
+
+      {hasSecondary ? (
+        <Button
+          label={secondaryActionLabel}
+          onPress={onSecondaryAction}
+          variant="secondary"
+          size="sm"
+          style={hasPrimary ? styles.secondaryAction : styles.action}
         />
       ) : null}
     </View>
@@ -77,4 +94,6 @@ const styles = StyleSheet.create({
   },
 
   action: { marginTop: space.lg },
+  // Tighter than `action` so a pair of buttons reads as one group.
+  secondaryAction: { marginTop: space.sm },
 });

@@ -4,6 +4,8 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { supabase } from '../../lib/supabase';
+import { toUserMessage } from '../../utils/errors';
+import useToastStore from '../../store/useToastStore';
 import colors from '../../theme/colors';
 import { space, hit, press } from '../../theme/layout';
 import { heading } from '../../theme/fonts';
@@ -12,13 +14,6 @@ import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../../constants/legal'
 import {
   AuthShell, Button, Divider, ErrorBanner, Field, IconButton,
 } from '../../components/ui';
-
-const FEATURES = [
-  { icon: 'search-outline',   text: 'Find tutors by subject & free period' },
-  { icon: 'calendar-outline', text: 'Book sessions that fit your schedule' },
-  { icon: 'ribbon-outline',   text: 'Core classes, SAT & AP prep from fellow Crusaders' },
-  { icon: 'star-outline',     text: 'Ratings & reviews for every tutor' },
-];
 
 const schema = z.object({
   email: z
@@ -35,6 +30,7 @@ export default function LoginScreen({ navigation }) {
   const [loading, setLoading]         = useState(false);
   const [showPw, setShowPw]           = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const showToast                     = useToastStore((s) => s.show);
 
   const { control, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
@@ -44,18 +40,26 @@ export default function LoginScreen({ navigation }) {
     setLoading(true);
     setSubmitError('');
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: email.toLowerCase().trim(),
         password,
       });
-      if (error) setSubmitError(error.message);
+
+      if (error) {
+        // Supabase still has "Confirm email" on - say what to do about it
+        // instead of surfacing the raw "Email not confirmed".
+        setSubmitError(toUserMessage(error, "We couldn't sign you in. Please try again."));
+        return;
+      }
+
+      // Confirm the sign-in before App.js swaps this screen out from under us.
+      const first = data?.session?.user?.user_metadata?.full_name
+        ?.trim()
+        .split(/\s+/)[0];
+      showToast(first ? `Signed in. Welcome back, ${first}!` : 'Signed in. Welcome back!');
     } catch (e) {
       if (__DEV__) console.error('[Login]', e);
-      setSubmitError(
-        e?.message?.includes('fetch')
-          ? 'Cannot reach the server. Check your internet connection.'
-          : (e?.message ?? 'Something went wrong.'),
-      );
+      setSubmitError(toUserMessage(e, "We couldn't sign you in. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -65,7 +69,6 @@ export default function LoginScreen({ navigation }) {
     <AuthShell
       title={'Welcome back,\nCrusader'}
       subtitle="Peer tutoring for Strake Jesuit students, by Strake Jesuit students"
-      features={FEATURES}
     >
       <Text style={styles.cardTitle}>Sign In</Text>
 
@@ -128,12 +131,23 @@ export default function LoginScreen({ navigation }) {
         style={styles.submit}
       />
 
+      <TouchableOpacity
+        style={styles.forgotRow}
+        onPress={() => navigation.navigate('ForgotPassword')}
+        hitSlop={hit.slop}
+        activeOpacity={press.opacity}
+        accessibilityRole="link"
+        accessibilityLabel="Forgot your password?"
+      >
+        <Text style={styles.forgotLink}>Forgot your password?</Text>
+      </TouchableOpacity>
+
       <Divider label="New here?" />
 
       <Button
         label="Create an Account"
         variant="secondary"
-        onPress={() => navigation.navigate('SignUp')}
+        onPress={() => navigation.navigate('Onboarding')}
         fullWidth
       />
 
@@ -170,6 +184,12 @@ const styles = StyleSheet.create({
     marginBottom: space.xxl,
   },
   submit: { marginTop: space.sm },
+
+  forgotRow:  { alignItems: 'center', marginTop: space.lg },
+  forgotLink: {
+    fontSize: 13, color: colors.accent,
+    fontWeight: '600', textDecorationLine: 'underline',
+  },
 
   legalRow: {
     flexDirection: 'row', justifyContent: 'center',

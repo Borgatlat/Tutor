@@ -14,3 +14,4 @@ export { default as SectionHeader } from './SectionHeader';
 export { default as Sheet }         from './Sheet';
 export { default as StatusPill }    from './StatusPill';
 export { default as SubjectPicker } from './SubjectPicker';
+export { default as Toast }         from './Toast';

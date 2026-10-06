@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase, uploadAvatar } from '../../lib/supabase';
+import { toUserMessage } from '../../utils/errors';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { radii, space, border, press, hit } from '../../theme/layout';
@@ -49,7 +50,7 @@ export default function ProfileSetupScreen() {
     });
   };
 
-  // Each block is stored once per row — no day dimension
+  // Each block is stored once per row - no day dimension
   const availabilitySlots = [...selectedBlocks].map((b) => ({ period: b }));
 
   const pickImage = async () => {
@@ -105,7 +106,7 @@ export default function ProfileSetupScreen() {
       // before the user could ever see why the save failed.
       if (profileError) {
         if (__DEV__) console.warn('Profile update error:', profileError.message);
-        setSaveError(profileError.message);
+        setSaveError(toUserMessage(profileError, "We couldn't save your profile. Please try again."));
         return;
       }
 
@@ -124,7 +125,7 @@ export default function ProfileSetupScreen() {
         if (subjectsError && __DEV__) console.warn('Subjects error:', subjectsError.message);
       }
 
-      // 4. Save free blocks — stored in tutor_availability for all roles
+      // 4. Save free blocks - stored in tutor_availability for all roles
       //    (student_availability table does not exist; one table covers everyone)
       if (availabilitySlots.length > 0) {
         await supabase.from('tutor_availability').delete().eq('tutor_id', userId);
@@ -136,11 +137,11 @@ export default function ProfileSetupScreen() {
       // 5. Refresh profile in store (best effort)
       try { await refreshProfile(); } catch (e) { if (__DEV__) console.warn('refreshProfile:', e); }
 
-      // 6. Mark setup complete in DB + local state — switches App.js to AppNavigator
+      // 6. Mark setup complete in DB + local state - switches App.js to AppNavigator
       await completeSetup();
     } catch (e) {
       if (__DEV__) console.error('[ProfileSetup] handleSave:', e);
-      setSaveError(e?.message ?? 'Something went wrong. Please try again.');
+      setSaveError(toUserMessage(e, "We couldn't save your profile. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -149,7 +150,7 @@ export default function ProfileSetupScreen() {
   return (
     <AuthShell
       title="Set Up Your Profile"
-      subtitle="All fields are optional — you can update these later"
+      subtitle="All fields are optional. You can update these later"
     >
       <ErrorBanner message={saveError} />
 
@@ -201,7 +202,7 @@ export default function ProfileSetupScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>Subjects You Can Teach</Text>
         <Text style={styles.hint}>
-          Core classes, SAT and AP — select all that apply. Skip if you're only a student.
+          Core classes, SAT and AP. Select all that apply, or skip if you're only a student.
         </Text>
         <SubjectPicker
           selected={selectedSubjects}
