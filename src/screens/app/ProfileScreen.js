@@ -442,8 +442,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brand,
     alignItems: 'center',
     paddingTop: space.xl,
-    paddingBottom: space.xxl,
+    paddingBottom: space.xxxl,
     paddingHorizontal: space.xl,
+    borderBottomLeftRadius: radii.xxl,
+    borderBottomRightRadius: radii.xxl,
   },
   avatarWrap: { position: 'relative', marginBottom: space.md },
   avatarRing: {
@@ -459,7 +461,7 @@ const styles = StyleSheet.create({
     borderWidth: 2, borderColor: colors.white,
   },
   heroRule: {
-    width: rule.width, height: rule.height,
+    width: rule.width, height: rule.height, borderRadius: rule.radius,
     backgroundColor: colors.gold,
     marginTop: space.xs, marginBottom: space.md,
   },

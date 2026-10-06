@@ -224,11 +224,14 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.offWhite },
 
   // ── Hero ──────────────────────────────────────────────────────────────────
+  // Curved bottom edge so the green band flows into the page.
   hero: {
     backgroundColor: colors.brand,
     paddingHorizontal: space.xl,
     paddingTop: space.xl,
-    paddingBottom: space.xxl,
+    paddingBottom: space.xxxl,
+    borderBottomLeftRadius: radii.xxl,
+    borderBottomRightRadius: radii.xxl,
   },
   heroRow: {
     flexDirection: 'row',
@@ -260,7 +263,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 6,
     backgroundColor: colors.white,
     paddingHorizontal: space.lg, paddingVertical: space.md,
-    borderRadius: radii.sm,
+    borderRadius: radii.pill,
   },
   qBtnText: { ...label.caps, fontSize: 11, letterSpacing: 1.8, color: colors.brand },
 
@@ -300,11 +303,11 @@ const styles = StyleSheet.create({
   // Green band with the gold rule — the site's "Take the Next Steps" panel.
   promo: {
     backgroundColor: colors.brandDark,
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     padding: space.xxl,
   },
   promoRule: {
-    width: rule.width, height: rule.height,
+    width: rule.width, height: rule.height, borderRadius: rule.radius,
     backgroundColor: colors.gold,
     marginBottom: space.lg,
   },
@@ -314,8 +317,8 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     marginTop: space.lg,
     backgroundColor: colors.white,
-    borderRadius: radii.sm,
-    paddingHorizontal: space.lg,
+    borderRadius: radii.pill,
+    paddingHorizontal: space.xl,
     paddingVertical: space.md,
   },
   promoCtaText: { ...label.caps, fontSize: 11, letterSpacing: 2, color: colors.brand },

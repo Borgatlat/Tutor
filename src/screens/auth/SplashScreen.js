@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   iconWrap: {
     width: 88,
     height: 88,
-    borderRadius: radii.sm,
+    borderRadius: radii.pill,
     borderWidth: 1,
     borderColor: colors.whiteAlpha[30],
     alignItems: 'center',
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     letterSpacing: 3,
   },
   rule: {
-    width: rule.width, height: rule.height,
+    width: rule.width, height: rule.height, borderRadius: rule.radius,
     backgroundColor: colors.gold,
     marginTop: space.lg, marginBottom: space.lg,
   },

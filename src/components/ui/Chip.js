@@ -63,9 +63,9 @@ export default function Chip({
 
 const styles = StyleSheet.create({
   chip: {
-    paddingHorizontal: space.md,
+    paddingHorizontal: space.lg,
     paddingVertical: space.sm,
-    borderRadius: radii.sm,
+    borderRadius: radii.pill,
     borderWidth: border.control,
     borderColor: colors.line,
     backgroundColor: colors.white,

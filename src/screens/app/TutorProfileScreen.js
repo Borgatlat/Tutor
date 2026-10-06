@@ -281,8 +281,10 @@ const styles = StyleSheet.create({
   hero: {
     backgroundColor: colors.brand,
     alignItems: 'center',
-    paddingBottom: space.xxl,
+    paddingBottom: space.xxxl,
     paddingTop: space.xs,
+    borderBottomLeftRadius: radii.xxl,
+    borderBottomRightRadius: radii.xxl,
   },
   heroAvatarRing: {
     borderRadius: radii.pill,
@@ -291,7 +293,7 @@ const styles = StyleSheet.create({
     marginBottom: space.md,
   },
   heroRule: {
-    width: rule.width, height: rule.height,
+    width: rule.width, height: rule.height, borderRadius: rule.radius,
     backgroundColor: colors.gold,
     marginBottom: space.md,
   },
@@ -300,13 +302,15 @@ const styles = StyleSheet.create({
   heroPhone: { color: colors.whiteAlpha[65], fontSize: 13, marginBottom: space.sm },
 
   // ── Stats ─────────────────────────────────────────────────────────────────
+  // Floating card that overlaps the curved hero edge.
   statsBar: {
     backgroundColor: colors.white,
-    paddingHorizontal: space.xl,
-    paddingTop: space.xl,
-    paddingBottom: space.xl,
-    borderBottomWidth: border.hairline,
-    borderBottomColor: colors.gray200,
+    marginHorizontal: space.lg,
+    marginTop: -space.xl,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.lineSoft,
+    padding: space.xl,
   },
 
   // ── Body ──────────────────────────────────────────────────────────────────

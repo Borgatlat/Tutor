@@ -99,12 +99,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.xxxl,
   },
   iconCircle: {
-    width: 72, height: 72, borderRadius: radii.sm,
+    width: 72, height: 72, borderRadius: radii.pill,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: border.control, borderColor: colors.whiteAlpha[30],
   },
   rule: {
-    width: rule.width, height: rule.height,
+    width: rule.width, height: rule.height, borderRadius: rule.radius,
     backgroundColor: colors.gold,
     marginTop: space.xxl, marginBottom: space.lg,
   },
@@ -122,13 +122,15 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     backgroundColor: colors.white,
+    borderTopLeftRadius: radii.xxl,
+    borderTopRightRadius: radii.xxl,
     padding: space.xxxl,
   },
 
   stepList: { gap: space.lg },
   step: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   stepIconWrap: {
-    width: 40, height: 40, borderRadius: radii.sm,
+    width: 40, height: 40, borderRadius: radii.pill,
     backgroundColor: colors.brandTint,
     alignItems: 'center', justifyContent: 'center',
     flexShrink: 0,

@@ -61,10 +61,6 @@ const styles = StyleSheet.create({
   cardActive: {
     borderColor: colors.brand,
     backgroundColor: colors.brandTint,
-    // Gold marker on the chosen option, echoing the active tab.
-    borderTopWidth: border.rule,
-    borderTopColor: colors.gold,
-    paddingTop: space.lg - 2,
   },
 
   icon: {

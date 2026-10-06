@@ -254,10 +254,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.xl,
     paddingTop: space.lg,
     paddingBottom: space.xl,
+    borderBottomLeftRadius: radii.xxl,
+    borderBottomRightRadius: radii.xxl,
   },
   // Short gold rule above the screen title (school-site heading treatment).
   headerRule: {
-    width: rule.width, height: rule.height,
+    width: rule.width, height: rule.height, borderRadius: rule.radius,
     backgroundColor: colors.gold,
     marginBottom: space.md,
   },
@@ -267,21 +269,19 @@ const styles = StyleSheet.create({
   searchRow: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: space.lg, paddingVertical: space.md, gap: space.sm,
-    backgroundColor: colors.white,
-    borderBottomWidth: border.hairline, borderBottomColor: colors.gray200,
   },
   searchWrap: {
     flex: 1, flexDirection: 'row', alignItems: 'center',
     backgroundColor: colors.white,
-    borderRadius: radii.sm,
-    paddingHorizontal: space.md,
+    borderRadius: radii.pill,
+    paddingHorizontal: space.lg,
     borderWidth: border.control, borderColor: colors.line,
   },
   searchIcon:  { marginRight: space.sm },
   searchInput: { flex: 1, fontSize: 15, color: colors.black, paddingVertical: space.md },
 
   filterToggle: {
-    width: 48, height: 48, borderRadius: radii.sm,
+    width: 48, height: 48, borderRadius: radii.pill,
     backgroundColor: colors.white,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: border.control, borderColor: colors.line,
@@ -291,8 +291,6 @@ const styles = StyleSheet.create({
   matchRow: {
     flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: space.sm,
     paddingHorizontal: space.lg, paddingVertical: space.sm,
-    backgroundColor: colors.white,
-    borderBottomWidth: border.hairline, borderBottomColor: colors.gray200,
   },
   matchNote: { fontSize: 11, color: colors.gray500, flex: 1 },
 
@@ -312,8 +310,10 @@ const styles = StyleSheet.create({
 
   mobileFilterPanel: {
     backgroundColor: colors.white,
-    paddingHorizontal: space.lg, paddingVertical: space.lg,
-    borderBottomWidth: border.hairline, borderBottomColor: colors.gray200,
+    marginHorizontal: space.lg, marginBottom: space.sm,
+    padding: space.lg,
+    borderRadius: radii.lg,
+    borderWidth: 1, borderColor: colors.lineSoft,
   },
 
   filterLabel: {

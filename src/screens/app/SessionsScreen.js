@@ -337,27 +337,31 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.xl,
     paddingTop: space.lg,
     paddingBottom: space.xl,
+    borderBottomLeftRadius: radii.xxl,
+    borderBottomRightRadius: radii.xxl,
   },
   // Short gold rule above the screen title (school-site heading treatment).
   headerRule: {
-    width: rule.width, height: rule.height,
+    width: rule.width, height: rule.height, borderRadius: rule.radius,
     backgroundColor: colors.gold,
     marginBottom: space.md,
   },
   headerTitle: { ...heading.xl, color: colors.white, fontSize: 28 },
 
+  // Pill segmented control on the stone background.
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: colors.white,
-    borderBottomWidth: border.hairline,
-    borderBottomColor: colors.gray200,
+    backgroundColor: colors.cream,
+    borderRadius: radii.pill,
+    padding: space.xs,
+    marginHorizontal: space.lg,
+    marginTop: space.lg,
   },
-  // Gold underline on the active tab, matching the bottom nav marker.
   tab: {
-    flex: 1, paddingVertical: space.lg, alignItems: 'center',
-    borderBottomWidth: border.rule, borderBottomColor: 'transparent',
+    flex: 1, paddingVertical: space.md, alignItems: 'center',
+    borderRadius: radii.pill,
   },
-  tabActive:     { borderBottomColor: colors.gold },
+  tabActive:     { backgroundColor: colors.white },
   tabText:       { ...label.caps, fontSize: 11, letterSpacing: 1.8, color: colors.gray500 },
   tabTextActive: { color: colors.brand, fontWeight: '700' },
 
@@ -395,9 +399,7 @@ const styles = StyleSheet.create({
     left: space.xl,
     right: space.xl,
     backgroundColor: colors.brand,
-    borderRadius: radii.sm,
-    borderLeftWidth: border.rule,
-    borderLeftColor: colors.gold,
+    borderRadius: radii.lg,
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.sm,

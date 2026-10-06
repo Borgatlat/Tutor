@@ -170,8 +170,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderTopLeftRadius: radii.xxl,
     borderTopRightRadius: radii.xxl,
-    borderTopWidth: 4,
-    borderTopColor: colors.brand,
     paddingHorizontal: space.xxl,
     paddingTop: space.md,
     maxHeight: '85%',

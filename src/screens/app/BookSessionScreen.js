@@ -201,10 +201,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brand,
     paddingHorizontal: space.xl,
     paddingBottom: space.xxl,
+    borderBottomLeftRadius: radii.xxl,
+    borderBottomRightRadius: radii.xxl,
   },
   // Short gold rule above the screen title (school-site heading treatment).
   headerRule: {
-    width: rule.width, height: rule.height,
+    width: rule.width, height: rule.height, borderRadius: rule.radius,
     backgroundColor: colors.gold,
     marginBottom: space.md,
   },
@@ -213,8 +215,12 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     backgroundColor: colors.white,
+    margin: space.lg,
+    borderRadius: radii.xl,
+    borderWidth: 1,
+    borderColor: colors.lineSoft,
     padding: space.xxl,
-    paddingBottom: space.huge,
+    paddingBottom: space.xxxl,
   },
 
   tutorRow:   { flexDirection: 'row', alignItems: 'center', gap: space.md, marginBottom: space.lg },
@@ -225,8 +231,7 @@ const styles = StyleSheet.create({
   slotBanner: {
     flexDirection: 'row', alignItems: 'center', gap: space.sm,
     backgroundColor: colors.brandTint,
-    borderRadius: radii.sm, padding: space.md, marginBottom: space.xl,
-    borderLeftWidth: border.rule, borderLeftColor: colors.gold,
+    borderRadius: radii.lg, padding: space.lg, marginBottom: space.xl,
   },
   slotText: { fontSize: 16, fontWeight: '800', color: colors.brand },
 
@@ -268,8 +273,6 @@ const styles = StyleSheet.create({
   confirmCard: {
     backgroundColor: colors.offWhite,
     borderRadius: radii.lg,
-    borderTopWidth: border.rule,
-    borderTopColor: colors.gold,
     padding: space.lg,
     width: '100%',
     gap: space.sm,

@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../theme/colors';
-import { space } from '../theme/layout';
+import { space, radii } from '../theme/layout';
 import { heading, label } from '../theme/fonts';
 import Card from './ui/Card';
 import Avatar from './ui/Avatar';
@@ -132,12 +132,16 @@ const styles = StyleSheet.create({
 
   details: {
     flexDirection: 'row',
-    borderTopWidth: 1, borderBottomWidth: 1,
-    borderColor: colors.lineSoft,
+    gap: space.sm,
     marginBottom: space.md,
   },
-  detailCell:      { flex: 1, paddingVertical: space.md, gap: space.xs, alignItems: 'flex-start' },
-  detailCellRight: { borderLeftWidth: 1, borderLeftColor: colors.lineSoft, paddingLeft: space.md },
+  detailCell: {
+    flex: 1, gap: space.xs, alignItems: 'flex-start',
+    backgroundColor: colors.offWhite,
+    borderRadius: radii.sm,
+    padding: space.md,
+  },
+  detailCellRight: {},
   detailLabel:     { ...label.caps, fontWeight: '500', fontSize: 9, letterSpacing: 1.6, color: colors.gray500 },
   detailItem:      { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   detailValue:     { ...heading.lg, fontSize: 18, color: colors.brand },

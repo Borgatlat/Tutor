@@ -84,7 +84,7 @@ export default function Button({
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: radii.sm,
+    borderRadius: radii.pill,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',

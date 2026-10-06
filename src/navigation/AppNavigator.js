@@ -97,6 +97,7 @@ function DesktopSidebar({ state, navigation }) {
             <Text style={[styles.navLabel, isFocused && styles.navLabelActive]}>
               {meta.label}
             </Text>
+            {isFocused ? <View style={styles.navDot} /> : null}
           </TouchableOpacity>
         );
       })}
@@ -105,8 +106,8 @@ function DesktopSidebar({ state, navigation }) {
 }
 
 // ─── Mobile tab bar ───────────────────────────────────────────────────────────
-// White bar with tracked-caps labels; the active tab gets a gold marker along
-// its top edge, like the active item on the school site's nav.
+// White bar with tracked-caps labels; the active tab gets a short rounded gold
+// marker and a soft green pill behind its icon.
 function MobileTabBar({ state, navigation }) {
   const insets = useSafeAreaInsets();
 
@@ -126,18 +127,21 @@ function MobileTabBar({ state, navigation }) {
         return (
           <TouchableOpacity
             key={route.key}
-            style={[styles.tabItem, isFocused && styles.tabItemActive]}
+            style={styles.tabItem}
             onPress={onPress}
             activeOpacity={press.opacity}
             accessibilityRole="tab"
             accessibilityLabel={meta.label}
             accessibilityState={{ selected: isFocused }}
           >
-            <NavIcon
-              name={isFocused ? meta.iconOn : meta.iconOff}
-              size={22}
-              color={tint}
-            />
+            <View style={[styles.tabMarker, isFocused && styles.tabMarkerActive]} />
+            <View style={[styles.tabIconWrap, isFocused && styles.tabIconWrapActive]}>
+              <NavIcon
+                name={isFocused ? meta.iconOn : meta.iconOff}
+                size={22}
+                color={tint}
+              />
+            </View>
             <Text style={[styles.tabLabel, { color: tint }, isFocused && styles.tabLabelActive]}>
               {meta.label}
             </Text>
@@ -205,7 +209,7 @@ const styles = StyleSheet.create({
     paddingBottom: space.xxl,
   },
   brandIconWrap: {
-    width: 40, height: 40, borderRadius: radii.sm,
+    width: 40, height: 40, borderRadius: radii.pill,
     borderWidth: 1, borderColor: colors.whiteAlpha[30],
     alignItems: 'center', justifyContent: 'center',
   },
@@ -230,15 +234,17 @@ const styles = StyleSheet.create({
     gap: space.md,
     paddingHorizontal: space.md,
     paddingVertical: space.md,
-    borderRadius: radii.sm,
-    borderLeftWidth: border.rule,
-    borderLeftColor: 'transparent',
+    borderRadius: radii.pill,
     marginBottom: space.xs,
   },
-  // Gold marker on the left edge of the current section.
+  // Soft pill for the current section, with a gold dot at its end.
   navItemActive: {
     backgroundColor: colors.whiteAlpha[12],
-    borderLeftColor: colors.gold,
+  },
+  navDot: {
+    width: 6, height: 6, borderRadius: 3,
+    backgroundColor: colors.gold,
+    marginLeft: 'auto',
   },
   navLabel: {
     fontSize: 12, fontWeight: '600', letterSpacing: 1.6, textTransform: 'uppercase',
@@ -258,12 +264,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 3,
-    paddingTop: space.sm,
-    minHeight: 56,
-    borderTopWidth: border.rule,
-    borderTopColor: 'transparent',
+    minHeight: 60,
   },
-  tabItemActive: { borderTopColor: colors.gold },
+  tabMarker: {
+    width: 28, height: 4, borderRadius: 2,
+    backgroundColor: 'transparent',
+    marginBottom: space.xs,
+  },
+  tabMarkerActive: { backgroundColor: colors.gold },
+  tabIconWrap: {
+    paddingHorizontal: space.lg, paddingVertical: 3,
+    borderRadius: radii.pill,
+  },
+  tabIconWrapActive: { backgroundColor: colors.brandTint },
   tabLabel: {
     fontSize: 10, fontWeight: '600', letterSpacing: 1.4, textTransform: 'uppercase',
   },

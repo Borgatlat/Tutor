@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
   },
   titleWrap: { flexShrink: 1 },
   rule: {
-    width: rule.width, height: rule.height,
+    width: rule.width, height: rule.height, borderRadius: rule.radius,
     backgroundColor: colors.gold,
     marginBottom: space.sm,
   },

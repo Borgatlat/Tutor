@@ -14,16 +14,16 @@ export const space = {
   huge: 40,
 };
 
-// Crisp, institutional corners — matched to the school website's square
-// buttons and lightly-rounded cards.
+// Soft, rounded corners. Buttons, chips and tags are full pills; cards and
+// panels are generously rounded so nothing reads as a hard rectangle.
 export const radii = {
-  xs:   3,    // status / date tags
-  sm:   4,    // buttons, inputs, chips
-  md:   4,    // small buttons, inline controls
-  lg:   6,    // cards, list panels
-  xl:   8,    // modals, large panels
-  xxl:  10,   // bottom sheets
-  pill: 999,  // avatars and round dots only
+  xs:   999,  // status / date tags (pill)
+  sm:   14,   // inputs, icon buttons, small tiles
+  md:   14,   // inline controls
+  lg:   20,   // cards, list panels
+  xl:   24,   // modals, large panels
+  xxl:  28,   // bottom sheets, curved header edges
+  pill: 999,  // buttons, chips, avatars
 };
 
 export const border = {
@@ -34,8 +34,8 @@ export const border = {
 };
 
 // The short gold rule that sits above section titles (like the site's
-// "Take the Next Steps" heading).
-export const rule = { width: 48, height: 3 };
+// "Take the Next Steps" heading). Rounded ends keep it soft.
+export const rule = { width: 48, height: 4, radius: 2 };
 
 // One press feedback value for every touchable in the app.
 export const press = { opacity: 0.8 };

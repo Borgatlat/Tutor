@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   // ── Brand ─────────────────────────────────────────────────────────────────
   lockup: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   badge: {
-    width: 48, height: 48, borderRadius: radii.sm,
+    width: 48, height: 48, borderRadius: radii.pill,
     borderWidth: 1, borderColor: colors.whiteAlpha[30],
     alignItems: 'center', justifyContent: 'center',
   },
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
 
   // Short gold rule above the title, like the school site's section headings.
   rule: {
-    width: rule.width + 8, height: rule.height,
+    width: rule.width + 8, height: rule.height, borderRadius: rule.radius,
     backgroundColor: colors.gold,
     marginTop: space.huge, marginBottom: space.lg,
   },
@@ -173,6 +173,8 @@ const styles = StyleSheet.create({
   sheet: {
     flexGrow: 1,
     backgroundColor: colors.white,
+    borderTopLeftRadius: radii.xxl,
+    borderTopRightRadius: radii.xxl,
     padding: space.xxl,
     paddingBottom: space.huge,
   },
@@ -202,8 +204,6 @@ const styles = StyleSheet.create({
     maxWidth: 480,
     backgroundColor: colors.white,
     borderRadius: radii.xl,
-    borderTopWidth: 4,
-    borderTopColor: colors.brand,
     padding: space.xxxl,
     ...panelShadow,
   },
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   featureList: { gap: space.lg, marginTop: space.huge },
   featureRow:  { flexDirection: 'row', alignItems: 'center', gap: space.md },
   featureIcon: {
-    width: 36, height: 36, borderRadius: radii.sm,
+    width: 36, height: 36, borderRadius: radii.pill,
     borderWidth: 1, borderColor: colors.whiteAlpha[30],
     alignItems: 'center', justifyContent: 'center',
   },
