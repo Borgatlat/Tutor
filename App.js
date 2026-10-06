@@ -12,12 +12,14 @@ import AuthNavigator      from './src/navigation/AuthNavigator';
 import AppNavigator       from './src/navigation/AppNavigator';
 import SplashScreen       from './src/screens/auth/SplashScreen';
 import ProfileSetupScreen from './src/screens/auth/ProfileSetupScreen';
+import ResetPasswordScreen from './src/screens/auth/ResetPasswordScreen';
+import { Toast }          from './src/components/ui';
 
 // ─── Resolve the real Ionicons TTF URL ────────────────────────────────────────
 //
 // Problem: Ionicons.font.ionicons is an asset-registry NUMBER (e.g. 4), not a URL.
 // expo-asset's Asset.fromModule(number).uri returns '' in production web builds
-// because selectAssetSource() has no dev-server URL and no Expo Go context —
+// because selectAssetSource() has no dev-server URL and no Expo Go context -
 // it falls through every condition and returns { uri: '' }.
 // expo-font then creates:  @font-face { src: url() }
 // The browser fetches the page itself as a font, fails, uses a system fallback
@@ -50,7 +52,7 @@ try {
 if (Platform.OS === 'web' && typeof document !== 'undefined') {
 
   if (_ioniconsUrl) {
-    // 1. <link rel="preload"> — kicks off the 443 KB font download immediately,
+    // 1. <link rel="preload"> - kicks off the 443 KB font download immediately,
     //    before any CSS is evaluated, so the font is usually cached by the time
     //    the @font-face rule is applied.
     const preload = document.createElement('link');
@@ -79,6 +81,42 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
     ));
   }
 
+  // 2b. Body font.
+  //
+  // react-native-web gives every <Text> its own font-family from one base class
+  // (.css-*), so nothing inherits and a plain stylesheet rule either loses to
+  // that class or, if appended to <head>, also clobbers the serif headings,
+  // which win through an extra atomic .r-* class in the same sheet.
+  //
+  // Equal specificity means document order decides, so insert our rule INTO
+  // react-native-web's own stylesheet immediately after the base rule:
+  //   base  <  ours  <  atomic (explicit fontFamily)
+  // Body text picks up IBM Plex Sans; anything that names its own font, such as
+  // the Source Serif 4 headings, still wins.
+  try {
+    const BODY_STACK =
+      '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+
+    outer: for (const sheet of document.styleSheets) {
+      let rules;
+      try { rules = sheet.cssRules; } catch (_) { continue; }   // cross-origin
+      for (let i = 0; i < rules.length; i++) {
+        const r = rules[i];
+        if (
+          r.style &&
+          r.style.fontFamily &&
+          /apple-system/.test(r.style.fontFamily) &&
+          /^\.css-/.test(r.selectorText || '')
+        ) {
+          sheet.insertRule(`${r.selectorText}{font-family:${BODY_STACK}}`, i + 1);
+          break outer;
+        }
+      }
+    }
+  } catch (_) {
+    // Cosmetic only - the system sans fallback is perfectly readable.
+  }
+
   // 3. iOS Safari keyboard fixes + layout reset
   const kbStyle = document.createElement('style');
   kbStyle.id = 'rn-web-ios-keyboard-fix';
@@ -103,6 +141,32 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
       position: relative;
       z-index: 1;
     }
+
+    /* Escape hatch from the overflow lock above.
+     *
+     * The lock exists only for the iOS Safari keyboard bug, but it applies to
+     * every platform, which forces every screen to scroll through a nested
+     * ScrollView instead of the document. On a long form (the onboarding
+     * subject picker) that nested scroller does not respond to a mouse wheel,
+     * so the content below the fold is unreachable on desktop.
+     *
+     * AuthShell adds .page-scroll to <html> while an auth screen is mounted on
+     * a non-iOS browser, handing scrolling back to the document, which always
+     * responds to wheel, trackpad and keyboard. App screens keep the lock, so
+     * the bottom tab bar stays pinned.
+     */
+    html.page-scroll,
+    html.page-scroll body,
+    html.page-scroll #root {
+      /* vh, not %: a percentage min-height resolves against the parent's own
+       * height, and html is height:auto here, so 100% collapses to 0 and the
+       * body ends up 0px tall with the content spilling out of it. */
+      height: auto !important;
+      min-height: 100vh !important;
+      /* visible, not auto: let the viewport scroller do the work rather than
+       * creating a second scroll container on body. */
+      overflow: visible !important;
+    }
   `;
   const expoReset = document.getElementById('expo-reset');
   if (expoReset && expoReset.nextSibling) {
@@ -115,7 +179,7 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 function App() {
-  const { session, setupComplete, loading, init } = useAuthStore();
+  const { session, setupComplete, loading, init, onboarding, recovery } = useAuthStore();
 
   // On web, pass the resolved string URL instead of Ionicons.font (which contains
   // a raw asset-registry number).  Passing the string bypasses the broken
@@ -140,13 +204,24 @@ function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar style="light" />
       <NavigationContainer>
-        {!session
+        {/* `recovery` wins over everything: a reset link produces a real
+            session, so without this the user would be dropped into the app
+            without ever choosing a new password. */}
+        {recovery
+          ? <ResetPasswordScreen />
+          /* `onboarding` keeps the wizard mounted after signUp creates a session,
+             so it can finish writing subjects/availability before we switch. */
+          : !session || onboarding
           ? <AuthNavigator />
           : !setupComplete
             ? <ProfileSetupScreen />
             : <AppNavigator />
         }
       </NavigationContainer>
+
+      {/* Outside NavigationContainer: survives the auth → app navigator swap,
+          so the "signed in" confirmation is still on screen after the switch. */}
+      <Toast />
     </GestureHandlerRootView>
   );
 }

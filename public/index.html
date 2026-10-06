@@ -1,14 +1,3 @@
-<!--
-  ============================================================================
-  DEAD FILE - NOT USED BY THE BUILD.
-
-  Expo's Metro web bundler reads its HTML template from public/index.html.
-  Anything edited here is silently ignored and you get Expo's default page.
-  Edit public/index.html instead.
-
-  Kept only so the history of this file is not lost; safe to delete.
-  ============================================================================
--->
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -16,8 +5,7 @@
     <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
     <!--
       touch-action: manipulation stops the 300ms click delay on iOS Safari.
-      initial-scale=1 keeps the viewport correct; maximum-scale=5 still allows
-      pinch-zoom for accessibility but does NOT disable the keyboard.
+      initial-scale=1 keeps the viewport correct; pinch-zoom stays available.
     -->
     <meta
       name="viewport"
@@ -28,11 +16,14 @@
     <meta name="description" content="Peer-to-peer SAT & AP tutoring for Strake Jesuit students" />
 
     <!--
-      Real typefaces, not system fallbacks. Source Serif 4 for headings keeps the
-      academic tone the app already had with Georgia but at a far higher quality;
-      IBM Plex Sans for body text is deliberately NOT Inter, which has become the
-      default of every generated interface.
-      display=swap so text paints immediately in the fallback and reflows.
+      NOTE: this file must live at public/index.html, not web/index.html.
+      Expo's Metro web bundler reads its HTML template from public/; a template
+      in web/ is silently ignored and you get Expo's default page instead,
+      which is how these font links went missing the first time.
+
+      Source Serif 4 for headings; IBM Plex Sans for body, chosen over Inter,
+      which reads as the default of every generated interface.
+      display=swap paints fallback text immediately, then swaps.
     -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -41,7 +32,7 @@
       rel="stylesheet"
     />
 
-    <!-- React Native Web recommended style reset -->
+    <!-- react-native-web recommended reset -->
     <style id="expo-reset">
       html, body { height: 100%; }
       body { overflow: hidden; }
@@ -49,11 +40,9 @@
     </style>
 
     <!--
-      iOS Safari keyboard fix:
-      React Native Web sets user-select:none on View containers which
-      prevents mobile Safari from showing the keyboard when inputs are tapped.
-      We force text inputs back to selectable, add manipulation touch-action
-      so taps register instantly, and remove the blue tap highlight.
+      iOS Safari keyboard fix: react-native-web sets user-select:none on View
+      containers, which stops mobile Safari showing the keyboard when an input
+      is tapped. Force text inputs back to selectable and kill the tap delay.
     -->
     <style id="ios-input-fix">
       input,
@@ -63,17 +52,13 @@
         user-select: text !important;
         touch-action: manipulation;
         -webkit-tap-highlight-color: transparent;
-        /* Prevent iOS Safari from zooming on focus (font-size < 16px trigger) */
+        /* under 16px makes iOS Safari zoom on focus */
         font-size: max(16px, 1em);
       }
 
-      /* Keep the placeholder readable at the forced 16px */
       input::placeholder,
-      textarea::placeholder {
-        font-size: inherit;
-      }
+      textarea::placeholder { font-size: inherit; }
 
-      /* Remove iOS default inner shadow on inputs */
       input[type="text"],
       input[type="email"],
       input[type="password"],

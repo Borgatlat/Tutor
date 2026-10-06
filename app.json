@@ -68,7 +68,7 @@
       ]
     ],
     "web": {
-      "favicon": "./assets/icon.png",
+      "favicon": "./assets/favicon.png",
       "name": "Strake Jesuit Tutors",
       "shortName": "SJ Tutors",
       "description": "Peer-to-peer SAT & AP tutoring for Strake Jesuit students",

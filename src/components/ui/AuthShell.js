@@ -1,40 +1,56 @@
 /**
- * AuthShell — the layout wrapper for every pre-app screen.
+ * AuthShell - the layout wrapper for every pre-app screen.
  *
- * Desktop (≥768): two columns — brand panel left, form card right.
+ * Desktop (≥768): two columns - brand panel left, form card right.
  * Mobile: brand hero on top, form in a rounded sheet below.
  *
  * On web the KeyboardAvoidingView is deliberately skipped: it collapses the
  * container on iPhone Safari and blocks input taps, and the browser already
  * handles keyboard avoidance natively.
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView,
   KeyboardAvoidingView, Platform, ScrollView,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import colors from '../../theme/colors';
 import { radii, space } from '../../theme/layout';
 import { panelShadow } from '../../theme/shadows';
 import { heading } from '../../theme/fonts';
 import { useResponsive } from '../../hooks/useResponsive';
+import Wordmark from './Wordmark';
+import BlockAvailabilityStrip from '../BlockAvailabilityStrip';
+
+// The overflow lock in App.js is only needed for the iOS Safari keyboard bug.
+// Everywhere else it breaks wheel scrolling on long forms, so auth screens opt
+// out and let the document scroll instead. iPadOS reports as MacIntel, hence
+// the maxTouchPoints check.
+const IS_WEB = Platform.OS === 'web';
+const IS_IOS_WEB = IS_WEB && typeof navigator !== 'undefined' && (
+  /iP(hone|ad|od)/.test(navigator.userAgent) ||
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+);
+const USE_PAGE_SCROLL = IS_WEB && !IS_IOS_WEB;
 
 export default function AuthShell({
   title,
   subtitle,
-  features,
   headerRight,
   children,
 }) {
   const { isWide } = useResponsive();
 
+  // Hand scrolling back to the document while this screen is mounted.
+  useEffect(() => {
+    if (!USE_PAGE_SCROLL) return undefined;
+    const html = document.documentElement;
+    html.classList.add('page-scroll');
+    return () => html.classList.remove('page-scroll');
+  }, []);
+
   const brand = (compact) => (
     <>
-      <View style={[styles.badge, compact && styles.badgeCompact]}>
-        <Ionicons name="school" size={compact ? 30 : 36} color={colors.white} />
-      </View>
-      <Text style={styles.school}>STRAKE JESUIT</Text>
+      <Wordmark compact={compact} style={styles.mark} />
       <Text style={[styles.title, compact && styles.titleCompact]}>{title}</Text>
       {subtitle ? (
         <Text style={[styles.subtitle, compact && styles.subtitleCompact]}>{subtitle}</Text>
@@ -49,18 +65,8 @@ export default function AuthShell({
         <View style={styles.wideLeft}>
           {brand(false)}
 
-          {features?.length ? (
-            <View style={styles.featureList}>
-              {features.map((f) => (
-                <View key={f.text} style={styles.featureRow}>
-                  <View style={styles.featureIcon}>
-                    <Ionicons name={f.icon} size={16} color={colors.white} />
-                  </View>
-                  <Text style={styles.featureText}>{f.text}</Text>
-                </View>
-              ))}
-            </View>
-          ) : null}
+          {/* Real, school-specific data instead of generic feature bullets. */}
+          <BlockAvailabilityStrip />
         </View>
 
         <ScrollView
@@ -78,6 +84,7 @@ export default function AuthShell({
   // ── Mobile: hero + sheet ────────────────────────────────────────────────────
   const inner = (
     <ScrollView
+      style={styles.fill}
       contentContainerStyle={styles.scroll}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
@@ -109,25 +116,20 @@ export default function AuthShell({
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
-  safe: { flex: 1, backgroundColor: colors.brand },
+  safe: {
+    flex: 1,
+    backgroundColor: colors.brand,
+    // Clamp only when the inner ScrollView must scroll (iOS). When the page
+    // scrolls, the root has to grow past the viewport or nothing overflows.
+    ...(USE_PAGE_SCROLL ? { minHeight: '100vh' } : {}),
+    ...(IS_IOS_WEB ? { maxHeight: '100vh' } : {}),
+  },
   // flexGrow lets content fill the viewport minimum while still overflowing
   // enough for the ScrollView to actually scroll.
   scroll: { flexGrow: 1, paddingBottom: space.xxxl },
 
   // ── Brand ─────────────────────────────────────────────────────────────────
-  badge: {
-    width: 64, height: 64, borderRadius: radii.pill,
-    backgroundColor: colors.accent,
-    alignItems: 'center', justifyContent: 'center',
-    marginBottom: space.lg,
-  },
-  badgeCompact: { width: 56, height: 56, marginBottom: space.md },
-
-  school: {
-    color: colors.whiteAlpha[80],
-    fontSize: 11, fontWeight: '700',
-    letterSpacing: 2.5, marginBottom: space.sm,
-  },
+  mark: { marginBottom: space.xl },
   title: {
     ...heading.xl,
     color: colors.white,
@@ -167,10 +169,18 @@ const styles = StyleSheet.create({
   wideRoot: {
     flex: 1,
     flexDirection: 'row',
-    ...Platform.select({ web: { minHeight: '100vh' }, default: {} }),
+    // maxHeight, not minHeight/height. With minHeight the row grows to fit tall
+    // content (an expanded SubjectPicker), so the ScrollView grows with it and
+    // never overflows -> nothing scrolls, and the page can't scroll either
+    // because App.js pins body to overflow:hidden for the iOS keyboard fix.
+    // Plain `height` doesn't help: `flex: 1` compiles to flex-basis:0%, which
+    // wins over height on the main axis. max-height always clamps.
+    ...(USE_PAGE_SCROLL ? { minHeight: '100vh' } : {}),
+    ...(IS_IOS_WEB ? { height: '100vh', maxHeight: '100vh' } : {}),
   },
   wideLeft: {
     flex: 1,
+    overflow: 'hidden',
     backgroundColor: colors.brand,
     paddingHorizontal: 56,
     paddingVertical: 64,
@@ -192,12 +202,4 @@ const styles = StyleSheet.create({
     ...panelShadow,
   },
 
-  featureList: { gap: space.lg, marginTop: space.huge },
-  featureRow:  { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  featureIcon: {
-    width: 36, height: 36, borderRadius: radii.md,
-    backgroundColor: colors.whiteAlpha[18],
-    alignItems: 'center', justifyContent: 'center',
-  },
-  featureText: { color: colors.whiteAlpha[80], fontSize: 14, flex: 1 },
 });

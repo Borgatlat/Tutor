@@ -1,17 +1,19 @@
 import { Platform } from 'react-native';
 
-// Heading font — Georgia (system serif on iOS/web, fallback on Android)
+// Heading font. Web loads Source Serif 4 (see the <link> in web/index.html);
+// native keeps the system serif until the TTFs are bundled via expo-font.
 const serif = Platform.select({
   ios:     'Georgia',
   android: 'serif',
-  web:     'Georgia, "Times New Roman", serif',
+  web:     '"Source Serif 4", Georgia, "Times New Roman", serif',
 });
 
-// Body font — system sans-serif
+// Body font. IBM Plex Sans on web - chosen over Inter, which reads as the
+// default of every generated interface.
 const sans = Platform.select({
   ios:     'System',
   android: 'sans-serif',
-  web:     '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  web:     '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
 });
 
 export const fonts = { serif, sans };
