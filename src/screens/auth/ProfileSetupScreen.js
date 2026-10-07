@@ -229,7 +229,7 @@ export default function ProfileSetupScreen() {
 
         {selectedBlocks.size > 0 ? (
           <View style={styles.availCount}>
-            <Ionicons name="checkmark-circle" size={14} color={colors.accent} />
+            <Ionicons name="checkmark-circle" size={14} color={colors.brand} />
             <Text style={styles.availCountText}>
               {selectedBlocks.size} block{selectedBlocks.size === 1 ? '' : 's'} selected
             </Text>
@@ -266,21 +266,29 @@ const styles = StyleSheet.create({
   avatarImage:   { width: 100, height: 100, borderRadius: radii.pill },
   avatarPlaceholder: {
     width: 100, height: 100, borderRadius: radii.pill,
-    backgroundColor: colors.gray100,
-    borderWidth: border.control, borderColor: colors.gray200,
+    backgroundColor: colors.offWhite,
+    borderWidth: border.control, borderColor: colors.line,
     alignItems: 'center', justifyContent: 'center',
   },
   avatarEditBadge: {
     position: 'absolute', bottom: 0, right: 0,
     width: 32, height: 32, borderRadius: radii.pill,
-    backgroundColor: colors.accent,
+    backgroundColor: colors.brand,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: border.control, borderColor: colors.white,
+    borderWidth: 2, borderColor: colors.white,
   },
   avatarHint: { fontSize: 13, color: colors.gray400 },
 
-  section:      { marginBottom: space.xxl },
-  sectionLabel: { fontSize: 13, fontWeight: '600', color: colors.gray600 },
+  section: {
+    marginBottom: space.xxl,
+    paddingTop: space.xl,
+    borderTopWidth: border.hairline,
+    borderTopColor: colors.line,
+  },
+  sectionLabel: {
+    fontSize: 11, fontWeight: '700', letterSpacing: 1.8, textTransform: 'uppercase',
+    color: colors.black,
+  },
   hint: {
     fontSize: 12, color: colors.gray500,
     marginTop: space.xs, marginBottom: space.md, lineHeight: 17,
@@ -290,7 +298,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center',
     gap: space.xs, marginTop: space.md,
   },
-  availCountText: { fontSize: 12, color: colors.accent, fontWeight: '700' },
+  availCountText: { fontSize: 12, color: colors.brand, fontWeight: '700' },
 
   save: { marginTop: space.xs },
 

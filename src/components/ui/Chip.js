@@ -1,5 +1,5 @@
 /**
- * Chip — one pill primitive for every selectable token in the app:
+ * Chip — one tag primitive for every selectable token in the app:
  * availability blocks (B1–B8), subject picker entries, report reasons.
  *
  * States:
@@ -13,6 +13,7 @@ import { Text, TouchableOpacity, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../../theme/colors';
 import { radii, space, border, press, hit } from '../../theme/layout';
+import { label as labelPreset } from '../../theme/fonts';
 
 export default function Chip({
   label,
@@ -29,8 +30,8 @@ export default function Chip({
   const textColor =
       selected   ? colors.white
     : disabled   ? colors.gray400
-    : available  ? colors.accentDark
-    : colors.gray600;
+    : available  ? colors.brand
+    : colors.gray700;
 
   return (
     <TouchableOpacity
@@ -62,21 +63,21 @@ export default function Chip({
 
 const styles = StyleSheet.create({
   chip: {
-    paddingHorizontal: space.md,
+    paddingHorizontal: space.lg,
     paddingVertical: space.sm,
     borderRadius: radii.pill,
     borderWidth: border.control,
-    borderColor: colors.gray200,
+    borderColor: colors.line,
     backgroundColor: colors.white,
     alignItems: 'center',
   },
   available: {
-    borderColor: colors.accent,
-    backgroundColor: colors.accentTint,
+    borderColor: colors.brandTint,
+    backgroundColor: colors.brandTint,
   },
   selected: {
-    borderColor: colors.accent,
-    backgroundColor: colors.accent,
+    borderColor: colors.brand,
+    backgroundColor: colors.brand,
   },
   disabled: {
     borderColor: colors.gray200,
@@ -84,5 +85,5 @@ const styles = StyleSheet.create({
   },
 
   inner: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
-  label: { fontSize: 13, fontWeight: '600' },
+  label: { ...labelPreset.caps, fontSize: 11, letterSpacing: 1.2 },
 });

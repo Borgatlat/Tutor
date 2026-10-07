@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   },
   handle: {
     width: 40, height: 4, borderRadius: radii.pill,
-    backgroundColor: colors.gray200,
+    backgroundColor: colors.line,
     alignSelf: 'center', marginBottom: space.xl,
   },
   title:    { ...heading.lg, fontSize: 20, color: colors.black, marginBottom: space.xs },

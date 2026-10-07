@@ -7,9 +7,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
-import { radii, space, border, press, hit } from '../../theme/layout';
+import { radii, space, border, press, hit, rule } from '../../theme/layout';
 import { sheetShadow } from '../../theme/shadows';
-import { heading } from '../../theme/fonts';
+import { heading, label } from '../../theme/fonts';
 import SessionCard from '../../components/SessionCard';
 import {
   Button, EmptyState, ErrorBanner, Field, Sheet,
@@ -155,6 +155,7 @@ export default function SessionsScreen({ navigation }) {
       <StatusBar barStyle="light-content" backgroundColor={colors.brand} />
 
       <View style={styles.header}>
+        <View style={styles.headerRule} />
         <Text style={styles.headerTitle}>My Sessions</Text>
       </View>
 
@@ -334,21 +335,35 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.brand,
     paddingHorizontal: space.xl,
-    paddingTop: space.sm,
-    paddingBottom: space.lg,
+    paddingTop: space.lg,
+    paddingBottom: space.xl,
+    borderBottomLeftRadius: radii.xxl,
+    borderBottomRightRadius: radii.xxl,
   },
-  headerTitle: { ...heading.lg, color: colors.white, fontSize: 26 },
+  // Short gold rule above the screen title (school-site heading treatment).
+  headerRule: {
+    width: rule.width, height: rule.height, borderRadius: rule.radius,
+    backgroundColor: colors.gold,
+    marginBottom: space.md,
+  },
+  headerTitle: { ...heading.xl, color: colors.white, fontSize: 28 },
 
+  // Pill segmented control on the stone background.
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: colors.white,
-    borderBottomWidth: border.hairline,
-    borderBottomColor: colors.gray200,
+    backgroundColor: colors.cream,
+    borderRadius: radii.pill,
+    padding: space.xs,
+    marginHorizontal: space.lg,
+    marginTop: space.lg,
   },
-  tab:       { flex: 1, paddingVertical: space.lg, alignItems: 'center' },
-  tabActive: { borderBottomWidth: 2, borderBottomColor: colors.accent },
-  tabText:       { fontSize: 14, fontWeight: '600', color: colors.gray400 },
-  tabTextActive: { color: colors.accent, fontWeight: '800' },
+  tab: {
+    flex: 1, paddingVertical: space.md, alignItems: 'center',
+    borderRadius: radii.pill,
+  },
+  tabActive:     { backgroundColor: colors.white },
+  tabText:       { ...label.caps, fontSize: 11, letterSpacing: 1.8, color: colors.gray500 },
+  tabTextActive: { color: colors.brand, fontWeight: '700' },
 
   loader: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
@@ -384,7 +399,7 @@ const styles = StyleSheet.create({
     left: space.xl,
     right: space.xl,
     backgroundColor: colors.brand,
-    borderRadius: radii.md,
+    borderRadius: radii.lg,
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.sm,

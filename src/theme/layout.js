@@ -14,19 +14,28 @@ export const space = {
   huge: 40,
 };
 
+// Soft, rounded corners. Buttons, chips and tags are full pills; cards and
+// panels are generously rounded so nothing reads as a hard rectangle.
 export const radii = {
-  sm:   8,    // small inner elements (grade pills, tiny tags)
-  md:   12,   // inputs, small buttons
-  lg:   16,   // cards, primary buttons
-  xl:   20,   // modals, large panels
-  xxl:  28,   // bottom sheets
-  pill: 999,  // chips, badges, avatars
+  xs:   999,  // status / date tags (pill)
+  sm:   14,   // inputs, icon buttons, small tiles
+  md:   14,   // inline controls
+  lg:   20,   // cards, list panels
+  xl:   24,   // modals, large panels
+  xxl:  28,   // bottom sheets, curved header edges
+  pill: 999,  // buttons, chips, avatars
 };
 
 export const border = {
   hairline: 1,     // dividers, subtle outlines
-  control:  1.5,   // inputs, chips, outlined buttons
+  control:  1,     // inputs, chips, outlined buttons
+  focus:    2,     // focused input
+  rule:     3,     // gold accent rule / active tab marker
 };
+
+// The short gold rule that sits above section titles (like the site's
+// "Take the Next Steps" heading). Rounded ends keep it soft.
+export const rule = { width: 48, height: 4, radius: 2 };
 
 // One press feedback value for every touchable in the app.
 export const press = { opacity: 0.8 };

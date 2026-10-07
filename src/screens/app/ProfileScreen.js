@@ -8,8 +8,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase, uploadAvatar } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
-import { radii, space, border, press, hit } from '../../theme/layout';
-import { heading } from '../../theme/fonts';
+import { radii, space, border, press, hit, rule } from '../../theme/layout';
+import { heading, label } from '../../theme/fonts';
 import SubjectBadge from '../../components/SubjectBadge';
 import AvailabilityGrid from '../../components/AvailabilityGrid';
 import {
@@ -210,7 +210,7 @@ export default function ProfileScreen() {
                 uri={avatarSource}
                 name={profile?.full_name}
                 size={84}
-                color={colors.accent}
+                color={colors.accentLight}
               />
             </View>
             {editing ? (
@@ -220,6 +220,7 @@ export default function ProfileScreen() {
             ) : null}
           </TouchableOpacity>
 
+          <View style={styles.heroRule} />
           <Text style={styles.heroName}>{profile?.full_name}</Text>
           <Text style={styles.heroEmail}>{profile?.email}</Text>
 
@@ -441,8 +442,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brand,
     alignItems: 'center',
     paddingTop: space.xl,
-    paddingBottom: space.xxl,
+    paddingBottom: space.xxxl,
     paddingHorizontal: space.xl,
+    borderBottomLeftRadius: radii.xxl,
+    borderBottomRightRadius: radii.xxl,
   },
   avatarWrap: { position: 'relative', marginBottom: space.md },
   avatarRing: {
@@ -453,27 +456,34 @@ const styles = StyleSheet.create({
   cameraIcon: {
     position: 'absolute', bottom: 0, right: 0,
     width: 30, height: 30, borderRadius: radii.pill,
-    backgroundColor: colors.accent,
+    backgroundColor: colors.brand,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: border.control, borderColor: colors.white,
+    borderWidth: 2, borderColor: colors.white,
   },
-  heroName:  { ...heading.lg, color: colors.white, fontSize: 22, marginBottom: 3 },
+  heroRule: {
+    width: rule.width, height: rule.height, borderRadius: rule.radius,
+    backgroundColor: colors.gold,
+    marginTop: space.xs, marginBottom: space.md,
+  },
+  heroName:  { ...heading.xl, color: colors.white, fontSize: 26, marginBottom: space.xs },
   heroEmail: { color: colors.whiteAlpha[80], fontSize: 13, marginBottom: space.sm },
 
   roleBadge: {
     paddingHorizontal: space.md,
     paddingVertical: space.xs,
-    borderRadius: radii.pill,
-    backgroundColor: colors.whiteAlpha[18],
+    borderRadius: radii.xs,
+    backgroundColor: colors.maroon,
   },
-  roleBadgeText: { fontSize: 13, fontWeight: '700', color: colors.white },
+  roleBadgeText: { ...label.caps, fontSize: 10, letterSpacing: 1.6, color: colors.white },
 
   // ── Sections ──────────────────────────────────────────────────────────────
   body: { padding: space.lg, gap: space.md },
   section: {
     backgroundColor: colors.white,
     borderRadius: radii.lg,
-    padding: space.lg,
+    borderWidth: 1,
+    borderColor: colors.lineSoft,
+    padding: space.xl,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -481,13 +491,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: space.md,
   },
-  sectionTitle:  { ...heading.md, fontSize: 16, color: colors.black },
+  sectionTitle:  { ...heading.lg, fontSize: 18, color: colors.black, marginBottom: space.xs },
   sectionAction: { marginTop: space.lg },
-  editLink:      { fontSize: 14, color: colors.accent, fontWeight: '600' },
+  editLink:      { ...label.caps, fontSize: 11, letterSpacing: 1.6, color: colors.brand },
 
   fieldLabel: {
-    fontSize: 13, fontWeight: '600',
-    color: colors.gray600, marginBottom: space.xs,
+    ...label.caps, fontSize: 10, letterSpacing: 1.8,
+    color: colors.gray500, marginBottom: space.xs,
   },
   fieldLabelSpaced: { marginTop: space.md },
   fieldValue: { fontSize: 14, color: colors.gray700, lineHeight: 20 },
@@ -502,7 +512,7 @@ const styles = StyleSheet.create({
   // ── Account ───────────────────────────────────────────────────────────────
   legalRow:  { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   legalLink: {
-    fontSize: 13, color: colors.accent,
+    fontSize: 13, color: colors.brand,
     fontWeight: '600', textDecorationLine: 'underline',
   },
   legalSep: { fontSize: 13, color: colors.gray300 },

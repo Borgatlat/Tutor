@@ -2,7 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../theme/colors';
-import { space } from '../theme/layout';
+import { space, radii } from '../theme/layout';
+import { heading, label } from '../theme/fonts';
 import Card from './ui/Card';
 import Avatar from './ui/Avatar';
 import Button from './ui/Button';
@@ -30,7 +31,7 @@ export default function SessionCard({
           uri={otherUser?.avatar_url}
           name={otherUser?.full_name}
           size={44}
-          color={isTutor ? colors.accent : colors.brand}
+          color={isTutor ? colors.accentLight : colors.brand}
           style={styles.avatar}
         />
 
@@ -42,12 +43,18 @@ export default function SessionCard({
         <StatusPill status={session.status} />
       </View>
 
-      {/* Details */}
+      {/* Details — subject and block as a small "at a glance" pair */}
       <View style={styles.details}>
-        <SubjectBadge subject={session.subject} small />
-        <View style={styles.detailItem}>
-          <Ionicons name="calendar-outline" size={13} color={colors.gray500} />
-          <Text style={styles.detailText}>Block {session.period}</Text>
+        <View style={styles.detailCell}>
+          <Text style={styles.detailLabel}>Subject</Text>
+          <SubjectBadge subject={session.subject} small />
+        </View>
+        <View style={[styles.detailCell, styles.detailCellRight]}>
+          <Text style={styles.detailLabel}>Block</Text>
+          <View style={styles.detailItem}>
+            <Ionicons name="calendar-outline" size={14} color={colors.brand} />
+            <Text style={styles.detailValue}>{session.period}</Text>
+          </View>
         </View>
       </View>
 
@@ -123,9 +130,21 @@ const styles = StyleSheet.create({
   name:   { fontSize: 15, fontWeight: '700', color: colors.black },
   role:   { fontSize: 12, color: colors.gray500, marginTop: 1 },
 
-  details:    { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginBottom: space.sm },
-  detailItem: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
-  detailText: { fontSize: 12, color: colors.gray500 },
+  details: {
+    flexDirection: 'row',
+    gap: space.sm,
+    marginBottom: space.md,
+  },
+  detailCell: {
+    flex: 1, gap: space.xs, alignItems: 'flex-start',
+    backgroundColor: colors.offWhite,
+    borderRadius: radii.sm,
+    padding: space.md,
+  },
+  detailCellRight: {},
+  detailLabel:     { ...label.caps, fontWeight: '500', fontSize: 9, letterSpacing: 1.6, color: colors.gray500 },
+  detailItem:      { flexDirection: 'row', alignItems: 'center', gap: space.xs },
+  detailValue:     { ...heading.lg, fontSize: 18, color: colors.brand },
 
   notes: { fontSize: 13, color: colors.gray600, lineHeight: 18, marginBottom: space.sm },
 

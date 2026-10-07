@@ -8,6 +8,7 @@
     "ios": "expo start --ios"
   },
   "dependencies": {
+    "@expo-google-fonts/montserrat": "^0.2.3",
     "@expo/metro-runtime": "~3.2.3",
     "@expo/vector-icons": "^14.0.0",
     "@hookform/resolvers": "^5.2.2",

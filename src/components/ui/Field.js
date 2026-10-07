@@ -9,11 +9,12 @@
  * (e.g. a password reveal button).
  */
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AppTextInput from '../AppTextInput';
 import colors from '../../theme/colors';
 import { radii, space, border } from '../../theme/layout';
+import { label as labelPreset } from '../../theme/fonts';
 
 export default function Field({
   label,
@@ -46,7 +47,7 @@ export default function Field({
           <Ionicons
             name={icon}
             size={18}
-            color={focused ? colors.accent : colors.gray400}
+            color={focused ? colors.brand : colors.gray400}
             style={styles.icon}
           />
         ) : null}
@@ -77,8 +78,9 @@ const styles = StyleSheet.create({
   wrap: { marginBottom: space.lg },
 
   label: {
-    fontSize: 13,
-    fontWeight: '600',
+    ...labelPreset.caps,
+    fontSize: 11,
+    letterSpacing: 1.6,
     color: colors.gray600,
     marginBottom: space.sm,
   },
@@ -87,15 +89,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: border.control,
-    borderColor: colors.gray200,
-    borderRadius: radii.md,
-    backgroundColor: colors.offWhite,
+    borderColor: colors.line,
+    borderRadius: radii.sm,
+    backgroundColor: colors.white,
     paddingHorizontal: space.md,
   },
   boxMultiline: { alignItems: 'flex-start', paddingVertical: space.xs },
+  // Green border plus a 1px outer ring on web, so focus reads as a 2px line
+  // without the box changing size.
   boxFocused: {
-    borderColor: colors.accent,
-    backgroundColor: colors.white,
+    borderColor: colors.brand,
+    ...Platform.select({ web: { boxShadow: `0 0 0 1px ${colors.brand}` }, default: {} }),
   },
   boxError: { borderColor: colors.error },
 

@@ -45,8 +45,8 @@ const styles = StyleSheet.create({
     padding: space.sm,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radii.pill,
+    borderRadius: radii.sm,
   },
-  tinted: { backgroundColor: colors.gray100 },
+  tinted: { backgroundColor: colors.gray100, borderWidth: 1, borderColor: colors.lineSoft },
   off:    { opacity: 0.4 },
 });

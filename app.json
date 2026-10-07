@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#1B4D2E"
+      "backgroundColor": "#004B30"
     },
     "ios": {
       "supportsTablet": false,
@@ -36,7 +36,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#1B4D2E"
+        "backgroundColor": "#004B30"
       },
       "package": "com.strakejesuit.tutors",
       "versionCode": 1,
@@ -73,8 +73,8 @@
       "shortName": "SJ Tutors",
       "description": "Peer-to-peer SAT & AP tutoring for Strake Jesuit students",
       "lang": "en",
-      "backgroundColor": "#1B4D2E",
-      "themeColor": "#1B4D2E",
+      "backgroundColor": "#004B30",
+      "themeColor": "#004B30",
       "bundler": "metro"
     },
     "extra": {

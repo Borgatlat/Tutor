@@ -50,6 +50,8 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.white,
     borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.lineSoft,
     padding: space.lg,
     marginBottom: space.md,
     ...cardShadow,
@@ -60,6 +62,6 @@ const styles = StyleSheet.create({
   line1:  { height: 14, borderRadius: radii.sm, width: '60%' },
   line2:  { height: 11, borderRadius: radii.sm, width: '40%' },
   badgeRow: { flexDirection: 'row', gap: space.sm, marginBottom: space.sm },
-  badge:  { height: 24, width: 80, borderRadius: radii.pill },
+  badge:  { height: 22, width: 80, borderRadius: radii.xs },
   bio:    { height: 11, borderRadius: radii.sm, width: '90%' },
 });

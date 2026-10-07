@@ -23,7 +23,7 @@ export default function EmptyState({
   return (
     <View style={[styles.wrap, compact && styles.compact, style]}>
       <View style={[styles.iconWrap, compact && styles.iconWrapCompact]}>
-        <Ionicons name={icon} size={compact ? 20 : 26} color={colors.accent} />
+        <Ionicons name={icon} size={compact ? 20 : 26} color={colors.brand} />
       </View>
 
       <Text style={[styles.title, compact && styles.titleCompact]}>{title}</Text>
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   iconWrap: {
     width: 56, height: 56,
     borderRadius: radii.pill,
-    backgroundColor: colors.accentTint,
+    backgroundColor: colors.brandTint,
     alignItems: 'center', justifyContent: 'center',
     marginBottom: space.md,
   },
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 15,
     fontWeight: '700',
-    color: colors.gray700,
+    color: colors.black,
     textAlign: 'center',
   },
   titleCompact: { fontSize: 14 },

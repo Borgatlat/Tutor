@@ -2,7 +2,7 @@
  * AuthShell — the layout wrapper for every pre-app screen.
  *
  * Desktop (≥768): two columns — brand panel left, form card right.
- * Mobile: brand hero on top, form in a rounded sheet below.
+ * Mobile: green brand band on top, form on white below.
  *
  * On web the KeyboardAvoidingView is deliberately skipped: it collapses the
  * container on iPhone Safari and blocks input taps, and the browser already
@@ -17,7 +17,8 @@ import { Ionicons } from '@expo/vector-icons';
 import colors from '../../theme/colors';
 import { radii, space } from '../../theme/layout';
 import { panelShadow } from '../../theme/shadows';
-import { heading } from '../../theme/fonts';
+import { heading, label } from '../../theme/fonts';
+import { rule } from '../../theme/layout';
 import { useResponsive } from '../../hooks/useResponsive';
 
 export default function AuthShell({
@@ -31,10 +32,16 @@ export default function AuthShell({
 
   const brand = (compact) => (
     <>
-      <View style={[styles.badge, compact && styles.badgeCompact]}>
-        <Ionicons name="school" size={compact ? 30 : 36} color={colors.white} />
+      <View style={styles.lockup}>
+        <View style={[styles.badge, compact && styles.badgeCompact]}>
+          <Ionicons name="school" size={compact ? 20 : 24} color={colors.white} />
+        </View>
+        <View>
+          <Text style={styles.school}>STRAKE JESUIT</Text>
+          <Text style={styles.schoolSub}>Peer Tutoring</Text>
+        </View>
       </View>
-      <Text style={styles.school}>STRAKE JESUIT</Text>
+      <View style={[styles.rule, compact && styles.ruleCompact]} />
       <Text style={[styles.title, compact && styles.titleCompact]}>{title}</Text>
       {subtitle ? (
         <Text style={[styles.subtitle, compact && styles.subtitleCompact]}>{subtitle}</Text>
@@ -112,27 +119,36 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.brand },
   // flexGrow lets content fill the viewport minimum while still overflowing
   // enough for the ScrollView to actually scroll.
-  scroll: { flexGrow: 1, paddingBottom: space.xxxl },
+  // No bottom padding here: it would show the green safe-area background
+  // below the white form. The form itself pads its bottom.
+  scroll: { flexGrow: 1 },
 
   // ── Brand ─────────────────────────────────────────────────────────────────
+  lockup: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   badge: {
-    width: 64, height: 64, borderRadius: radii.pill,
-    backgroundColor: colors.accent,
+    width: 48, height: 48, borderRadius: radii.pill,
+    borderWidth: 1, borderColor: colors.whiteAlpha[30],
     alignItems: 'center', justifyContent: 'center',
-    marginBottom: space.lg,
   },
-  badgeCompact: { width: 56, height: 56, marginBottom: space.md },
+  badgeCompact: { width: 40, height: 40 },
 
   school: {
-    color: colors.whiteAlpha[80],
-    fontSize: 11, fontWeight: '700',
-    letterSpacing: 2.5, marginBottom: space.sm,
+    color: colors.white,
+    fontSize: 14, fontWeight: '800', letterSpacing: 0.6,
   },
+  schoolSub: { color: colors.whiteAlpha[65], fontSize: 11, marginTop: 1 },
+
+  // Short gold rule above the title, like the school site's section headings.
+  rule: {
+    width: rule.width + 8, height: rule.height, borderRadius: rule.radius,
+    backgroundColor: colors.gold,
+    marginTop: space.huge, marginBottom: space.lg,
+  },
+  ruleCompact: { width: rule.width, marginTop: space.xxl, marginBottom: space.md },
   title: {
     ...heading.xl,
     color: colors.white,
-    fontSize: 46, lineHeight: 54,
-    marginTop: space.xs,
+    fontSize: 44, lineHeight: 52,
   },
   titleCompact: { fontSize: 30, lineHeight: 36 },
   subtitle: {
@@ -147,7 +163,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brand,
     paddingHorizontal: space.xxl,
     paddingTop: space.lg,
-    paddingBottom: space.xxxl,
+    paddingBottom: space.huge,
     alignItems: 'flex-start',
   },
   // alignItems keeps the back button pinned left; without it the IconButton's
@@ -195,9 +211,9 @@ const styles = StyleSheet.create({
   featureList: { gap: space.lg, marginTop: space.huge },
   featureRow:  { flexDirection: 'row', alignItems: 'center', gap: space.md },
   featureIcon: {
-    width: 36, height: 36, borderRadius: radii.md,
-    backgroundColor: colors.whiteAlpha[18],
+    width: 36, height: 36, borderRadius: radii.pill,
+    borderWidth: 1, borderColor: colors.whiteAlpha[30],
     alignItems: 'center', justifyContent: 'center',
   },
-  featureText: { color: colors.whiteAlpha[80], fontSize: 14, flex: 1 },
+  featureText: { color: colors.whiteAlpha[80], fontSize: 14, lineHeight: 21, flex: 1 },
 });
