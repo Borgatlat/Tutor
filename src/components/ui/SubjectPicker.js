@@ -186,7 +186,10 @@ const styles = StyleSheet.create({
     borderTopWidth: border.hairline,
     borderTopColor: colors.line,
   },
-  gradeHeading: { fontSize: 14, fontWeight: '700', color: colors.gray700 },
+  gradeHeading: {
+    fontSize: 11, fontWeight: '700', letterSpacing: 1.8, textTransform: 'uppercase',
+    color: colors.black,
+  },
   gradeHint: {
     fontSize: 12, color: colors.gray500,
     marginTop: space.xs, marginBottom: space.md, lineHeight: 17,
