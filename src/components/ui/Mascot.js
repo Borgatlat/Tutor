@@ -1,14 +1,14 @@
 /**
- * Mascot — "Ollie", a wise owl in a graduation cap.
+ * Mascot: "Ollie", a wise owl in a graduation cap.
  *
  * Drawn entirely from theme colours, so another school that swaps colors.js
  * gets an owl in its own colours. Pure vector (react-native-svg): crisp at any
  * size on iPhone, Android and web.
  *
  *   size  number, px (the owl is square)
- *   mood  'default' — open eyes
- *         'happy'   — smiling closed eyes (success moments)
- *         'thinking'— eyes glancing up (empty / nothing-found states)
+ *   mood  'default': open eyes
+ *         'happy': smiling closed eyes (success moments)
+ *         'thinking': eyes glancing up (empty / nothing-found states)
  *   onDark true when sitting on a green header: lighter body + a soft halo so
  *          the owl doesn't disappear into the background
  */

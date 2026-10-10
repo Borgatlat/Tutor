@@ -44,7 +44,7 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
-  // School-wide totals. Hidden if the RPC isn't deployed or fails — it's a
+  // School-wide totals. Hidden if the RPC isn't deployed or fails; it's a
   // nice-to-have, never a blocker for the rest of Home.
   const loadCommunity = async () => {
     const { data, error } = await supabase.rpc('community_stats');
@@ -99,7 +99,7 @@ export default function HomeScreen({ navigation }) {
       <View style={styles.promoRule} />
       <Text style={styles.promoTitle}>Core Classes, SAT & AP</Text>
       <Text style={styles.promoSub}>
-        Algebra to AP Calc — help from fellow {school.memberPlural}.
+        Algebra to AP Calc, with help from fellow {school.memberPlural}.
       </Text>
       <View style={styles.promoCta}>
         <Text style={styles.promoCtaText}>Browse tutors</Text>
@@ -232,7 +232,7 @@ export default function HomeScreen({ navigation }) {
           </View>
         </View>
 
-        {/* One content tree — the wrapper switches between two columns and a
+        {/* One content tree: the wrapper switches between two columns and a
             single stack, so the blocks themselves are never duplicated. */}
         <View style={[styles.body, isWide && styles.bodyWide]}>
           <View style={[styles.col, isWide && styles.colNarrow]}>

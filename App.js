@@ -22,8 +22,8 @@ import ProfileSetupScreen from './src/screens/auth/ProfileSetupScreen';
 //
 // Problem: Ionicons.font.ionicons is an asset-registry NUMBER (e.g. 4), not a URL.
 // expo-asset's Asset.fromModule(number).uri returns '' in production web builds
-// because selectAssetSource() has no dev-server URL and no Expo Go context —
-// it falls through every condition and returns { uri: '' }.
+// because selectAssetSource() has no dev-server URL and no Expo Go context,
+// so it falls through every condition and returns { uri: '' }.
 // expo-font then creates:  @font-face { src: url() }
 // The browser fetches the page itself as a font, fails, uses a system fallback
 // that has no Ionicons glyphs → rectangles / missing icons forever.
@@ -55,7 +55,7 @@ try {
 if (Platform.OS === 'web' && typeof document !== 'undefined') {
 
   if (_ioniconsUrl) {
-    // 1. <link rel="preload"> — kicks off the 443 KB font download immediately,
+    // 1. <link rel="preload">: kicks off the 443 KB font download immediately,
     //    before any CSS is evaluated, so the font is usually cached by the time
     //    the @font-face rule is applied.
     const preload = document.createElement('link');
@@ -84,7 +84,7 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
     ));
   }
 
-  // 3. Montserrat from Google Fonts — the exported page doesn't use
+  // 3. Montserrat from Google Fonts: the exported page doesn't use
   //    web/index.html, so the stylesheet is added here at load time.
   if (!document.getElementById('montserrat-font')) {
     const fontLink = document.createElement('link');

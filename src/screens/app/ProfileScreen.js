@@ -164,7 +164,7 @@ export default function ProfileScreen() {
   };
 
   // Block schedule: toggle a block on/off (no day dimension).
-  // All roles use tutor_availability — student_availability table doesn't exist.
+  // All roles use tutor_availability: student_availability table doesn't exist.
   // Optimistic toggle; on failure the block flips back and the reason shows,
   // so the grid never claims a block is saved when it isn't.
   const toggleAvailability = async (block) => {
@@ -372,7 +372,7 @@ export default function ProfileScreen() {
                 <EmptyState
                   icon="book-outline"
                   title="No subjects yet"
-                  body="Tap Edit to pick the classes you can help with — core classes, SAT and AP."
+                  body="Tap Edit to pick the classes you can help with: core classes, SAT and AP."
                   compact
                 />
               )}
@@ -387,7 +387,7 @@ export default function ProfileScreen() {
             <Text style={styles.hint}>
               {isTutor
                 ? 'Tap a block to toggle when students can book you'
-                : 'Tap a block to mark it free — tutors who share your blocks rank higher in search'}
+                : 'Tap a block to mark it free. Tutors who share your blocks rank higher in search.'}
             </Text>
             <ErrorBanner message={availError} />
             <AvailabilityGrid
@@ -520,7 +520,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle:  { ...type.heading, color: colors.black, marginBottom: space.xs },
   sectionAction: { marginTop: space.lg },
-  // Same look as SectionHeader's "See all" — a quiet brand link with an icon,
+  // Same look as SectionHeader's "See all": a quiet brand link with an icon,
   // on a soft tint so it reads as tappable.
   editLink: {
     flexDirection: 'row', alignItems: 'center', gap: space.xs,

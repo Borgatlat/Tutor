@@ -53,7 +53,7 @@ export default function SessionCard({
         <Text style={styles.notes} numberOfLines={2}>{session.notes}</Text>
       ) : null}
 
-      {/* Actions — `busy` disables them all so they can't be double-tapped
+      {/* Actions: `busy` disables them all so they can't be double-tapped
           while the request is in flight. */}
       {hasActions ? (
       <View style={styles.actions}>

@@ -1,13 +1,13 @@
 /**
- * OrganicBackdrop — soft, overlapping blob shapes behind a green header.
+ * OrganicBackdrop: soft, overlapping blob shapes behind a green header.
  *
  * Purely decorative: absolutely positioned, ignores touches and is hidden
  * from screen readers. Drop it as the FIRST child of a header whose style has
  * `overflow: 'hidden'` (and usually a curved bottom edge); everything after it
  * renders on top.
  *
- *   variant  'header' (default) — blobs top-right + bottom-left
- *            'panel'            — one smaller blob, for cards like the Home promo
+ *   variant  'header' (default): blobs top-right + bottom-left
+ *            'panel': one smaller blob, for cards like the Home promo
  */
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
@@ -35,7 +35,7 @@ export default function OrganicBackdrop({ variant = 'header' }) {
 }
 
 // Uneven width/height plus a rotation keeps each rounded rect from reading as
-// a plain circle — that's what gives the "organic" pebble shape.
+// a plain circle: that's what gives the "organic" pebble shape.
 const styles = StyleSheet.create({
   blob: { position: 'absolute' },
   topRight: {

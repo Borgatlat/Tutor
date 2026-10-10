@@ -1,5 +1,5 @@
 /**
- * StatRow — the "At a glance" strip from the school website: a stone rule,
+ * StatRow: the "At a glance" strip from the school website: a stone rule,
  * then big green numbers over small tracked captions, in equal columns.
  *
  *   <StatRow stats={[{ value: '24', label: 'Sessions' }, …]} />

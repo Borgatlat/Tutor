@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { supabase, fetchMyProfile } from '../lib/supabase';
 
-// ─── NO persist middleware — setupComplete comes from Supabase, not local storage ───
+// ─── NO persist middleware: setupComplete comes from Supabase, not local storage ───
 // Local storage can't be trusted because of hydration race conditions.
 // The source of truth is profiles.setup_complete in the database.
 
@@ -64,7 +64,7 @@ const useAuthStore = create((set, get) => ({
 
       set({ profile, loading: false, setupComplete: alreadySetup });
     } catch {
-      // Profile row doesn't exist yet — create from signup metadata
+      // Profile row doesn't exist yet: create from signup metadata
       try {
         const { data: { user } } = await supabase.auth.getUser();
         const meta = user?.user_metadata ?? {};
@@ -91,7 +91,7 @@ const useAuthStore = create((set, get) => ({
     if (userId) await get().loadProfile(userId);
   },
 
-  /** Called by ProfileSetupScreen after saving — marks the DB row AND local state */
+  /** Called by ProfileSetupScreen after saving: marks the DB row AND local state */
   completeSetup: async () => {
     const userId = get().session?.user?.id;
     // Persist the flag to Supabase so it survives any reload / device change

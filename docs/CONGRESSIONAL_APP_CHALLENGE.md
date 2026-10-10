@@ -1,6 +1,6 @@
-# Congressional App Challenge — submission kit
+# Congressional App Challenge: submission kit
 
-**Deadline:** October 26, 2026 (some districts list October 30 — check your
+**Deadline:** October 26, 2026 (some districts list October 30, so check your
 representative's page). Submissions can't be changed after the deadline.
 
 **Judges score:**

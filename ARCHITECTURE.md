@@ -1,4 +1,4 @@
-# Strake Jesuit Tutor Platform — Technical Architecture
+# Strake Jesuit Tutor Platform: Technical Architecture
 **Role:** Technical Co-Founder  
 **Stack decision:** React Native (Expo) · Supabase · Custom Search  
 **MVP scope:** SAT tutoring (Math + English) at Strake Jesuit  
@@ -13,7 +13,7 @@
 | Navigation | React Navigation v6 (Stack + Bottom Tabs) | Industry standard, smooth native feel |
 | Backend / Auth | Supabase | Postgres DB + Row-Level Security + Auth + Storage, one service |
 | File Storage | Supabase Storage | Profile pictures, cheap, co-located with DB |
-| Search | Custom algorithm (Supabase RPC + `pg_trgm`) | Fuzzy name matching, subject + period filters, scored ranking — no third-party needed |
+| Search | Custom algorithm (Supabase RPC + `pg_trgm`) | Fuzzy name matching, subject + period filters, scored ranking, no third-party needed |
 | State | Zustand | Lightweight global store (auth session, user profile) |
 | Forms | React Hook Form + Zod | Validation with schema, great DX |
 | Icons | @expo/vector-icons (Ionicons) | Already in project |
@@ -175,9 +175,9 @@ MAX possible score ≈ 1.70
 
 **Filter pipeline (applied before scoring, in SQL WHERE):**
 1. `is_tutor = true`
-2. Subject filter — exact match on `tutor_subjects.subject`
-3. Period filter — existence check in `tutor_availability` for (day, period)
-4. Name filter — `similarity > 0.15` threshold (removes total mismatches)
+2. Subject filter: exact match on `tutor_subjects.subject`
+3. Period filter: existence check in `tutor_availability` for (day, period)
+4. Name filter: `similarity > 0.15` threshold (removes total mismatches)
 
 **Client-side (React Native):**
 ```js
@@ -224,17 +224,17 @@ App
 
 #### `LoginScreen`
 - Strake Jesuit branded header (red hero, green cross badge)
-- Email input — validated to end with `@mail.strakejesuit.org` on submit
+- Email input: validated to end with `@mail.strakejesuit.org` on submit
 - Password input
 - "Sign Up" link → SignUpScreen
 - Supabase `signInWithPassword` on submit
 
 #### `SignUpScreen`
 - Full name, email, password
-- **Role picker** — three tappable cards:
-  - 🎓 Student — "I want to find a tutor"
-  - 📚 Tutor — "I want to help others"
-  - ⚡ Both — "I do both"
+- **Role picker**: three tappable cards:
+  - 🎓 Student: "I want to find a tutor"
+  - 📚 Tutor: "I want to help others"
+  - ⚡ Both: "I do both"
 - Email domain enforced: reject anything not `@mail.strakejesuit.org`
 - On submit → Supabase `signUp` → insert into `profiles`
 
@@ -243,7 +243,7 @@ App
 - Bio (multiline, optional)
 - Phone number (optional)
 - If role is Tutor/Both → subject selector (SAT Math, SAT English, or both)
-- Skip button — all fields optional
+- Skip button: all fields optional
 
 ---
 
@@ -256,11 +256,11 @@ App
 - Quick CTA: "Find a Tutor" button → navigates to SearchScreen
 
 #### `SearchScreen` (tab icon: `search` Ionicon)
-- **Search bar** — debounced 300ms, calls `searchTutors` on change
-- **Subject filter chips** — `All` · `SAT Math` · `SAT English`
-- **Period filter** — two dropdowns: Day (Mon–Fri) + Period (1–8)
+- **Search bar**: debounced 300ms, calls `searchTutors` on change
+- **Subject filter chips**: `All` · `SAT Math` · `SAT English`
+- **Period filter**: two dropdowns: Day (Mon–Fri) + Period (1–8)
   - When both selected, only tutors free that slot appear
-- **Results list** — `TutorCard` components ranked by score
+- **Results list**: `TutorCard` components ranked by score
   - Shows: avatar, name, subjects, avg rating, free periods badge
 - Empty state with illustration
 - Loading skeleton cards while fetching
@@ -268,7 +268,7 @@ App
 #### `TutorProfileScreen`
 - Full profile: avatar, name, bio, email, phone (if provided)
 - Subject badges
-- **Availability grid** — 5 columns (Mon–Fri) × 8 rows (P1–P8)
+- **Availability grid**: 5 columns (Mon–Fri) × 8 rows (P1–P8)
   - Green cell = tutor is free · Gray = unavailable
 - Star rating + review count
 - Completed sessions count
@@ -296,9 +296,9 @@ App
 
 ---
 
-## 6. Supabase Auth — Email Domain Enforcement
+## 6. Supabase Auth: Email Domain Enforcement
 
-**Layer 1 — Client validation (React Hook Form + Zod):**
+**Layer 1: Client validation (React Hook Form + Zod):**
 ```js
 const schema = z.object({
   email: z.string().endsWith('@mail.strakejesuit.org', {
@@ -308,7 +308,7 @@ const schema = z.object({
 });
 ```
 
-**Layer 2 — Supabase Edge Function (server-side, can't be bypassed):**
+**Layer 2: Supabase Edge Function (server-side, can't be bypassed):**
 ```js
 // supabase/functions/validate-signup/index.ts
 Deno.serve(async (req) => {
@@ -320,7 +320,7 @@ Deno.serve(async (req) => {
 });
 ```
 
-**Layer 3 — Row Level Security:**
+**Layer 3: Row Level Security:**
 ```sql
 alter table profiles enable row level security;
 create policy "Users can only see their own profile for editing"
@@ -402,7 +402,7 @@ src/
 
 ## 9. Phase Roadmap
 
-### Phase 1 — MVP (build now)
+### Phase 1: MVP (build now)
 - [ ] Supabase project setup (tables, RLS, search RPC)
 - [ ] Auth flow (login, sign up, domain validation)
 - [ ] Profile creation + avatar upload
@@ -411,13 +411,13 @@ src/
 - [ ] Tutor profile view
 - [ ] Session booking
 
-### Phase 2 — Polish
+### Phase 2: Polish
 - [ ] Push notifications for session confirmation/reminder
 - [ ] In-app messaging between tutor + student
 - [ ] Review + rating system
 - [ ] Home screen dashboard with real data
 
-### Phase 3 — Growth
+### Phase 3: Growth
 - [ ] Admin dashboard (web) for faculty oversight
 - [ ] Expand subjects beyond SAT (AP classes, etc.)
 - [ ] Session history + tutor earnings tracking

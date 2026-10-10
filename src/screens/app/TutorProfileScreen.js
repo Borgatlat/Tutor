@@ -62,7 +62,7 @@ export default function TutorProfileScreen({ route, navigation }) {
     { icon: 'book-outline',             val: subjects.length,          lbl: 'Subjects' },
     {
       icon: 'star-outline',
-      val: tutor.avg_rating ? Number(tutor.avg_rating).toFixed(1) : '—',
+      val: tutor.avg_rating ? Number(tutor.avg_rating).toFixed(1) : 'New',
       lbl: 'Rating',
     },
   ];
@@ -241,7 +241,7 @@ export default function TutorProfileScreen({ route, navigation }) {
         reportedUser={tutor}
       />
 
-      {/* Book bar — only appears once a block is picked */}
+      {/* Book bar: only appears once a block is picked */}
       {!isSelf && selectedSlot ? (
         <View style={styles.bookBar}>
           <View style={styles.bookText}>

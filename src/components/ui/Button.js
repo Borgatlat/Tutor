@@ -1,13 +1,13 @@
 /**
- * Button — the only button in the app.
+ * Button: the only button in the app.
  *
  * Variants:
- *   primary   filled Strake green — the main action on a screen
- *   secondary stone outline on white, green label — a real but lesser action
- *   ghost     no border, accent text — tertiary / inline
- *   danger    error outline — destructive, offered alongside a safer option
- *   dangerSolid filled error — the confirming tap in a destructive dialog
- *   neutral   gray outline — "keep it" / dismiss
+ *   primary   filled Strake green: the main action on a screen
+ *   secondary stone outline on white, green label, a real but lesser action
+ *   ghost     no border, accent text: tertiary / inline
+ *   danger    error outline: destructive, offered alongside a safer option
+ *   dangerSolid filled error: the confirming tap in a destructive dialog
+ *   neutral   gray outline: "keep it" / dismiss
  *
  * `loading` swaps the label for a spinner and disables the press, so callers
  * never have to hand-roll the double-tap guard.
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
 
   off: { opacity: 0.5 },
 
-  // Sentence case — capitals are kept for small section eyebrows only.
+  // Sentence case: capitals are kept for small section eyebrows only.
   label:   { ...labelPreset.ui, fontSize: 15 },
   labelSm: { fontSize: 13 },
 });

@@ -1,5 +1,5 @@
 /**
- * ReportModal — Apple App Store guideline 5.1.1 / 1.2
+ * ReportModal: Apple App Store guideline 5.1.1 / 1.2
  * Required for any app with user-generated content.
  * Lets signed-in users report inappropriate users and block them.
  */

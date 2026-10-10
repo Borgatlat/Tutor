@@ -1,5 +1,5 @@
 /**
- * WelcomeTour — three short cards from Ollie the first time someone reaches
+ * WelcomeTour: three short cards from Ollie the first time someone reaches
  * Home: find a tutor → book a free block → track it. Shown once per device
  * (AsyncStorage flag); "Skip" and "Get started" both mark it seen.
  */
@@ -19,16 +19,16 @@ const STEPS = [
   {
     mood: 'default',
     title: `Hi, I'm ${school.mascotName}!`,
-    body: `I'll help you find a fellow ${school.memberName} who can explain it — Algebra to AP Calc, SAT to Spanish.`,
+    body: `I'll help you find a fellow ${school.memberName} who can explain it, from Algebra to AP Calc and SAT to Spanish.`,
   },
   {
     mood: 'thinking',
     title: 'Book a free block',
-    body: 'Tutors list the blocks they are free. Pick one that matches yours and send a request — no swapping texts.',
+    body: 'Tutors list the blocks they are free. Pick one that matches yours and send a request. No swapping texts.',
   },
   {
     mood: 'happy',
-    title: 'Track what you learn — and give back',
+    title: 'Track what you learn and give back',
     body: 'Tutors confirm, you meet, and every finished session counts toward their service hours.',
   },
 ];

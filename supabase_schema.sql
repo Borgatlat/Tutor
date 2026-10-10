@@ -1,5 +1,5 @@
 -- ============================================================
--- STRAKE JESUIT TUTOR MARKETPLACE — Complete Supabase Schema
+-- STRAKE JESUIT TUTOR MARKETPLACE: Complete Supabase Schema
 -- ============================================================
 -- Paste this entire file into:
 --   Supabase Dashboard → SQL Editor → New query → Run
@@ -155,7 +155,7 @@ create policy "reviews: insert own"
 
 
 -- ─────────────────────────────────────────────────────────────
--- 6. TRIGGERS — keep denormalised stats up to date
+-- 6. TRIGGERS: keep denormalised stats up to date
 -- ─────────────────────────────────────────────────────────────
 
 -- 6a. Update avg_rating + review_count when a review is added/deleted
@@ -232,7 +232,7 @@ create policy "avatars: update own"
 
 
 -- ─────────────────────────────────────────────────────────────
--- 9. AUTO-CONFIRM school emails (optional — remove if you want
+-- 9. AUTO-CONFIRM school emails (optional: remove if you want
 --    manual review of every sign-up)
 -- ─────────────────────────────────────────────────────────────
 -- The app enforces @mail.strakejesuit.org on the client.
@@ -266,7 +266,7 @@ create index if not exists student_avail_student_idx on public.student_availabil
 -- ─────────────────────────────────────────────────────────────
 -- Also add period constraint to tutor_availability for consistency
 -- ─────────────────────────────────────────────────────────────
--- (Safe to run even if constraint already exists — caught by the
+-- (Safe to run even if constraint already exists, caught by the
 --  "if not exists" pattern on the table above)
 
 
@@ -449,7 +449,7 @@ create index if not exists blocked_users_blocker_idx on public.blocked_users (bl
 -- 12. COMMUNITY STATS (Home screen impact strip)
 -- ─────────────────────────────────────────────────────────────
 -- Sessions are private (RLS: read own), so the school-wide totals come from a
--- security-definer function that returns ONLY aggregate counts — no names,
+-- security-definer function that returns ONLY aggregate counts, no names,
 -- no rows. 50 minutes per block, matching src/utils/hours.js.
 create or replace function public.community_stats()
 returns table (sessions_completed bigint, hours_tutored numeric, active_tutors bigint)

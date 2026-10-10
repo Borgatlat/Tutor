@@ -1,5 +1,5 @@
 /**
- * StatusPill — renders a session status from SESSION_STATUS as a solid tag
+ * StatusPill: renders a session status from SESSION_STATUS as a solid tag
  * (maroon / green / stone), like the school site's date labels.
  *
  * Reads the `tint` defined alongside each status rather than appending an

@@ -1,5 +1,5 @@
 /**
- * download.js — hand a generated text file (CSV, .ics) to the user.
+ * download.js: hand a generated text file (CSV, .ics) to the user.
  *
  *  - Web:    triggers a browser download.
  *  - Native: opens the share sheet, so it can be emailed, saved to Files or

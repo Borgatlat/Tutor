@@ -1,5 +1,5 @@
 /**
- * RoleSelector — the student / tutor / both picker.
+ * RoleSelector: the student / tutor / both picker.
  *
  * Shared by SignUpScreen, ProfileSetupScreen and ProfileScreen. A single pill
  * switch (the same shape as the Sessions tabs) with a one-line description of
@@ -29,7 +29,7 @@ export default function RoleSelector({ value, onChange, style }) {
               onPress={() => onChange(r.key)}
               activeOpacity={press.opacity}
               accessibilityRole="radio"
-              accessibilityLabel={`${r.label} — ${r.description}`}
+              accessibilityLabel={`${r.label}: ${r.description}`}
               accessibilityState={{ checked: active, selected: active }}
               aria-checked={active}
             >

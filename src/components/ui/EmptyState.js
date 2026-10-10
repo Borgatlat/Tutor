@@ -1,5 +1,5 @@
 /**
- * EmptyState — icon + title + optional body and action.
+ * EmptyState: icon + title + optional body and action.
  *
  * Use this anywhere a list can be empty, so "no data" always reads as a
  * deliberate state rather than a blank area that looks broken.

@@ -1,5 +1,5 @@
 /**
- * reminders.js — local "your session starts soon" notifications.
+ * reminders.js: local "your session starts soon" notifications.
  *
  * Native only (iOS / Android); a no-op on web, where the .ics calendar file
  * carries its own alarms. Reminders are rebuilt from the confirmed-session

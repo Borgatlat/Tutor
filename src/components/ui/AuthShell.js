@@ -1,7 +1,7 @@
 /**
- * AuthShell — the layout wrapper for every pre-app screen.
+ * AuthShell: the layout wrapper for every pre-app screen.
  *
- * Desktop (≥768): two columns — brand panel left, form card right.
+ * Desktop (≥768): two columns: brand panel left, form card right.
  * Mobile: green brand band on top, form on white below.
  *
  * On web the KeyboardAvoidingView is deliberately skipped: it collapses the

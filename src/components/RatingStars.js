@@ -30,7 +30,7 @@ export default function RatingStars({ rating, count, size = 14, showCount = true
 
       {showCount && (
         <Text style={[styles.val, { fontSize: size }, onDark && styles.valDark]}>
-          {hasRating ? ` ${Number(rating).toFixed(1)}` : ' —'}
+          {hasRating ? ` ${Number(rating).toFixed(1)}` : ' New'}
           {count != null && <Text style={[styles.count, onDark && styles.countDark]}> ({count})</Text>}
         </Text>
       )}

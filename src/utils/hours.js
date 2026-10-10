@@ -1,12 +1,12 @@
 /**
- * hours.js — service-hours log for tutors.
+ * hours.js: service-hours log for tutors.
  *
  * Many schools ask tutors to log volunteer / NHS hours. Every completed session
  * a tutor taught counts as one block. Blocks are 50 minutes (see BLOCK_TIMES in
  * calendar.js), so hours are always derived, never typed in, and can't drift
  * from the session history.
  *
- * Pure functions only — no Supabase or React here — so they are unit-tested.
+ * Pure functions only: no Supabase or React here, so they are unit-tested.
  */
 import { school } from '../theme/school';
 
@@ -49,7 +49,7 @@ export function buildHoursCsv(sessions, tutorId, tutorName = '') {
     .sort((a, b) => String(a.created_at ?? '').localeCompare(String(b.created_at ?? '')));
 
   const rows = [
-    [`${school.name} peer tutoring — service hours`],
+    [`${school.name} peer tutoring: service hours`],
     ['Tutor', tutorName],
     [],
     ['Date booked', 'Day', 'Block', 'Subject', 'Student', 'Minutes'],

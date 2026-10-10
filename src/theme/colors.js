@@ -12,13 +12,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default {
-  // Primary brand — Strake green
+  // Primary brand: Strake green
   brand:      '#004B30',   // hero / header backgrounds, sidebar
   brandDark:  '#003521',   // pressed state
   brandLight: '#1D6347',   // hover state
   brandTint:  '#E5EEE9',   // tinted chip / section backgrounds
 
-  // Accent — the same green family for interactive states
+  // Accent: the same green family for interactive states
   accent:      '#004B30',  // primary buttons, selected chips, links
   accentDark:  '#003521',  // pressed
   accentLight: '#2F6B4F',  // hover + secondary avatar fill
@@ -31,10 +31,10 @@ export default {
 
   // Base
   white:    '#FFFFFF',
-  offWhite: '#F1EFEC',     // app background — warm stone
+  offWhite: '#F1EFEC',     // app background: warm stone
   cream:    '#E9E5E0',     // recessed section background
 
-  // 3D button edges — the darker "base" a raised button sits on
+  // 3D button edges: the darker "base" a raised button sits on
   brandDeep: '#002417',   // under Strake-green buttons
   stoneDeep: '#C9C1B8',   // under white / outlined buttons
   brandTintDeep: '#C3D6CB', // under light-green 'available' chips
@@ -42,7 +42,7 @@ export default {
   errorDeep: '#7E1810',   // under red buttons
   buttonGlow: 'rgba(0,75,48,0.22)', // soft green-tinted shadow
 
-  // Organic header blobs — lighter shades of the same green, drawn over brand
+  // Organic header blobs: lighter shades of the same green, drawn over brand
   blob:     'rgba(255,255,255,0.07)',
   blobSoft: 'rgba(255,255,255,0.045)',
 
@@ -60,7 +60,7 @@ export default {
   gray700: '#3A3E43',
   black:   '#1A1C1E',
 
-  // White overlays — for text/icons on brand-colored surfaces
+  // White overlays: for text/icons on brand-colored surfaces
   whiteAlpha: {
     12: 'rgba(255,255,255,0.12)',   // dividers
     18: 'rgba(255,255,255,0.18)',   // active nav background
@@ -71,8 +71,8 @@ export default {
 
   // Semantic
   star:        '#C49A2C',  // rating stars
-  starText:    '#8C6A14',  // rating numbers — darker gold so text passes contrast
-  pending:     '#9B2C2C',  // "waiting" status — school maroon
+  starText:    '#8C6A14',  // rating numbers: darker gold so text passes contrast
+  pending:     '#9B2C2C',  // "waiting" status: school maroon
   pendingTint: '#F6E9E9',
   error:       '#B42318',
   errorMuted:  '#FEF2F2',

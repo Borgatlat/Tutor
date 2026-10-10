@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 import colors from './colors';
 
-// Emits a cross-platform elevation. Both branches must always be present —
+// Emits a cross-platform elevation. Both branches must always be present:
 // a web-only branch means no shadow on native, and vice versa.
 // The look is flat (like the school site), so these stay very soft.
 const s = (h, blur, opacity) =>
@@ -16,7 +16,7 @@ const s = (h, blur, opacity) =>
     },
   });
 
-export const cardShadow   = s(2, 12, 0.06);   // cards, list rows — the only depth a card gets
+export const cardShadow   = s(2, 12, 0.06);   // cards, list rows: the only depth a card gets
 export const modalShadow  = s(2,  8, 0.06);   // popovers, dropdowns
 export const searchShadow = s(1,  4, 0.06);   // search bars, sticky headers
 export const sheetShadow  = s(3, 16, 0.18);   // bottom sheets, modals over dim

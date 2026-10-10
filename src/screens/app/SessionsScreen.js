@@ -29,7 +29,7 @@ export default function SessionsScreen({ navigation }) {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading]   = useState(true);
 
-  // Which session has a request in flight — disables that card's actions so
+  // Which session has a request in flight. It disables that card's actions so
   // Confirm/Decline can't be double-tapped.
   const [busyId, setBusyId] = useState(null);
 
@@ -44,7 +44,7 @@ export default function SessionsScreen({ navigation }) {
   const [submitting, setSubmitting]       = useState(false);
   const [reviewError, setReviewError]     = useState('');
 
-  // Calendar — tracks which session IDs have been added
+  // Calendar: tracks which session IDs have been added
   const [calendarAdded, setCalendarAdded] = useState(new Set());
   const [toast, setToast]                 = useState(null); // { message, isError }
   const toastOpacity = useRef(new Animated.Value(0)).current;
@@ -116,7 +116,7 @@ export default function SessionsScreen({ navigation }) {
     setLoading(false);
   }, [tab, profile?.id]);
 
-  // Status changes report failures instead of silently doing nothing — a
+  // Status changes report failures instead of silently doing nothing. A
   // blocked update (e.g. a row-level-security rule) used to look like success.
   const updateStatus = async (sessionId, status, failMsg) => {
     const { error } = await supabase.from('sessions').update({ status }).eq('id', sessionId);

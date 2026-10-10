@@ -1,5 +1,5 @@
 /**
- * ServiceHoursCard — a tutor's volunteer-hours log on their Profile.
+ * ServiceHoursCard: a tutor's volunteer-hours log on their Profile.
  *
  * Counts every completed session they taught (one 50-minute block each) and
  * offers the full log as a CSV a moderator can check and sign.

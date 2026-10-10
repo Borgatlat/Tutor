@@ -14,8 +14,8 @@ app** and as a **website**.
 ## The problem
 
 Students who need help usually ask a friend, wait for office hours, or pay for
-outside tutoring. Strong students who want to help — and who often need
-volunteer or NHS hours — have no easy way to be found. And on a rotating block
+outside tutoring. Strong students who want to help (and who often need
+volunteer or NHS hours) have no easy way to be found. And on a rotating block
 schedule, "when are we both free?" takes a dozen texts.
 
 ## What it does
@@ -24,10 +24,10 @@ schedule, "when are we both free?" takes a dozen texts.
   **Match my schedule** to rank tutors who are free when you are.
 - **Book a free block** and add a note. The tutor confirms or declines.
 - **Reminders** 10 minutes before a confirmed block, plus *Add to calendar*.
-- **Service-hours log** — every session a tutor marks as done counts as one
+- **Service-hours log**: every session a tutor marks as done counts as one
   50-minute block; tutors download a CSV a moderator can check and sign.
 - **Reviews** after a session, so the best tutors rise to the top.
-- **Safety** — school-email sign-up only, report and block on every profile.
+- **Safety**: school-email sign-up only, report and block on every profile.
 - **Ollie the owl** guides new users through a three-step welcome tour.
 
 ## How it works
@@ -38,10 +38,10 @@ schedule, "when are we both free?" takes a dozen texts.
             ▼
  Supabase ─ Auth (school-email only)
           ├ Postgres + Row-Level Security on every table
-          ├ search_tutors()   — fuzzy name search + subject/block filters,
+          ├ search_tutors(): fuzzy name search + subject/block filters,
           │                     ranked by rating and shared free blocks
-          ├ community_stats() — school-wide totals only (no personal rows)
-          └ Storage            — profile photos
+          ├ community_stats(): school-wide totals only (no personal rows)
+          └ Storage: profile photos
 ```
 
 - **Matching on a block schedule.** Tutors and students each mark the blocks
@@ -63,7 +63,7 @@ More detail: [ARCHITECTURE.md](ARCHITECTURE.md) · database:
 ## Quality
 
 - **Unit tests** (Jest + Testing Library): service hours, schedule maths,
-  reminders and core components — `npm test`.
+  reminders and core components: `npm test`.
 - **CI** on every push: tests plus web and iOS bundles
   ([.github/workflows/ci.yml](.github/workflows/ci.yml)).
 - **End-to-end checks** with Playwright against the web build: 72 checks

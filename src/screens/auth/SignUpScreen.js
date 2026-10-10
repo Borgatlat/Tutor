@@ -16,7 +16,7 @@ import {
 
 const FEATURES = [
   { icon: 'people-outline',            text: `Peer-to-peer tutoring from ${school.memberPlural}` },
-  { icon: 'book-outline',              text: 'All subjects — core classes, AP, SAT & more' },
+  { icon: 'book-outline',              text: 'All subjects: core classes, AP, SAT & more' },
   { icon: 'time-outline',              text: 'Schedule around your free periods' },
   { icon: 'shield-checkmark-outline',  text: `${school.name} email required` },
 ];
