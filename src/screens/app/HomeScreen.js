@@ -9,6 +9,8 @@ import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { radii, space, border, press, rule, leaf } from '../../theme/layout';
 import { heading, label } from '../../theme/fonts';
+import { raised } from '../../theme/shadows';
+import { school } from '../../theme/school';
 import TutorCard from '../../components/TutorCard';
 import SkeletonCard from '../../components/SkeletonCard';
 import { Avatar, EmptyState, OrganicBackdrop, SectionHeader, StatusPill } from '../../components/ui';
@@ -22,7 +24,7 @@ export default function HomeScreen({ navigation }) {
   const [upcomingSessions, setUpcoming]   = useState([]);
   const [loadingTutors, setLoadingTutors] = useState(true);
 
-  const firstName = profile?.full_name?.split(' ')[0] ?? 'Crusader';
+  const firstName = profile?.full_name?.split(' ')[0] ?? school.memberName;
   const hour      = new Date().getHours();
   const greeting  = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const isTutor   = profile?.role === 'tutor' || profile?.role === 'both';
@@ -88,7 +90,7 @@ export default function HomeScreen({ navigation }) {
       <View style={styles.promoRule} />
       <Text style={styles.promoTitle}>Core Classes, SAT & AP</Text>
       <Text style={styles.promoSub}>
-        Algebra to AP Calc — help from fellow Crusaders.
+        Algebra to AP Calc — help from fellow {school.memberPlural}.
       </Text>
       <View style={styles.promoCta}>
         <Text style={styles.promoCtaText}>Browse tutors</Text>
@@ -129,7 +131,7 @@ export default function HomeScreen({ navigation }) {
         <EmptyState
           icon="people-outline"
           title="No tutors yet"
-          body="Once Crusaders add the subjects they can teach, they'll show up here."
+          body={`Once ${school.memberPlural} add the subjects they can teach, they'll show up here.`}
           actionLabel="Browse search"
           onAction={() => navigation.navigate('Search')}
         />
@@ -267,6 +269,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     paddingHorizontal: space.lg, paddingVertical: space.md,
     borderRadius: radii.pill,
+    ...raised('white'),
   },
   qBtnText: { ...label.caps, fontSize: 11, letterSpacing: 1.8, color: colors.brand },
 
@@ -322,6 +325,7 @@ const styles = StyleSheet.create({
     marginTop: space.lg,
     backgroundColor: colors.white,
     borderRadius: radii.pill,
+    ...raised('white'),
     paddingHorizontal: space.xl,
     paddingVertical: space.md,
   },

@@ -10,7 +10,7 @@ import colors from '../../theme/colors';
 import { radii, space, border, press, hit, rule } from '../../theme/layout';
 import { heading, label } from '../../theme/fonts';
 import {
-  Avatar, Button, Chip, EmptyState, ErrorBanner, Field,
+  Avatar, Button, Chip, EmptyState, ErrorBanner, Field, Mascot,
   OrganicBackdrop,
 } from '../../components/ui';
 
@@ -49,9 +49,7 @@ export default function BookSessionScreen({ route, navigation }) {
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.successScreen}>
-          <View style={styles.successCircle}>
-            <Ionicons name="checkmark" size={44} color={colors.white} />
-          </View>
+          <Mascot size={128} mood="happy" style={styles.successMascot} />
           <Text style={styles.successTitle}>Session Requested</Text>
           <Text style={styles.successSub}>
             Your request has been sent to {tutor.full_name}.{'\n'}
@@ -262,12 +260,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.xxxl,
     backgroundColor: colors.white,
   },
-  successCircle: {
-    width: 88, height: 88, borderRadius: radii.pill,
-    backgroundColor: colors.brand,
-    alignItems: 'center', justifyContent: 'center',
-    marginBottom: space.xl,
-  },
+  successMascot: { marginBottom: space.lg },
   successTitle: { ...heading.lg, fontSize: 26, color: colors.black, marginBottom: space.sm },
   successSub: {
     fontSize: 15, color: colors.gray500,

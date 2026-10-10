@@ -11,12 +11,16 @@
  *
  * `loading` swaps the label for a spinner and disables the press, so callers
  * never have to hand-roll the double-tap guard.
+ *
+ * Every variant except `ghost` is raised: it sits on a darker base edge in its
+ * own colour family with a soft green glow, and drops onto it while pressed.
  */
 import React from 'react';
-import { Text, TouchableOpacity, ActivityIndicator, StyleSheet, View } from 'react-native';
+import { Text, Pressable, ActivityIndicator, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../../theme/colors';
-import { radii, space, border, press, control } from '../../theme/layout';
+import { radii, space, border, control } from '../../theme/layout';
+import { raised } from '../../theme/shadows';
 import { label as labelPreset } from '../../theme/fonts';
 
 export default function Button({
@@ -41,20 +45,25 @@ export default function Button({
     : variant === 'neutral'  ? colors.gray700
     : colors.brand;
   const spinnerColor = filled ? colors.white : contentColor;
+  const base =
+      variant === 'primary'                          ? 'green'
+    : variant === 'danger' || variant === 'dangerSolid' ? 'red'
+    : variant === 'ghost'                            ? null
+    : 'white';
 
   return (
-    <TouchableOpacity
-      style={[
+    <Pressable
+      style={({ pressed }) => [
         styles.base,
         small ? styles.sizeSm : styles.sizeMd,
         styles[variant],
+        base && !isOff && raised(base, pressed),
         fullWidth && styles.fullWidth,
         isOff && styles.off,
         style,
       ]}
       onPress={onPress}
       disabled={isOff}
-      activeOpacity={press.opacity}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ disabled: isOff, busy: loading }}
@@ -78,7 +87,7 @@ export default function Button({
           </Text>
         </View>
       )}
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 

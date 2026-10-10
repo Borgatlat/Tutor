@@ -13,6 +13,7 @@ import SessionsScreen     from '../screens/app/SessionsScreen';
 import ProfileScreen      from '../screens/app/ProfileScreen';
 import { useResponsive, SIDEBAR_WIDTH } from '../hooks/useResponsive';
 import colors             from '../theme/colors';
+import { school }        from '../theme/school';
 import { radii, space, border, press } from '../theme/layout';
 import { sidebarShadow }  from '../theme/shadows';
 
@@ -67,7 +68,7 @@ function DesktopSidebar({ state, navigation }) {
           <NavIcon name="school" size={22} color={colors.white} />
         </View>
         <View>
-          <Text style={styles.brandLine1}>STRAKE JESUIT</Text>
+          <Text style={styles.brandLine1}>{school.name.toUpperCase()}</Text>
           <Text style={styles.brandLine2}>Tutors</Text>
         </View>
       </View>

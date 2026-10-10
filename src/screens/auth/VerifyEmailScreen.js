@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 import colors from '../../theme/colors';
 import { radii, space, border, rule } from '../../theme/layout';
 import { heading } from '../../theme/fonts';
-import { Button, Divider, ErrorBanner, OrganicBackdrop } from '../../components/ui';
+import { Button, Divider, ErrorBanner, Mascot, OrganicBackdrop } from '../../components/ui';
 
 const STEPS = [
   { icon: 'mail-outline',             text: 'Open the confirmation email we sent you' },
@@ -37,9 +37,7 @@ export default function VerifyEmailScreen({ route }) {
     <SafeAreaView style={styles.safe}>
       <View style={styles.hero}>
         <OrganicBackdrop />
-        <View style={styles.iconCircle}>
-          <Ionicons name="mail-unread" size={32} color={colors.white} />
-        </View>
+        <Mascot size={104} onDark />
         <View style={styles.rule} />
         <Text style={styles.heroTitle}>Confirm Your Email</Text>
         <Text style={styles.heroSub}>
@@ -99,11 +97,6 @@ const styles = StyleSheet.create({
     paddingTop: space.huge,
     paddingBottom: space.huge,
     paddingHorizontal: space.xxxl,
-  },
-  iconCircle: {
-    width: 72, height: 72, borderRadius: radii.pill,
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: border.control, borderColor: colors.whiteAlpha[30],
   },
   rule: {
     width: rule.width, height: rule.height, borderRadius: rule.radius,

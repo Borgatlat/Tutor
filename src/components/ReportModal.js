@@ -5,7 +5,6 @@
  */
 import React, { useState } from 'react';
 import { Modal, View, Text, StyleSheet, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
 import useAuthStore from '../store/useAuthStore';
 import colors from '../theme/colors';
@@ -18,6 +17,7 @@ import Field from './ui/Field';
 import Divider from './ui/Divider';
 import ErrorBanner from './ui/ErrorBanner';
 import IconButton from './ui/IconButton';
+import Mascot from './ui/Mascot';
 
 const REPORT_REASONS = [
   'Inappropriate content',
@@ -79,9 +79,7 @@ export default function ReportModal({ visible, onClose, reportedUser }) {
           {done ? (
             /* ── Success state ── */
             <View style={styles.doneWrap}>
-              <View style={styles.doneCircle}>
-                <Ionicons name="checkmark" size={30} color={colors.white} />
-              </View>
+              <Mascot size={104} mood="happy" style={styles.doneMascot} />
               <Text style={styles.doneTitle}>
                 {done === 'blocked' ? 'User Blocked' : 'Report Submitted'}
               </Text>
@@ -209,12 +207,7 @@ const styles = StyleSheet.create({
     paddingVertical: space.huge,
     paddingHorizontal: space.lg,
   },
-  doneCircle: {
-    width: 72, height: 72, borderRadius: radii.pill,
-    backgroundColor: colors.brand,
-    alignItems: 'center', justifyContent: 'center',
-    marginBottom: space.xl,
-  },
+  doneMascot: { marginBottom: space.lg },
   doneTitle: { ...heading.lg, fontSize: 22, color: colors.black, marginBottom: space.sm },
   doneSub: {
     fontSize: 14, color: colors.gray500,

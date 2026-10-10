@@ -11,6 +11,7 @@
  * Users can edit the event after it's created if the times differ.
  */
 import { Platform } from 'react-native';
+import { school } from '../theme/school';
 
 // ─── Block start/end times (24-hour, based on Strake Jesuit block schedule) ──
 const BLOCK_TIMES = {
@@ -86,7 +87,7 @@ async function addToNativeCalendar(session, otherName, times, startDate, endDate
     session.notes ?? null,
     `Subject: ${session.subject}`,
     `Block ${session.period}`,
-    'Strake Jesuit Tutor Marketplace',
+    `${school.name} Tutor Marketplace`,
   ].filter(Boolean).join('\n');
 
   try {
@@ -137,7 +138,7 @@ function addToWebCalendar(session, otherName, startDate, endDate) {
     session.notes ?? null,
     `Subject: ${session.subject}`,
     `Block ${session.period}`,
-    'Strake Jesuit Tutor Marketplace',
+    `${school.name} Tutor Marketplace`,
   ].filter(Boolean).join('\\n');
 
   const uid = `session-${session.id ?? Date.now()}@strakejesuit.tutors`;

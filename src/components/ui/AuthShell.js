@@ -18,8 +18,10 @@ import colors from '../../theme/colors';
 import { radii, space } from '../../theme/layout';
 import { panelShadow } from '../../theme/shadows';
 import { heading, label } from '../../theme/fonts';
+import { school } from '../../theme/school';
 import { rule } from '../../theme/layout';
 import OrganicBackdrop from './OrganicBackdrop';
+import Mascot from './Mascot';
 import { useResponsive } from '../../hooks/useResponsive';
 
 export default function AuthShell({
@@ -38,7 +40,7 @@ export default function AuthShell({
           <Ionicons name="school" size={compact ? 20 : 24} color={colors.white} />
         </View>
         <View>
-          <Text style={styles.school}>STRAKE JESUIT</Text>
+          <Text style={styles.school}>{school.name.toUpperCase()}</Text>
           <Text style={styles.schoolSub}>Peer Tutoring</Text>
         </View>
       </View>
@@ -56,6 +58,7 @@ export default function AuthShell({
       <View style={styles.wideRoot}>
         <View style={styles.wideLeft}>
           <OrganicBackdrop />
+          <Mascot size={150} onDark style={styles.mascotWide} />
           {brand(false)}
 
           {features?.length ? (
@@ -93,6 +96,7 @@ export default function AuthShell({
     >
       <View style={styles.hero}>
         <OrganicBackdrop />
+        <Mascot size={80} onDark style={styles.mascotPeek} />
         {headerRight ? <View style={styles.heroTop}>{headerRight}</View> : null}
         {brand(true)}
       </View>
@@ -182,6 +186,10 @@ const styles = StyleSheet.create({
     padding: space.xxl,
     paddingBottom: space.huge,
   },
+
+  // The owl perches in the top-right of the green header, clear of the text.
+  mascotPeek: { position: 'absolute', right: space.lg, top: space.lg },
+  mascotWide: { position: 'absolute', right: 48, bottom: 48 },
 
   // ── Desktop ───────────────────────────────────────────────────────────────
   wideRoot: {
