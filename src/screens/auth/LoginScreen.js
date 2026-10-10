@@ -184,6 +184,6 @@ const styles = StyleSheet.create({
 
   footer: {
     textAlign: 'center', fontSize: 11,
-    color: colors.gray400, marginTop: space.sm,
+    color: colors.gray500, marginTop: space.sm,
   },
 });

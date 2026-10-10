@@ -36,7 +36,7 @@ const DEPARTMENTS = [
 
 // `subject` can be null when a session row is missing its join, so coerce
 // before matching rather than letting .includes() throw.
-const getSubjectColors = (subject) => {
+export const getSubjectColors = (subject) => {
   const name = typeof subject === 'string' ? subject : '';
   const dept = DEPARTMENTS.find((d) => d.match.some((m) => name.includes(m)));
   return dept ?? { bg: colors.gray100, text: colors.gray600 };

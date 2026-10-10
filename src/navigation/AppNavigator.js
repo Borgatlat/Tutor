@@ -76,32 +76,34 @@ function DesktopSidebar({ state, navigation }) {
       <View style={styles.sidebarDivider} />
 
       {/* Nav items */}
-      {state.routes.map((route, index) => {
-        const isFocused = state.index === index;
-        const meta = TAB_META.find((t) => t.name === route.name);
-        if (!meta) return null;
-        return (
-          <TouchableOpacity
-            key={route.key}
-            style={[styles.navItem, isFocused && styles.navItemActive]}
-            onPress={() => navigation.navigate(route.name)}
-            activeOpacity={press.opacity}
-            accessibilityRole="tab"
-            accessibilityLabel={meta.label}
-            accessibilityState={{ selected: isFocused }}
-          >
-            <NavIcon
-              name={isFocused ? meta.iconOn : meta.iconOff}
-              size={20}
-              color={isFocused ? colors.white : colors.whiteAlpha[65]}
-            />
-            <Text style={[styles.navLabel, isFocused && styles.navLabelActive]}>
-              {meta.label}
-            </Text>
-            {isFocused ? <View style={styles.navDot} /> : null}
-          </TouchableOpacity>
-        );
-      })}
+      <View accessibilityRole="tablist">
+        {state.routes.map((route, index) => {
+          const isFocused = state.index === index;
+          const meta = TAB_META.find((t) => t.name === route.name);
+          if (!meta) return null;
+          return (
+            <TouchableOpacity
+              key={route.key}
+              style={[styles.navItem, isFocused && styles.navItemActive]}
+              onPress={() => navigation.navigate(route.name)}
+              activeOpacity={press.opacity}
+              accessibilityRole="tab"
+              accessibilityLabel={meta.label}
+              accessibilityState={{ selected: isFocused }}
+            >
+              <NavIcon
+                name={isFocused ? meta.iconOn : meta.iconOff}
+                size={20}
+                color={isFocused ? colors.white : colors.whiteAlpha[65]}
+              />
+              <Text style={[styles.navLabel, isFocused && styles.navLabelActive]}>
+                {meta.label}
+              </Text>
+              {isFocused ? <View style={styles.navDot} /> : null}
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </View>
   );
 }
@@ -113,7 +115,10 @@ function MobileTabBar({ state, navigation }) {
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, space.sm) }]}>
+    <View
+      style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, space.sm) }]}
+      accessibilityRole="tablist"
+    >
       {state.routes.map((route, index) => {
         const isFocused = state.index === index;
         const meta = TAB_META.find((t) => t.name === route.name);

@@ -5,7 +5,8 @@ import colors from '../theme/colors';
 
 // Stars use the school gold; the number uses a darker gold-brown so it still
 // passes text contrast.
-export default function RatingStars({ rating, count, size = 14, showCount = true }) {
+// `onDark` is for green headers, where gold-brown and grey text can't be read.
+export default function RatingStars({ rating, count, size = 14, showCount = true, onDark = false }) {
   const rounded = Math.round(rating ?? 0);
   const hasRating = rating != null && Number(rating) > 0;
 
@@ -28,9 +29,9 @@ export default function RatingStars({ rating, count, size = 14, showCount = true
       ))}
 
       {showCount && (
-        <Text style={[styles.val, { fontSize: size }]}>
+        <Text style={[styles.val, { fontSize: size }, onDark && styles.valDark]}>
           {hasRating ? ` ${Number(rating).toFixed(1)}` : ' —'}
-          {count != null && <Text style={styles.count}> ({count})</Text>}
+          {count != null && <Text style={[styles.count, onDark && styles.countDark]}> ({count})</Text>}
         </Text>
       )}
     </View>
@@ -41,4 +42,6 @@ const styles = StyleSheet.create({
   row:   { flexDirection: 'row', alignItems: 'center' },
   val:   { fontWeight: '700', color: colors.starText, marginLeft: 2 },
   count: { fontWeight: '400', color: colors.gray500 },
+  valDark:   { color: colors.white },
+  countDark: { color: colors.whiteAlpha[80] },
 });

@@ -88,5 +88,5 @@ const styles = StyleSheet.create({
   moreText: { fontSize: 12, fontWeight: '600', color: colors.gray500 },
 
   availText:      { ...type.small, fontWeight: '600', color: colors.brand },
-  availTextEmpty: { color: colors.gray400 },
+  availTextEmpty: { color: colors.gray500 },
 });

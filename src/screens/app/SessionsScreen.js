@@ -189,7 +189,7 @@ export default function SessionsScreen({ navigation }) {
       </View>
 
       {/* Tabs */}
-      <View style={styles.tabBar}>
+      <View style={styles.tabBar} accessibilityRole="tablist">
         {TABS.map((t) => (
           <TouchableOpacity
             key={t}

@@ -123,7 +123,7 @@ export default function TutorProfileScreen({ route, navigation }) {
           <Text style={styles.heroName}>{tutor.full_name}</Text>
           <Text style={styles.heroEmail}>{tutor.email}</Text>
           {tutor.phone ? <Text style={styles.heroPhone}>{tutor.phone}</Text> : null}
-          <RatingStars rating={tutor.avg_rating} count={tutor.review_count} size={15} />
+          <RatingStars rating={tutor.avg_rating} count={tutor.review_count} size={15} onDark />
         </View>
 
         {/* "At a glance" stats, as on the school site */}

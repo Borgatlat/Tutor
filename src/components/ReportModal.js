@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   detailsField: { marginTop: space.lg },
 
   blockNote: {
-    fontSize: 11, color: colors.gray400,
+    fontSize: 11, color: colors.gray500,
     textAlign: 'center', marginTop: space.md, lineHeight: 16,
   },
   bottomSpacer: { height: space.xxxl },

@@ -30,7 +30,8 @@ export default function RoleSelector({ value, onChange, style }) {
               activeOpacity={press.opacity}
               accessibilityRole="radio"
               accessibilityLabel={`${r.label} — ${r.description}`}
-              accessibilityState={{ selected: active }}
+              accessibilityState={{ checked: active, selected: active }}
+              aria-checked={active}
             >
               <Text style={[styles.label, active && styles.labelActive]}>{r.label}</Text>
             </TouchableOpacity>

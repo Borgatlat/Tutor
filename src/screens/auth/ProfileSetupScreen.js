@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 2, borderColor: colors.white,
   },
-  avatarHint: { fontSize: 13, color: colors.gray400 },
+  avatarHint: { fontSize: 13, color: colors.gray500 },
 
   section: {
     marginBottom: space.xxl,

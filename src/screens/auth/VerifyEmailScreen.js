@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     textAlign: 'center', marginBottom: space.md,
   },
   spamNote: {
-    fontSize: 12, color: colors.gray400,
+    fontSize: 12, color: colors.gray500,
     textAlign: 'center', marginTop: space.lg,
   },
 });
