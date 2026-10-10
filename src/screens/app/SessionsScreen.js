@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
+import { syncSessionReminders } from '../../utils/reminders';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { radii, space, border, press, hit, rule } from '../../theme/layout';
@@ -105,6 +106,12 @@ export default function SessionsScreen({ navigation }) {
       setSessions(data.map((s) => ({ ...s, reviewed: reviewed.has(s.id) })));
     } else {
       setSessions(data ?? []);
+      // Upcoming list is the source of truth for reminders (native only).
+      if (tab === 'Upcoming' && !error) {
+        syncSessionReminders(data ?? [], profile.id).catch((e) => {
+          if (__DEV__) console.warn('[SessionsScreen] reminders:', e);
+        });
+      }
     }
     setLoading(false);
   }, [tab, profile?.id]);

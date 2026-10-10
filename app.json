@@ -3,7 +3,11 @@
     "name": "Strake Jesuit Tutors",
     "slug": "strakejesuit-tutors",
     "version": "1.0.0",
-    "platforms": ["ios", "android", "web"],
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -28,7 +32,9 @@
         "NSPrivacyAccessedAPITypes": [
           {
             "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
-            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+            "NSPrivacyAccessedAPITypeReasons": [
+              "CA92.1"
+            ]
           }
         ]
       }
@@ -64,6 +70,13 @@
         {
           "photosPermission": "Strake Jesuit Tutors uses your photo library so you can set a profile picture.",
           "cameraPermission": "Strake Jesuit Tutors uses your camera so you can take a profile photo."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#004B30",
+          "icon": "./assets/adaptive-icon.png"
         }
       ]
     ],

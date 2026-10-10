@@ -217,6 +217,15 @@ export async function addSessionToCalendar(session, otherName) {
 }
 
 /**
+ * When the session's block next starts (next weekday at the block's start
+ * time), or null for an unknown block. Shared with reminders.js.
+ */
+export function nextSessionStart(period) {
+  const times = BLOCK_TIMES[period];
+  return times ? nextWeekdayAtTime(times.startH, times.startM) : null;
+}
+
+/**
  * Returns a human-readable summary of when the next occurrence will be.
  * e.g. "Next Monday, Oct 14 · 9:00 – 9:50 AM"
  */

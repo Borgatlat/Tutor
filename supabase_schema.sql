@@ -446,10 +446,36 @@ create index if not exists blocked_users_blocker_idx on public.blocked_users (bl
 
 
 -- ─────────────────────────────────────────────────────────────
+-- 12. COMMUNITY STATS (Home screen impact strip)
+-- ─────────────────────────────────────────────────────────────
+-- Sessions are private (RLS: read own), so the school-wide totals come from a
+-- security-definer function that returns ONLY aggregate counts — no names,
+-- no rows. 50 minutes per block, matching src/utils/hours.js.
+create or replace function public.community_stats()
+returns table (sessions_completed bigint, hours_tutored numeric, active_tutors bigint)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select
+    count(*)                                   as sessions_completed,
+    round(count(*) * 50 / 60.0, 1)             as hours_tutored,
+    count(distinct tutor_id)                   as active_tutors
+  from public.sessions
+  where status = 'completed';
+$$;
+
+revoke all on function public.community_stats() from public;
+grant execute on function public.community_stats() to authenticated;
+
+
+-- ─────────────────────────────────────────────────────────────
 -- Done! Tables created:
 --   profiles, tutor_subjects, tutor_availability, student_availability,
 --   sessions, reviews, reports, blocked_users
 -- Storage bucket: avatars
 -- RPC function:   search_tutors(query_name, filter_subject, filter_day,
 --                               filter_period, student_id, match_schedule)
+--                 community_stats()
 -- ─────────────────────────────────────────────────────────────

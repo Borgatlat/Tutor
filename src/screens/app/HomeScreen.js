@@ -13,7 +13,8 @@ import { raised, cardShadow } from '../../theme/shadows';
 import { school } from '../../theme/school';
 import TutorCard from '../../components/TutorCard';
 import SkeletonCard from '../../components/SkeletonCard';
-import { Avatar, EmptyState, OrganicBackdrop, SectionHeader, StatusPill } from '../../components/ui';
+import WelcomeTour from '../../components/WelcomeTour';
+import { Avatar, EmptyState, OrganicBackdrop, SectionHeader, StatRow, StatusPill } from '../../components/ui';
 import { useResponsive } from '../../hooks/useResponsive';
 
 export default function HomeScreen({ navigation }) {
@@ -23,13 +24,14 @@ export default function HomeScreen({ navigation }) {
   const [topTutors, setTopTutors]         = useState([]);
   const [upcomingSessions, setUpcoming]   = useState([]);
   const [loadingTutors, setLoadingTutors] = useState(true);
+  const [community, setCommunity]         = useState(null);
 
   const firstName = profile?.full_name?.split(' ')[0] ?? school.memberName;
   const hour      = new Date().getHours();
   const greeting  = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const isTutor   = profile?.role === 'tutor' || profile?.role === 'both';
 
-  useEffect(() => { loadTopTutors(); loadUpcomingSessions(); }, []);
+  useEffect(() => { loadTopTutors(); loadUpcomingSessions(); loadCommunity(); }, []);
 
   const loadTopTutors = async () => {
     try {
@@ -40,6 +42,14 @@ export default function HomeScreen({ navigation }) {
     } finally {
       setLoadingTutors(false);
     }
+  };
+
+  // School-wide totals. Hidden if the RPC isn't deployed or fails — it's a
+  // nice-to-have, never a blocker for the rest of Home.
+  const loadCommunity = async () => {
+    const { data, error } = await supabase.rpc('community_stats');
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!error && row && Number(row.sessions_completed) > 0) setCommunity(row);
   };
 
   const loadUpcomingSessions = async () => {
@@ -96,6 +106,19 @@ export default function HomeScreen({ navigation }) {
       </View>
     </TouchableOpacity>
   );
+
+  const impactSection = community ? (
+    <View style={styles.section}>
+      <StatRow
+        title={`${school.memberPlural} helping ${school.memberPlural}`}
+        stats={[
+          { value: String(Number(community.hours_tutored)), label: 'Hours tutored' },
+          { value: String(community.sessions_completed),    label: 'Sessions' },
+          { value: String(community.active_tutors),         label: 'Tutors' },
+        ]}
+      />
+    </View>
+  ) : null;
 
   const sessionsSection = upcomingSessions.length > 0 ? (
     <View style={styles.section}>
@@ -154,6 +177,7 @@ export default function HomeScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={colors.brand} />
+      <WelcomeTour />
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Hero */}
@@ -213,6 +237,7 @@ export default function HomeScreen({ navigation }) {
         <View style={[styles.body, isWide && styles.bodyWide]}>
           <View style={[styles.col, isWide && styles.colNarrow]}>
             {promoBanner}
+            {impactSection}
             {sessionsSection}
           </View>
           <View style={[styles.col, isWide && styles.colWide]}>

@@ -13,6 +13,7 @@ import { radii, space, border, press, hit, rule } from '../../theme/layout';
 import { heading, label, type } from '../../theme/fonts';
 import SubjectBadge from '../../components/SubjectBadge';
 import AvailabilityGrid from '../../components/AvailabilityGrid';
+import ServiceHoursCard from '../../components/ServiceHoursCard';
 import {
   Avatar, Button, Divider, EmptyState, ErrorBanner,
   Field, RoleSelector, SubjectPicker,
@@ -297,6 +298,11 @@ export default function ProfileScreen() {
             )}
           </View>
 
+          {/* Service hours (tutors) */}
+          {isTutor ? (
+            <ServiceHoursCard tutorId={userId} tutorName={profile?.full_name} />
+          ) : null}
+
           {/* Role */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>My role</Text>
@@ -376,7 +382,7 @@ export default function ProfileScreen() {
           {/* Availability */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>
-              {isTutor ? 'My Availability' : 'My Free Blocks'}
+              {isTutor ? 'My availability' : 'My free blocks'}
             </Text>
             <Text style={styles.hint}>
               {isTutor
