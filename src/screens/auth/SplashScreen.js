@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Platform, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { OrganicBackdrop } from '../../components/ui';
 import colors from '../../theme/colors';
 import { radii, space, rule } from '../../theme/layout';
 import { heading } from '../../theme/fonts';
@@ -20,6 +21,7 @@ export default function SplashScreen() {
 
   return (
     <View style={styles.container}>
+      <OrganicBackdrop />
       <Animated.View style={[styles.content, { opacity, transform: [{ scale }] }]}>
         <View style={styles.iconWrap}>
           <Ionicons name="school" size={44} color={colors.white} />
@@ -43,6 +45,7 @@ export default function SplashScreen() {
 
 const styles = StyleSheet.create({
   container: {
+    overflow: 'hidden',
     flex: 1,
     backgroundColor: colors.brand,
     alignItems: 'center',

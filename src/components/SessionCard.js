@@ -14,6 +14,7 @@ export default function SessionCard({
   session,
   currentUserId,
   onConfirm,
+  onComplete,
   onCancel,
   onReview,
   onAddToCalendar,
@@ -96,6 +97,16 @@ export default function SessionCard({
           />
         )}
 
+        {session.status === 'confirmed' && isTutor && (
+          <Button
+            label="Mark as Done"
+            icon="checkmark-done"
+            size="sm"
+            loading={busy}
+            onPress={() => onComplete?.(session.id)}
+          />
+        )}
+
         {session.status === 'confirmed' && (
           <Button
             label={calendarAdded ? 'Added to Calendar' : 'Add to Calendar'}
@@ -148,6 +159,6 @@ const styles = StyleSheet.create({
 
   notes: { fontSize: 13, color: colors.gray600, lineHeight: 18, marginBottom: space.sm },
 
-  actions: { flexDirection: 'row', gap: space.sm, marginTop: space.xs },
+  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.xs },
   grow:    { flex: 1 },
 });

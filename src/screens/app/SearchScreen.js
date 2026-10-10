@@ -14,6 +14,7 @@ import TutorCard from '../../components/TutorCard';
 import SkeletonCard from '../../components/SkeletonCard';
 import {
   Chip, EmptyState, IconButton, SubjectPicker,
+  OrganicBackdrop,
 } from '../../components/ui';
 import { BLOCKS } from '../../constants';
 import { useResponsive } from '../../hooks/useResponsive';
@@ -164,6 +165,7 @@ export default function SearchScreen({ navigation }) {
 
       {/* Header */}
       <View style={styles.header}>
+        <OrganicBackdrop />
         <View style={styles.headerRule} />
         <Text style={styles.headerTitle}>Find a Tutor</Text>
         <Text style={styles.headerSub}>Core classes · SAT · AP</Text>
@@ -250,6 +252,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.offWhite },
 
   header: {
+    overflow: 'hidden',
     backgroundColor: colors.brand,
     paddingHorizontal: space.xl,
     paddingTop: space.lg,

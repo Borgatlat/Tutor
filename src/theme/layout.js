@@ -26,6 +26,13 @@ export const radii = {
   pill: 999,  // buttons, chips, avatars
 };
 
+// Asymmetric "leaf" corners: two opposite corners very round, two gentler.
+// Spread into a style: { ...leaf.lg }.
+export const leaf = {
+  md: { borderTopLeftRadius: 24, borderBottomRightRadius: 24, borderTopRightRadius: 10, borderBottomLeftRadius: 10 },
+  lg: { borderTopLeftRadius: 32, borderBottomRightRadius: 32, borderTopRightRadius: 12, borderBottomLeftRadius: 12 },
+};
+
 export const border = {
   hairline: 1,     // dividers, subtle outlines
   control:  1,     // inputs, chips, outlined buttons

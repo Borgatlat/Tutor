@@ -10,7 +10,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../../theme/colors';
-import { radii, space, border, press } from '../../theme/layout';
+import { radii, space, border, press, leaf } from '../../theme/layout';
 import { ROLES } from '../../constants';
 
 export default function RoleSelector({ value, onChange, style }) {
@@ -59,6 +59,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   cardActive: {
+    ...leaf.md,
     borderColor: colors.brand,
     backgroundColor: colors.brandTint,
   },

@@ -19,6 +19,7 @@ import { radii, space } from '../../theme/layout';
 import { panelShadow } from '../../theme/shadows';
 import { heading, label } from '../../theme/fonts';
 import { rule } from '../../theme/layout';
+import OrganicBackdrop from './OrganicBackdrop';
 import { useResponsive } from '../../hooks/useResponsive';
 
 export default function AuthShell({
@@ -54,6 +55,7 @@ export default function AuthShell({
     return (
       <View style={styles.wideRoot}>
         <View style={styles.wideLeft}>
+          <OrganicBackdrop />
           {brand(false)}
 
           {features?.length ? (
@@ -90,6 +92,7 @@ export default function AuthShell({
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.hero}>
+        <OrganicBackdrop />
         {headerRight ? <View style={styles.heroTop}>{headerRight}</View> : null}
         {brand(true)}
       </View>
@@ -160,6 +163,7 @@ const styles = StyleSheet.create({
 
   // ── Mobile ────────────────────────────────────────────────────────────────
   hero: {
+    overflow: 'hidden',
     backgroundColor: colors.brand,
     paddingHorizontal: space.xxl,
     paddingTop: space.lg,
@@ -186,6 +190,7 @@ const styles = StyleSheet.create({
     ...Platform.select({ web: { minHeight: '100vh' }, default: {} }),
   },
   wideLeft: {
+    overflow: 'hidden',
     flex: 1,
     backgroundColor: colors.brand,
     paddingHorizontal: 56,

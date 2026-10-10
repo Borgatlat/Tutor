@@ -7,11 +7,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase, searchTutors } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
-import { radii, space, border, press, rule } from '../../theme/layout';
+import { radii, space, border, press, rule, leaf } from '../../theme/layout';
 import { heading, label } from '../../theme/fonts';
 import TutorCard from '../../components/TutorCard';
 import SkeletonCard from '../../components/SkeletonCard';
-import { Avatar, EmptyState, SectionHeader, StatusPill } from '../../components/ui';
+import { Avatar, EmptyState, OrganicBackdrop, SectionHeader, StatusPill } from '../../components/ui';
 import { useResponsive } from '../../hooks/useResponsive';
 
 export default function HomeScreen({ navigation }) {
@@ -84,6 +84,7 @@ export default function HomeScreen({ navigation }) {
       accessibilityRole="button"
       accessibilityLabel="Browse tutors for core classes, SAT and AP"
     >
+      <OrganicBackdrop variant="panel" />
       <View style={styles.promoRule} />
       <Text style={styles.promoTitle}>Core Classes, SAT & AP</Text>
       <Text style={styles.promoSub}>
@@ -154,6 +155,7 @@ export default function HomeScreen({ navigation }) {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Hero */}
         <View style={styles.hero}>
+          <OrganicBackdrop />
           <View style={styles.heroRow}>
             <View style={styles.heroGreetingWrap}>
               <Text style={styles.heroGreeting}>{greeting},</Text>
@@ -226,6 +228,7 @@ const styles = StyleSheet.create({
   // ── Hero ──────────────────────────────────────────────────────────────────
   // Curved bottom edge so the green band flows into the page.
   hero: {
+    overflow: 'hidden',
     backgroundColor: colors.brand,
     paddingHorizontal: space.xl,
     paddingTop: space.xl,
@@ -303,7 +306,8 @@ const styles = StyleSheet.create({
   // Green band with the gold rule — the site's "Take the Next Steps" panel.
   promo: {
     backgroundColor: colors.brandDark,
-    borderRadius: radii.xl,
+    ...leaf.lg,
+    overflow: 'hidden',
     padding: space.xxl,
   },
   promoRule: {

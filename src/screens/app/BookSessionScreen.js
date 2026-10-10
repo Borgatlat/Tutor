@@ -11,6 +11,7 @@ import { radii, space, border, press, hit, rule } from '../../theme/layout';
 import { heading, label } from '../../theme/fonts';
 import {
   Avatar, Button, Chip, EmptyState, ErrorBanner, Field,
+  OrganicBackdrop,
 } from '../../components/ui';
 
 export default function BookSessionScreen({ route, navigation }) {
@@ -111,6 +112,7 @@ export default function BookSessionScreen({ route, navigation }) {
 
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
+          <OrganicBackdrop />
           <View style={styles.headerRule} />
           <Text style={styles.headerTitle}>Book a Session</Text>
         </View>
@@ -198,6 +200,7 @@ const styles = StyleSheet.create({
   backText: { ...label.caps, color: colors.white, fontSize: 11, letterSpacing: 1.8 },
 
   header: {
+    overflow: 'hidden',
     backgroundColor: colors.brand,
     paddingHorizontal: space.xl,
     paddingBottom: space.xxl,

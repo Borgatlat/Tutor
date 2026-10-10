@@ -34,6 +34,10 @@ export default {
   offWhite: '#F1EFEC',     // app background — warm stone
   cream:    '#E9E5E0',     // recessed section background
 
+  // Organic header blobs — lighter shades of the same green, drawn over brand
+  blob:     'rgba(255,255,255,0.07)',
+  blobSoft: 'rgba(255,255,255,0.045)',
+
   // Rules / borders
   line:     '#D8D0C8',     // stone rule, input + outline borders
   lineSoft: '#EEEAE5',     // row dividers inside cards
