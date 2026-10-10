@@ -8,8 +8,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase, uploadAvatar } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
+import { cardShadow } from '../../theme/shadows';
 import { radii, space, border, press, hit, rule } from '../../theme/layout';
-import { heading, label } from '../../theme/fonts';
+import { heading, label, type } from '../../theme/fonts';
 import SubjectBadge from '../../components/SubjectBadge';
 import AvailabilityGrid from '../../components/AvailabilityGrid';
 import {
@@ -196,7 +197,14 @@ export default function ProfileScreen() {
       accessibilityRole="button"
       accessibilityLabel={`${active ? 'Cancel editing' : 'Edit'} ${label}`}
     >
-      <Text style={styles.editLink}>{active ? 'Cancel' : 'Edit'}</Text>
+      <View style={styles.editLink}>
+        <Ionicons
+          name={active ? 'close' : 'create-outline'}
+          size={15}
+          color={colors.brand}
+        />
+        <Text style={styles.editLinkText}>{active ? 'Cancel' : 'Edit'}</Text>
+      </View>
     </TouchableOpacity>
   );
 
@@ -247,7 +255,7 @@ export default function ProfileScreen() {
           {/* Profile info */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Profile Info</Text>
+              <Text style={styles.sectionTitle}>Profile info</Text>
               {editLink(editing, () => { setEditing(!editing); setSaveError(''); }, 'profile info')}
             </View>
 
@@ -272,7 +280,7 @@ export default function ProfileScreen() {
                   onChangeText={setPhone}
                 />
                 <Button
-                  label="Save Changes"
+                  label="Save changes"
                   onPress={handleSaveProfile}
                   loading={savingBio}
                   fullWidth
@@ -291,7 +299,7 @@ export default function ProfileScreen() {
 
           {/* Role */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>My Role</Text>
+            <Text style={styles.sectionTitle}>My role</Text>
             <Text style={styles.hint}>
               You can be a student, a tutor, or both at the same time.
             </Text>
@@ -302,7 +310,7 @@ export default function ProfileScreen() {
 
             {roleChanged ? (
               <Button
-                label="Save Role"
+                label="Save role"
                 onPress={handleSaveRole}
                 loading={savingRole}
                 fullWidth
@@ -315,7 +323,7 @@ export default function ProfileScreen() {
           {canTeach ? (
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>My Subjects</Text>
+                <Text style={styles.sectionTitle}>My subjects</Text>
                 {editLink(
                   editingSubjects,
                   () => { setEditingSubjects(!editingSubjects); setSubjectError(''); },
@@ -339,7 +347,7 @@ export default function ProfileScreen() {
                   />
 
                   <Button
-                    label="Save Subjects"
+                    label="Save subjects"
                     onPress={handleSaveSubjects}
                     loading={savingSubjects}
                     fullWidth
@@ -420,7 +428,7 @@ export default function ProfileScreen() {
                     style={styles.grow}
                   />
                   <Button
-                    label="Sign Out"
+                    label="Sign out"
                     variant="dangerSolid"
                     size="sm"
                     onPress={signOut}
@@ -430,7 +438,7 @@ export default function ProfileScreen() {
               </View>
             ) : (
               <Button
-                label="Sign Out"
+                label="Sign out"
                 icon="log-out-outline"
                 variant="danger"
                 size="sm"
@@ -479,7 +487,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gold,
     marginTop: space.xs, marginBottom: space.md,
   },
-  heroName:  { ...heading.xl, color: colors.white, fontSize: 26, marginBottom: space.xs },
+  heroName:  { ...type.title, color: colors.white, marginBottom: space.xs },
   heroEmail: { color: colors.whiteAlpha[80], fontSize: 13, marginBottom: space.sm },
 
   roleBadge: {
@@ -488,15 +496,14 @@ const styles = StyleSheet.create({
     borderRadius: radii.xs,
     backgroundColor: colors.maroon,
   },
-  roleBadgeText: { ...label.caps, fontSize: 10, letterSpacing: 1.6, color: colors.white },
+  roleBadgeText: { ...label.ui, fontSize: 12, color: colors.white },
 
   // ── Sections ──────────────────────────────────────────────────────────────
   body: { padding: space.lg, gap: space.md },
   section: {
     backgroundColor: colors.white,
     borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.lineSoft,
+    ...cardShadow,
     padding: space.xl,
   },
   sectionHeader: {
@@ -505,21 +512,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: space.md,
   },
-  sectionTitle:  { ...heading.lg, fontSize: 18, color: colors.black, marginBottom: space.xs },
+  sectionTitle:  { ...type.heading, color: colors.black, marginBottom: space.xs },
   sectionAction: { marginTop: space.lg },
-  editLink:      { ...label.caps, fontSize: 11, letterSpacing: 1.6, color: colors.brand },
+  // Same look as SectionHeader's "See all" — a quiet brand link with an icon,
+  // on a soft tint so it reads as tappable.
+  editLink: {
+    flexDirection: 'row', alignItems: 'center', gap: space.xs,
+    paddingHorizontal: space.md, paddingVertical: 6,
+    borderRadius: radii.pill,
+    backgroundColor: colors.brandTint,
+  },
+  editLinkText: { ...label.ui, fontSize: 13, color: colors.brand },
 
   fieldLabel: {
-    ...label.caps, fontSize: 10, letterSpacing: 1.8,
-    color: colors.gray500, marginBottom: space.xs,
+    ...label.ui, fontSize: 13,
+    color: colors.gray500, marginBottom: 2,
   },
   fieldLabelSpaced: { marginTop: space.md },
-  fieldValue: { fontSize: 14, color: colors.gray700, lineHeight: 20 },
+  fieldValue: { ...type.body, color: colors.gray700 },
 
-  hint: {
-    fontSize: 12, color: colors.gray500,
-    marginBottom: space.md, lineHeight: 17,
-  },
+  hint: { ...type.small, color: colors.gray500, marginBottom: space.md },
 
   badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
 

@@ -1,14 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import colors from '../theme/colors';
-import { space, radii } from '../theme/layout';
-import { heading, label } from '../theme/fonts';
+import { space } from '../theme/layout';
+import { type } from '../theme/fonts';
 import Card from './ui/Card';
 import Avatar from './ui/Avatar';
 import Button from './ui/Button';
 import StatusPill from './ui/StatusPill';
-import SubjectBadge from './SubjectBadge';
 
 export default function SessionCard({
   session,
@@ -23,6 +21,10 @@ export default function SessionCard({
 }) {
   const isTutor   = session.tutor_id === currentUserId;
   const otherUser = isTutor ? session.student : session.tutor;
+  const hasActions =
+       session.status === 'pending'
+    || session.status === 'confirmed'
+    || (session.status === 'completed' && !isTutor && !session.reviewed);
 
   return (
     <Card style={styles.card}>
@@ -37,26 +39,14 @@ export default function SessionCard({
         />
 
         <View style={styles.info}>
-          <Text style={styles.name}>{otherUser?.full_name ?? 'Unknown'}</Text>
-          <Text style={styles.role}>{isTutor ? 'Student' : 'Tutor'}</Text>
+          <Text style={styles.name} numberOfLines={1}>{otherUser?.full_name ?? 'Unknown'}</Text>
+          {/* One compact line instead of separate subject / block tiles */}
+          <Text style={styles.meta} numberOfLines={1}>
+            {isTutor ? 'Student' : 'Tutor'} · {session.subject || 'Subject'} · Block {session.period}
+          </Text>
         </View>
 
         <StatusPill status={session.status} />
-      </View>
-
-      {/* Details — subject and block as a small "at a glance" pair */}
-      <View style={styles.details}>
-        <View style={styles.detailCell}>
-          <Text style={styles.detailLabel}>Subject</Text>
-          <SubjectBadge subject={session.subject} small />
-        </View>
-        <View style={[styles.detailCell, styles.detailCellRight]}>
-          <Text style={styles.detailLabel}>Block</Text>
-          <View style={styles.detailItem}>
-            <Ionicons name="calendar-outline" size={14} color={colors.brand} />
-            <Text style={styles.detailValue}>{session.period}</Text>
-          </View>
-        </View>
       </View>
 
       {session.notes ? (
@@ -65,6 +55,7 @@ export default function SessionCard({
 
       {/* Actions — `busy` disables them all so they can't be double-tapped
           while the request is in flight. */}
+      {hasActions ? (
       <View style={styles.actions}>
         {session.status === 'pending' && isTutor && (
           <>
@@ -88,7 +79,7 @@ export default function SessionCard({
 
         {session.status === 'pending' && !isTutor && (
           <Button
-            label="Cancel Request"
+            label="Cancel request"
             size="sm"
             variant="danger"
             loading={busy}
@@ -99,7 +90,7 @@ export default function SessionCard({
 
         {session.status === 'confirmed' && isTutor && (
           <Button
-            label="Mark as Done"
+            label="Mark as done"
             icon="checkmark-done"
             size="sm"
             loading={busy}
@@ -109,7 +100,7 @@ export default function SessionCard({
 
         {session.status === 'confirmed' && (
           <Button
-            label={calendarAdded ? 'Added to Calendar' : 'Add to Calendar'}
+            label={calendarAdded ? 'Added to calendar' : 'Add to calendar'}
             icon={calendarAdded ? 'checkmark-circle' : 'calendar-outline'}
             size="sm"
             variant={calendarAdded ? 'ghost' : 'secondary'}
@@ -120,7 +111,7 @@ export default function SessionCard({
 
         {session.status === 'completed' && !isTutor && !session.reviewed && (
           <Button
-            label="Leave a Review"
+            label="Leave a review"
             icon="star-outline"
             size="sm"
             variant="secondary"
@@ -128,6 +119,7 @@ export default function SessionCard({
           />
         )}
       </View>
+      ) : null}
     </Card>
   );
 }
@@ -135,30 +127,14 @@ export default function SessionCard({
 const styles = StyleSheet.create({
   card: { marginBottom: space.md },
 
-  top:    { flexDirection: 'row', alignItems: 'center', marginBottom: space.md },
+  top:    { flexDirection: 'row', alignItems: 'center' },
   avatar: { marginRight: space.md },
-  info:   { flex: 1 },
-  name:   { fontSize: 15, fontWeight: '700', color: colors.black },
-  role:   { fontSize: 12, color: colors.gray500, marginTop: 1 },
+  info:   { flex: 1, marginRight: space.sm },
+  name:   { ...type.body, fontWeight: '700', color: colors.black },
+  meta:   { ...type.small, color: colors.gray500, marginTop: 2 },
 
-  details: {
-    flexDirection: 'row',
-    gap: space.sm,
-    marginBottom: space.md,
-  },
-  detailCell: {
-    flex: 1, gap: space.xs, alignItems: 'flex-start',
-    backgroundColor: colors.offWhite,
-    borderRadius: radii.sm,
-    padding: space.md,
-  },
-  detailCellRight: {},
-  detailLabel:     { ...label.caps, fontWeight: '500', fontSize: 9, letterSpacing: 1.6, color: colors.gray500 },
-  detailItem:      { flexDirection: 'row', alignItems: 'center', gap: space.xs },
-  detailValue:     { ...heading.lg, fontSize: 18, color: colors.brand },
+  notes: { ...type.small, color: colors.gray600, marginTop: space.md },
 
-  notes: { fontSize: 13, color: colors.gray600, lineHeight: 18, marginBottom: space.sm },
-
-  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.xs },
+  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.md },
   grow:    { flex: 1 },
 });

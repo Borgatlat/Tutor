@@ -8,8 +8,8 @@ import { supabase, searchTutors } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { radii, space, border, press, rule, leaf } from '../../theme/layout';
-import { heading, label } from '../../theme/fonts';
-import { raised } from '../../theme/shadows';
+import { type, label } from '../../theme/fonts';
+import { raised, cardShadow } from '../../theme/shadows';
 import { school } from '../../theme/school';
 import TutorCard from '../../components/TutorCard';
 import SkeletonCard from '../../components/SkeletonCard';
@@ -86,7 +86,6 @@ export default function HomeScreen({ navigation }) {
       accessibilityRole="button"
       accessibilityLabel="Browse tutors for core classes, SAT and AP"
     >
-      <OrganicBackdrop variant="panel" />
       <View style={styles.promoRule} />
       <Text style={styles.promoTitle}>Core Classes, SAT & AP</Text>
       <Text style={styles.promoSub}>
@@ -102,7 +101,7 @@ export default function HomeScreen({ navigation }) {
     <View style={styles.section}>
       <SectionHeader
         ruled
-        title="Upcoming Sessions"
+        title="Upcoming sessions"
         actionLabel="See all"
         onAction={() => navigation.navigate('Sessions')}
       />
@@ -110,11 +109,13 @@ export default function HomeScreen({ navigation }) {
     </View>
   ) : null;
 
+  // Tutor cards are already cards, so this section sits straight on the page
+  // rather than inside another white panel.
   const tutorsSection = (
-    <View style={styles.section}>
+    <View>
       <SectionHeader
         ruled
-        title="Top Tutors"
+        title="Top tutors"
         actionLabel="Browse all"
         onAction={() => navigation.navigate('Search')}
       />
@@ -171,11 +172,12 @@ export default function HomeScreen({ navigation }) {
               accessibilityRole="button"
               accessibilityLabel="Open your profile"
             >
-              {profile?.avatar_url ? (
-                <Avatar uri={profile.avatar_url} name={profile.full_name} size={44} />
-              ) : (
-                <Ionicons name="person" size={22} color={colors.white} />
-              )}
+              <Avatar
+                uri={profile?.avatar_url}
+                name={profile?.full_name}
+                size={44}
+                color={colors.accentLight}
+              />
             </TouchableOpacity>
           </View>
 
@@ -188,7 +190,7 @@ export default function HomeScreen({ navigation }) {
               accessibilityLabel="Find a tutor"
             >
               <Ionicons name="search" size={17} color={colors.brand} />
-              <Text style={styles.qBtnText}>Find a Tutor</Text>
+              <Text style={styles.qBtnText}>Find a tutor</Text>
             </TouchableOpacity>
 
             {isTutor ? (
@@ -200,7 +202,7 @@ export default function HomeScreen({ navigation }) {
                 accessibilityLabel="My sessions"
               >
                 <Ionicons name="calendar" size={17} color={colors.brand} />
-                <Text style={styles.qBtnText}>My Sessions</Text>
+                <Text style={styles.qBtnText}>My sessions</Text>
               </TouchableOpacity>
             ) : null}
           </View>
@@ -251,16 +253,10 @@ const styles = StyleSheet.create({
     color: colors.whiteAlpha[65],
     marginBottom: space.xs,
   },
-  heroName: {
-    ...heading.xl,
-    color: colors.white,
-    fontSize: 30,
-  },
+  heroName: { ...type.title, color: colors.white },
   heroBadge: {
-    width: 44, height: 44, borderRadius: radii.pill,
-    borderWidth: 1, borderColor: colors.whiteAlpha[30],
-    alignItems: 'center', justifyContent: 'center',
-    overflow: 'hidden',
+    borderRadius: radii.pill,
+    borderWidth: 2, borderColor: colors.whiteAlpha[30],
   },
 
   quickActions: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
@@ -271,7 +267,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
     ...raised('white'),
   },
-  qBtnText: { ...label.caps, fontSize: 11, letterSpacing: 1.8, color: colors.brand },
+  qBtnText: { ...label.ui, fontSize: 14, color: colors.brand },
 
   // ── Body ──────────────────────────────────────────────────────────────────
   body:     { padding: space.lg, gap: space.lg },
@@ -287,8 +283,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     padding: space.xl,
     borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.lineSoft,
+    ...cardShadow,
   },
 
   // ── Session rows ──────────────────────────────────────────────────────────
@@ -302,15 +297,15 @@ const styles = StyleSheet.create({
   sessionRowLast: { borderBottomWidth: 0, paddingBottom: 0 },
   sessionAvatar:  { marginRight: space.md },
   sessionInfo:    { flex: 1, marginRight: space.sm },
-  sessionName:    { fontSize: 14, fontWeight: '700', color: colors.black },
-  sessionDetail:  { fontSize: 12, color: colors.gray500, marginTop: 1 },
+  sessionName:    { ...type.body, fontWeight: '700', color: colors.black },
+  sessionDetail:  { ...type.small, color: colors.gray500, marginTop: 2 },
 
   // ── Promo banner ──────────────────────────────────────────────────────────
-  // Green band with the gold rule — the site's "Take the Next Steps" panel.
+  // Light green panel with the gold rule, so it doesn't stack a second dark
+  // block under the green header.
   promo: {
-    backgroundColor: colors.brandDark,
+    backgroundColor: colors.brandTint,
     ...leaf.lg,
-    overflow: 'hidden',
     padding: space.xxl,
   },
   promoRule: {
@@ -318,18 +313,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gold,
     marginBottom: space.lg,
   },
-  promoTitle: { ...heading.lg, color: colors.white, fontSize: 22, marginBottom: space.sm },
-  promoSub:   { color: colors.whiteAlpha[80], fontSize: 14, lineHeight: 22 },
+  promoTitle: { ...type.heading, color: colors.brand, marginBottom: space.xs },
+  promoSub:   { ...type.small, color: colors.gray600 },
   promoCta: {
     alignSelf: 'flex-start',
-    marginTop: space.lg,
-    backgroundColor: colors.white,
+    backgroundColor: colors.brand,
     borderRadius: radii.pill,
-    ...raised('white'),
+    ...raised('green'),
+    // After raised(), which resets marginTop for its press offset.
+    marginTop: space.lg,
     paddingHorizontal: space.xl,
     paddingVertical: space.md,
   },
-  promoCtaText: { ...label.caps, fontSize: 11, letterSpacing: 2, color: colors.brand },
+  promoCtaText: { ...label.ui, fontSize: 14, color: colors.white },
 
   bottomSpacer: { height: space.xxxl },
 });

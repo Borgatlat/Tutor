@@ -8,8 +8,8 @@ import { supabase } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { radii, space, border, press, hit, rule, leaf } from '../../theme/layout';
-import { modalShadow } from '../../theme/shadows';
-import { heading, label } from '../../theme/fonts';
+import { modalShadow, cardShadow } from '../../theme/shadows';
+import { heading, label, type } from '../../theme/fonts';
 import SubjectBadge from '../../components/SubjectBadge';
 import RatingStars from '../../components/RatingStars';
 import AvailabilityGrid from '../../components/AvailabilityGrid';
@@ -164,11 +164,11 @@ export default function TutorProfileScreen({ route, navigation }) {
             </View>
 
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Free Blocks</Text>
+              <Text style={styles.sectionTitle}>Free blocks</Text>
               <Text style={styles.sectionHint}>
                 {isSelf
                   ? 'Your free blocks'
-                  : 'Tap a highlighted block to pick a time'}
+                  : 'Pick a block to book it'}
               </Text>
 
               {!loading ? (
@@ -231,8 +231,8 @@ export default function TutorProfileScreen({ route, navigation }) {
           </View>
         </View>
 
-        {/* Room for the sticky book bar */}
-        <View style={styles.bottomSpacer} />
+        {/* Room for the book bar once it appears */}
+        <View style={selectedSlot ? styles.bottomSpacer : styles.bottomSpacerShort} />
       </ScrollView>
 
       <ReportModal
@@ -241,20 +241,15 @@ export default function TutorProfileScreen({ route, navigation }) {
         reportedUser={tutor}
       />
 
-      {/* Book CTA */}
-      {!isSelf ? (
+      {/* Book bar — only appears once a block is picked */}
+      {!isSelf && selectedSlot ? (
         <View style={styles.bookBar}>
           <View style={styles.bookText}>
-            <Text style={styles.bookTitle}>
-              {selectedSlot ? `Block ${selectedSlot.period}` : 'Select a block above'}
-            </Text>
-            <Text style={styles.bookSub}>
-              {selectedSlot ? 'Ready to book' : 'Tap a free block to select it'}
-            </Text>
+            <Text style={styles.bookTitle}>Block {selectedSlot.period}</Text>
+            <Text style={styles.bookSub}>Ready to book</Text>
           </View>
           <Button
-            label="Book Session"
-            disabled={!selectedSlot}
+            label="Book session"
             onPress={() => navigation.navigate('BookSession', { tutor, slot: selectedSlot })}
           />
         </View>
@@ -275,7 +270,7 @@ const styles = StyleSheet.create({
     paddingVertical: space.sm,
   },
   backBtn:    { flexDirection: 'row', alignItems: 'center', gap: space.xs },
-  backText:   { ...label.caps, color: colors.white, fontSize: 11, letterSpacing: 1.8 },
+  backText:   { ...label.ui, color: colors.white, fontSize: 15 },
   navActions: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   navBtn:     { borderWidth: 1, borderColor: colors.whiteAlpha[30] },
 
@@ -300,7 +295,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gold,
     marginBottom: space.md,
   },
-  heroName:  { ...heading.xl, color: colors.white, fontSize: 26, marginBottom: space.xs },
+  heroName:  { ...type.title, color: colors.white, marginBottom: space.xs },
   heroEmail: { color: colors.whiteAlpha[80], fontSize: 13, marginBottom: 2 },
   heroPhone: { color: colors.whiteAlpha[65], fontSize: 13, marginBottom: space.sm },
 
@@ -311,8 +306,7 @@ const styles = StyleSheet.create({
     marginHorizontal: space.lg,
     marginTop: -space.xl,
     ...leaf.lg,
-    borderWidth: 1,
-    borderColor: colors.lineSoft,
+    ...cardShadow,
     padding: space.xl,
   },
 
@@ -325,16 +319,12 @@ const styles = StyleSheet.create({
   section: {
     backgroundColor: colors.white,
     borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.lineSoft,
+    ...cardShadow,
     padding: space.xl,
   },
-  sectionTitle: {
-    ...label.caps, fontSize: 11, letterSpacing: 2,
-    color: colors.gray500, marginBottom: space.md,
-  },
-  sectionHint:  { fontSize: 12, color: colors.gray500, marginBottom: space.sm },
-  bio:          { fontSize: 14, color: colors.gray700, lineHeight: 22 },
+  sectionTitle: { ...type.heading, color: colors.black, marginBottom: space.sm },
+  sectionHint:  { ...type.small, color: colors.gray500, marginBottom: space.sm },
+  bio:          { ...type.body, color: colors.gray700 },
   badgeRow:     { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
 
   // ── Reviews ───────────────────────────────────────────────────────────────
@@ -353,10 +343,11 @@ const styles = StyleSheet.create({
   },
   reviewInitials: { color: colors.white, fontWeight: '700', fontSize: 12 },
   reviewMeta:     { flex: 1 },
-  reviewAuthor:   { fontSize: 13, fontWeight: '700', color: colors.black, marginBottom: 2 },
-  reviewComment:  { fontSize: 13, color: colors.gray700, lineHeight: 19 },
+  reviewAuthor:   { ...type.small, fontWeight: '700', color: colors.black, marginBottom: 2 },
+  reviewComment:  { ...type.small, color: colors.gray700 },
 
-  bottomSpacer: { height: 120 },
+  bottomSpacer:      { height: 120 },
+  bottomSpacerShort: { height: space.xxxl },
 
   // ── Sticky book bar ───────────────────────────────────────────────────────
   bookBar: {
@@ -374,6 +365,6 @@ const styles = StyleSheet.create({
     ...modalShadow,
   },
   bookText:  { flex: 1 },
-  bookTitle: { fontSize: 15, fontWeight: '800', color: colors.black },
-  bookSub:   { fontSize: 12, color: colors.gray500, marginTop: 2 },
+  bookTitle: { ...type.body, fontWeight: '700', color: colors.black },
+  bookSub:   { ...type.small, color: colors.gray500 },
 });

@@ -135,7 +135,6 @@ function MobileTabBar({ state, navigation }) {
             accessibilityLabel={meta.label}
             accessibilityState={{ selected: isFocused }}
           >
-            <View style={[styles.tabMarker, isFocused && styles.tabMarkerActive]} />
             <View style={[styles.tabIconWrap, isFocused && styles.tabIconWrapActive]}>
               <NavIcon
                 name={isFocused ? meta.iconOn : meta.iconOff}
@@ -248,7 +247,7 @@ const styles = StyleSheet.create({
     marginLeft: 'auto',
   },
   navLabel: {
-    fontSize: 12, fontWeight: '600', letterSpacing: 1.6, textTransform: 'uppercase',
+    fontSize: 14, fontWeight: '600',
     color: colors.whiteAlpha[65],
   },
   navLabelActive: { color: colors.white, fontWeight: '700' },
@@ -267,19 +266,11 @@ const styles = StyleSheet.create({
     gap: 3,
     minHeight: 60,
   },
-  tabMarker: {
-    width: 28, height: 4, borderRadius: 2,
-    backgroundColor: 'transparent',
-    marginBottom: space.xs,
-  },
-  tabMarkerActive: { backgroundColor: colors.gold },
   tabIconWrap: {
     paddingHorizontal: space.lg, paddingVertical: 3,
     borderRadius: radii.pill,
   },
   tabIconWrapActive: { backgroundColor: colors.brandTint },
-  tabLabel: {
-    fontSize: 10, fontWeight: '600', letterSpacing: 1.4, textTransform: 'uppercase',
-  },
+  tabLabel: { fontSize: 11, fontWeight: '600' },
   tabLabelActive: { fontWeight: '700' },
 });

@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AppTextInput from '../AppTextInput';
 import colors from '../../theme/colors';
 import { radii, space, border } from '../../theme/layout';
-import { label as labelPreset } from '../../theme/fonts';
+import { label as labelPreset, type } from '../../theme/fonts';
 
 export default function Field({
   label,
@@ -78,10 +78,9 @@ const styles = StyleSheet.create({
   wrap: { marginBottom: space.lg },
 
   label: {
-    ...labelPreset.caps,
-    fontSize: 11,
-    letterSpacing: 1.6,
-    color: colors.gray600,
+    ...labelPreset.ui,
+    fontSize: 13,
+    color: colors.gray700,
     marginBottom: space.sm,
   },
 

@@ -10,7 +10,9 @@
  *  highlightSlot – { period } | null — marks one chip as chosen
  *  onSelectSlot  – (null, period) => void — free chips become selectable
  *  emptyLabel    – shown instead of the grid when nothing is free and the grid
- *                  is read-only, so "no blocks" doesn't look like a bug
+ *                  is not editable, so "no blocks" doesn't look like a bug
+ *
+ * Outside edit mode only the free blocks are drawn.
  */
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
@@ -31,14 +33,18 @@ export default function AvailabilityGrid({
 
   const editable = !!onToggle;
 
-  // Read-only and nothing free → say so rather than rendering 8 inert chips.
-  if (!editable && !onSelectSlot && availability.length === 0) {
+  // Not editable and nothing free → say so rather than rendering 8 inert chips.
+  if (!editable && availability.length === 0) {
     return <EmptyState icon="time-outline" title={emptyLabel} compact />;
   }
 
+  // Only the edit view needs every block; elsewhere show just the free ones,
+  // so the row isn't mostly greyed-out chips.
+  const blocks = editable ? BLOCKS : BLOCKS.filter(isFree);
+
   return (
     <View style={styles.row}>
-      {BLOCKS.map((b) => {
+      {blocks.map((b) => {
         const free = isFree(b);
         const hi   = isHighlighted(b);
 

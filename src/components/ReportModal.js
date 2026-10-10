@@ -10,7 +10,7 @@ import useAuthStore from '../store/useAuthStore';
 import colors from '../theme/colors';
 import { radii, space } from '../theme/layout';
 import { sheetShadow } from '../theme/shadows';
-import { heading } from '../theme/fonts';
+import { heading, label, type } from '../theme/fonts';
 import Button from './ui/Button';
 import Chip from './ui/Chip';
 import Field from './ui/Field';
@@ -126,7 +126,7 @@ export default function ReportModal({ visible, onClose, reportedUser }) {
               />
 
               <Button
-                label="Submit Report"
+                label="Submit report"
                 icon="flag"
                 onPress={handleReport}
                 disabled={!reason}
@@ -187,10 +187,7 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 14, color: colors.gray500, marginBottom: space.xl },
   userName: { fontWeight: '700', color: colors.black },
 
-  label: {
-    fontSize: 11, fontWeight: '600', letterSpacing: 1.6, textTransform: 'uppercase',
-    color: colors.gray600, marginBottom: space.sm,
-  },
+  label: { ...type.small, fontWeight: '600', color: colors.gray700, marginBottom: space.sm },
 
   reasonGrid:   { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   detailsField: { marginTop: space.lg },

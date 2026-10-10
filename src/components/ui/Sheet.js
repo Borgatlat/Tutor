@@ -10,7 +10,7 @@ import { Modal, View, Text, StyleSheet } from 'react-native';
 import colors from '../../theme/colors';
 import { radii, space } from '../../theme/layout';
 import { sheetShadow } from '../../theme/shadows';
-import { heading } from '../../theme/fonts';
+import { heading, label, type } from '../../theme/fonts';
 
 export default function Sheet({
   visible,

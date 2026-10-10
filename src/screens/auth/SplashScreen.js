@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Animated, Platform, ActivityIndicator } from 'r
 import { Mascot, OrganicBackdrop } from '../../components/ui';
 import colors from '../../theme/colors';
 import { radii, space, rule } from '../../theme/layout';
-import { heading } from '../../theme/fonts';
+import { heading, label, type } from '../../theme/fonts';
 import { school } from '../../theme/school';
 
 const useNativeDriver = Platform.OS !== 'web';

@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { supabase } from '../../lib/supabase';
 import colors from '../../theme/colors';
 import { space, hit, press } from '../../theme/layout';
-import { heading } from '../../theme/fonts';
+import { heading, label, type } from '../../theme/fonts';
 import { school } from '../../theme/school';
 import { SCHOOL_EMAIL_DOMAIN } from '../../constants';
 import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../../constants/legal';
@@ -68,7 +68,7 @@ export default function LoginScreen({ navigation }) {
       subtitle={`Peer tutoring for ${school.name} students, by ${school.name} students`}
       features={FEATURES}
     >
-      <Text style={styles.cardTitle}>Sign In</Text>
+      <Text style={styles.cardTitle}>Sign in</Text>
 
       <ErrorBanner message={submitError} />
 
@@ -77,7 +77,7 @@ export default function LoginScreen({ navigation }) {
         name="email"
         render={({ field: { onChange, value, onBlur } }) => (
           <Field
-            label="School Email"
+            label="School email"
             icon="mail-outline"
             error={errors.email?.message}
             placeholder={`name${SCHOOL_EMAIL_DOMAIN}`}
@@ -122,7 +122,7 @@ export default function LoginScreen({ navigation }) {
       />
 
       <Button
-        label="Sign In"
+        label="Sign in"
         onPress={handleSubmit(onSubmit)}
         loading={loading}
         fullWidth

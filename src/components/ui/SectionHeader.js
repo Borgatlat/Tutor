@@ -12,7 +12,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../../theme/colors';
 import { space, press, hit, rule } from '../../theme/layout';
-import { heading, label } from '../../theme/fonts';
+import { type, label } from '../../theme/fonts';
 
 export default function SectionHeader({ title, actionLabel, onAction, ruled = false, style }) {
   return (
@@ -52,11 +52,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gold,
     marginBottom: space.sm,
   },
-  title: {
-    ...heading.lg,
-    fontSize: 18,
-    color: colors.black,
-  },
+  title: { ...type.heading, color: colors.black },
   action: { flexDirection: 'row', alignItems: 'center', gap: 2, paddingBottom: 2 },
-  actionText: { ...label.caps, fontSize: 11, letterSpacing: 1.6, color: colors.brand },
+  actionText: { ...label.ui, fontSize: 13, color: colors.brand },
 });

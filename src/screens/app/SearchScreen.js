@@ -7,8 +7,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { searchTutors } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
+import { cardShadow } from '../../theme/shadows';
 import { radii, space, border, press, hit, rule } from '../../theme/layout';
-import { heading, label } from '../../theme/fonts';
+import { heading, label, type } from '../../theme/fonts';
 import { school } from '../../theme/school';
 import AppTextInput from '../../components/AppTextInput';
 import TutorCard from '../../components/TutorCard';
@@ -168,7 +169,7 @@ export default function SearchScreen({ navigation }) {
       <View style={styles.header}>
         <OrganicBackdrop />
         <View style={styles.headerRule} />
-        <Text style={styles.headerTitle}>Find a Tutor</Text>
+        <Text style={styles.headerTitle}>Find a tutor</Text>
         <Text style={styles.headerSub}>Core classes · SAT · AP</Text>
       </View>
 
@@ -267,7 +268,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gold,
     marginBottom: space.md,
   },
-  headerTitle: { ...heading.xl, color: colors.white, fontSize: 28 },
+  headerTitle: { ...type.title, color: colors.white },
   headerSub:   { ...label.caps, color: colors.whiteAlpha[65], fontSize: 10, letterSpacing: 2.2, marginTop: space.xs },
 
   searchRow: {
@@ -317,13 +318,10 @@ const styles = StyleSheet.create({
     marginHorizontal: space.lg, marginBottom: space.sm,
     padding: space.lg,
     borderRadius: radii.lg,
-    borderWidth: 1, borderColor: colors.lineSoft,
+    ...cardShadow,
   },
 
-  filterLabel: {
-    ...label.caps, fontSize: 11, letterSpacing: 1.6,
-    color: colors.gray600, marginBottom: space.sm,
-  },
+  filterLabel: { ...type.small, fontWeight: '600', color: colors.gray700, marginBottom: space.sm },
   filterLabelSpaced: { marginTop: space.lg },
 
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },

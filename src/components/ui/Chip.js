@@ -92,5 +92,5 @@ const styles = StyleSheet.create({
   },
 
   inner: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
-  label: { ...labelPreset.caps, fontSize: 11, letterSpacing: 1.2 },
+  label: { ...labelPreset.ui, fontSize: 13 },
 });

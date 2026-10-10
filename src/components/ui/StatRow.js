@@ -10,7 +10,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import colors from '../../theme/colors';
 import { space } from '../../theme/layout';
-import { heading, label } from '../../theme/fonts';
+import { heading, label, type } from '../../theme/fonts';
 
 export default function StatRow({ stats = [], title, size = 'md', style }) {
   const big = size === 'lg';
@@ -60,8 +60,8 @@ const styles = StyleSheet.create({
   label: {
     ...label.caps,
     fontWeight: '500',
-    fontSize: 9,
-    letterSpacing: 1.6,
+    fontSize: 10,
+    letterSpacing: 1.4,
     color: colors.gray500,
     textAlign: 'center',
     marginTop: space.xs,

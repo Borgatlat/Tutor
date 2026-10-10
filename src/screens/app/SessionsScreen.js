@@ -8,8 +8,8 @@ import { supabase } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { radii, space, border, press, hit, rule } from '../../theme/layout';
-import { sheetShadow } from '../../theme/shadows';
-import { heading, label } from '../../theme/fonts';
+import { sheetShadow, cardShadow } from '../../theme/shadows';
+import { heading, label, type } from '../../theme/fonts';
 import SessionCard from '../../components/SessionCard';
 import {
   Button, EmptyState, ErrorBanner, Field, Sheet,
@@ -178,7 +178,7 @@ export default function SessionsScreen({ navigation }) {
 
         <OrganicBackdrop />
         <View style={styles.headerRule} />
-        <Text style={styles.headerTitle}>My Sessions</Text>
+        <Text style={styles.headerTitle}>My sessions</Text>
       </View>
 
       {/* Tabs */}
@@ -220,7 +220,7 @@ export default function SessionsScreen({ navigation }) {
                   ? 'Book a session with a tutor and it will show up here.'
                   : 'Completed and cancelled sessions will appear here.'
               }
-              actionLabel={tab === 'Upcoming' ? 'Find a Tutor' : undefined}
+              actionLabel={tab === 'Upcoming' ? 'Find a tutor' : undefined}
               onAction={tab === 'Upcoming' ? () => navigation.navigate('Search') : undefined}
             />
           }
@@ -259,7 +259,7 @@ export default function SessionsScreen({ navigation }) {
         </Text>
         <View style={styles.rowActions}>
           <Button
-            label="Keep It"
+            label="Keep it"
             variant="neutral"
             onPress={() => setCancelConfirmId(null)}
             disabled={cancelling}
@@ -279,7 +279,7 @@ export default function SessionsScreen({ navigation }) {
       <Sheet
         visible={!!reviewSession}
         onClose={closeReview}
-        title="Leave a Review"
+        title="Leave a review"
         subtitle={`How was your session with ${reviewSession?.tutor?.full_name ?? 'your tutor'}?`}
       >
         <View
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gold,
     marginBottom: space.md,
   },
-  headerTitle: { ...heading.xl, color: colors.white, fontSize: 28 },
+  headerTitle: { ...type.title, color: colors.white },
 
   // Pill segmented control on the stone background.
   tabBar: {
@@ -385,8 +385,8 @@ const styles = StyleSheet.create({
     flex: 1, paddingVertical: space.md, alignItems: 'center',
     borderRadius: radii.pill,
   },
-  tabActive:     { backgroundColor: colors.white },
-  tabText:       { ...label.caps, fontSize: 11, letterSpacing: 1.8, color: colors.gray500 },
+  tabActive:     { backgroundColor: colors.white, ...cardShadow },
+  tabText:       { ...label.ui, fontSize: 14, color: colors.gray500 },
   tabTextActive: { color: colors.brand, fontWeight: '700' },
 
   loader: { flex: 1, alignItems: 'center', justifyContent: 'center' },

@@ -17,7 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import colors from '../../theme/colors';
 import { radii, space } from '../../theme/layout';
 import { panelShadow } from '../../theme/shadows';
-import { heading, label } from '../../theme/fonts';
+import { heading, label, type } from '../../theme/fonts';
 import { school } from '../../theme/school';
 import { rule } from '../../theme/layout';
 import OrganicBackdrop from './OrganicBackdrop';

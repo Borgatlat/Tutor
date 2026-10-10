@@ -148,7 +148,7 @@ export default function ProfileSetupScreen() {
 
   return (
     <AuthShell
-      title="Set Up Your Profile"
+      title="Set up your profile"
       subtitle="All fields are optional — you can update these later"
     >
       <ErrorBanner message={saveError} />
@@ -187,7 +187,7 @@ export default function ProfileSetupScreen() {
       />
 
       <Field
-        label="Phone Number"
+        label="Phone number"
         icon="call-outline"
         placeholder="(713) 555-0100"
         keyboardType="phone-pad"
@@ -238,7 +238,7 @@ export default function ProfileSetupScreen() {
       </View>
 
       <Button
-        label="Looks Good"
+        label="Looks good"
         icon="arrow-forward"
         onPress={handleSave}
         loading={loading}

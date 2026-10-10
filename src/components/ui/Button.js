@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
 
   off: { opacity: 0.5 },
 
-  // Tracked capitals, like the school site's "APPLY TO SJ" buttons.
-  label:   { ...labelPreset.caps, fontSize: 12, letterSpacing: 2 },
-  labelSm: { fontSize: 11, letterSpacing: 1.6 },
+  // Sentence case — capitals are kept for small section eyebrows only.
+  label:   { ...labelPreset.ui, fontSize: 15 },
+  labelSm: { fontSize: 13 },
 });

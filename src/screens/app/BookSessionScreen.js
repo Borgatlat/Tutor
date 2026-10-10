@@ -7,8 +7,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
+import { cardShadow } from '../../theme/shadows';
 import { radii, space, border, press, hit, rule } from '../../theme/layout';
-import { heading, label } from '../../theme/fonts';
+import { heading, label, type } from '../../theme/fonts';
 import {
   Avatar, Button, Chip, EmptyState, ErrorBanner, Field, Mascot,
   OrganicBackdrop,
@@ -70,7 +71,7 @@ export default function BookSessionScreen({ route, navigation }) {
           </View>
 
           <Button
-            label="View My Sessions"
+            label="View my sessions"
             onPress={() => navigation.navigate('Sessions')}
             fullWidth
           />
@@ -176,7 +177,7 @@ export default function BookSessionScreen({ route, navigation }) {
           </View>
 
           <Button
-            label="Send Request"
+            label="Send request"
             icon="checkmark-circle"
             onPress={handleBook}
             loading={loading}
@@ -195,7 +196,7 @@ const styles = StyleSheet.create({
 
   navBar:   { backgroundColor: colors.brand, paddingHorizontal: space.lg, paddingVertical: space.sm },
   backBtn:  { flexDirection: 'row', alignItems: 'center', gap: space.xs },
-  backText: { ...label.caps, color: colors.white, fontSize: 11, letterSpacing: 1.8 },
+  backText: { ...label.ui, color: colors.white, fontSize: 15 },
 
   header: {
     overflow: 'hidden',
@@ -211,15 +212,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gold,
     marginBottom: space.md,
   },
-  headerTitle: { ...heading.xl, color: colors.white, fontSize: 28 },
+  headerTitle: { ...type.title, color: colors.white },
 
   card: {
     flex: 1,
     backgroundColor: colors.white,
     margin: space.lg,
     borderRadius: radii.xl,
-    borderWidth: 1,
-    borderColor: colors.lineSoft,
+    ...cardShadow,
     padding: space.xxl,
     paddingBottom: space.xxxl,
   },
@@ -236,10 +236,7 @@ const styles = StyleSheet.create({
   },
   slotText: { fontSize: 16, fontWeight: '800', color: colors.brand },
 
-  label: {
-    ...label.caps, fontSize: 11, letterSpacing: 1.6,
-    color: colors.gray600, marginBottom: space.sm,
-  },
+  label: { ...type.small, fontWeight: '600', color: colors.gray700, marginBottom: space.sm },
   subjectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
 
   notesField: { marginTop: space.xl },

@@ -50,8 +50,6 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.white,
     borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.lineSoft,
     padding: space.lg,
     marginBottom: space.md,
     ...cardShadow,

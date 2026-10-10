@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import colors from '../../theme/colors';
 import { radii, space, border, rule } from '../../theme/layout';
-import { heading } from '../../theme/fonts';
+import { heading, label, type } from '../../theme/fonts';
 import { Button, Divider, ErrorBanner, Mascot, OrganicBackdrop } from '../../components/ui';
 
 const STEPS = [
@@ -71,7 +71,7 @@ export default function VerifyEmailScreen({ route }) {
 
         <Text style={styles.resendLabel}>Didn't get the email?</Text>
         <Button
-          label="Resend Confirmation Email"
+          label="Resend confirmation email"
           icon="refresh"
           onPress={handleResend}
           loading={resending}

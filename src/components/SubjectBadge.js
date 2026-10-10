@@ -68,14 +68,14 @@ const styles = StyleSheet.create({
     borderRadius: radii.xs,
     gap: 6,
   },
-  text:      { fontSize: 11, fontWeight: '600', letterSpacing: 1.1, textTransform: 'uppercase' },
-  small:     { paddingHorizontal: space.sm, paddingVertical: space.xs },
-  smallText: { fontSize: 10, letterSpacing: 1 },
+  text:      { fontSize: 13, fontWeight: '600' },
+  small:     { paddingHorizontal: 10, paddingVertical: 3 },
+  smallText: { fontSize: 12 },
   gradePill: {
     borderWidth: border.hairline,
     borderRadius: radii.sm,
     paddingHorizontal: 6,
     paddingVertical: 1,
   },
-  gradeText: { fontSize: 11, fontWeight: '700' },
+  gradeText: { fontSize: 12, fontWeight: '700' },
 });
