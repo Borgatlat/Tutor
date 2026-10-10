@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import colors from './colors';
 
 // Emits a cross-platform elevation. Both branches must always be present —
 // a web-only branch means no shadow on native, and vice versa.
@@ -33,3 +34,38 @@ export const sidebarShadow = Platform.select({
     elevation: 2,
   },
 });
+
+// ─── Raised (3D) controls ─────────────────────────────────────────────────────
+// A raised control sits on a darker "base" edge in its own colour family plus a
+// soft green-tinted glow. Pressed, it drops onto the base (see Button.js).
+export const RAISE = 4;          // base edge thickness at rest
+export const RAISE_PRESSED = 1;  // base edge thickness while pressed
+
+export const buttonShadow = Platform.select({
+  web: { boxShadow: `0 6px 14px ${colors.buttonGlow}` },
+  default: {
+    shadowColor: colors.brand,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.22,
+    shadowRadius: 7,
+    elevation: 4,
+  },
+});
+
+// Base edge colour per surface. `raised('white')` for white pills on green.
+const BASE = {
+  green: colors.brandDeep,
+  white: colors.stoneDeep,
+  red:   colors.errorDeep,
+};
+
+export function raised(kind = 'green', pressed = false) {
+  return {
+    borderBottomWidth: pressed ? RAISE_PRESSED : RAISE,
+    borderBottomColor: BASE[kind] ?? BASE.green,
+    // Keep the outer height constant: the lost edge turns into top offset,
+    // so the button visibly "presses in" without the layout jumping.
+    marginTop: pressed ? RAISE - RAISE_PRESSED : 0,
+    ...(pressed ? {} : buttonShadow),
+  };
+}

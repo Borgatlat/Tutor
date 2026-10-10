@@ -15,6 +15,7 @@ import AvailabilityGrid from '../../components/AvailabilityGrid';
 import {
   Avatar, Button, Divider, EmptyState, ErrorBanner,
   Field, RoleSelector, SubjectPicker,
+  OrganicBackdrop,
 } from '../../components/ui';
 import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../../constants/legal';
 
@@ -30,6 +31,7 @@ export default function ProfileScreen() {
   const [saveError, setSaveError] = useState('');
 
   const [availability, setAvailability] = useState(profile?.availability ?? []);
+  const [availError, setAvailError]     = useState('');
 
   // Subjects editor
   const initSubjects = () =>
@@ -137,7 +139,9 @@ export default function ProfileScreen() {
     setSubjectError('');
     try {
       // Delete all existing subjects then re-insert
-      await supabase.from('tutor_subjects').delete().eq('tutor_id', userId);
+      const { error: deleteError } = await supabase
+        .from('tutor_subjects').delete().eq('tutor_id', userId);
+      if (deleteError) { setSubjectError(deleteError.message); return; }
       if (selectedSubjects.length > 0) {
         const { error } = await supabase.from('tutor_subjects').insert(
           selectedSubjects.map((subject) => ({
@@ -159,18 +163,25 @@ export default function ProfileScreen() {
 
   // Block schedule: toggle a block on/off (no day dimension).
   // All roles use tutor_availability — student_availability table doesn't exist.
+  // Optimistic toggle; on failure the block flips back and the reason shows,
+  // so the grid never claims a block is saved when it isn't.
   const toggleAvailability = async (block) => {
-    const exists = availability.some((a) => a.period === block);
+    const previous = availability;
+    const exists = previous.some((a) => a.period === block);
+    setAvailError('');
     setAvailability(exists
-      ? availability.filter((a) => a.period !== block)
-      : [...availability, { period: block }]);
+      ? previous.filter((a) => a.period !== block)
+      : [...previous, { period: block }]);
 
-    if (exists) {
-      await supabase.from('tutor_availability')
-        .delete().eq('tutor_id', userId).eq('period', block);
-    } else {
-      await supabase.from('tutor_availability')
-        .insert({ tutor_id: userId, period: block });
+    const { error } = exists
+      ? await supabase.from('tutor_availability')
+          .delete().eq('tutor_id', userId).eq('period', block)
+      : await supabase.from('tutor_availability')
+          .insert({ tutor_id: userId, period: block });
+
+    if (error) {
+      setAvailability(previous);
+      setAvailError(`Could not update block ${block}: ${error.message}`);
     }
   };
 
@@ -196,6 +207,7 @@ export default function ProfileScreen() {
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {/* Hero */}
         <View style={styles.hero}>
+          <OrganicBackdrop />
           <TouchableOpacity
             style={styles.avatarWrap}
             onPress={editing ? pickImage : undefined}
@@ -363,6 +375,7 @@ export default function ProfileScreen() {
                 ? 'Tap a block to toggle when students can book you'
                 : 'Tap a block to mark it free — tutors who share your blocks rank higher in search'}
             </Text>
+            <ErrorBanner message={availError} />
             <AvailabilityGrid
               availability={availability}
               onToggle={toggleAvailability}
@@ -439,6 +452,7 @@ const styles = StyleSheet.create({
 
   // ── Hero ──────────────────────────────────────────────────────────────────
   hero: {
+    overflow: 'hidden',
     backgroundColor: colors.brand,
     alignItems: 'center',
     paddingTop: space.xl,

@@ -9,6 +9,8 @@ export { default as EmptyState }    from './EmptyState';
 export { default as ErrorBanner }   from './ErrorBanner';
 export { default as Field }         from './Field';
 export { default as IconButton }    from './IconButton';
+export { default as Mascot }       from './Mascot';
+export { default as OrganicBackdrop } from './OrganicBackdrop';
 export { default as RoleSelector }  from './RoleSelector';
 export { default as SectionHeader } from './SectionHeader';
 export { default as Sheet }         from './Sheet';

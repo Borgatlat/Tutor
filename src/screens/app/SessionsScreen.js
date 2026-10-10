@@ -13,6 +13,7 @@ import { heading, label } from '../../theme/fonts';
 import SessionCard from '../../components/SessionCard';
 import {
   Button, EmptyState, ErrorBanner, Field, Sheet,
+  OrganicBackdrop,
 } from '../../components/ui';
 import { addSessionToCalendar, getSessionTimeLabel } from '../../utils/calendar';
 import { useResponsive } from '../../hooks/useResponsive';
@@ -108,10 +109,29 @@ export default function SessionsScreen({ navigation }) {
     setLoading(false);
   }, [tab, profile?.id]);
 
+  // Status changes report failures instead of silently doing nothing — a
+  // blocked update (e.g. a row-level-security rule) used to look like success.
+  const updateStatus = async (sessionId, status, failMsg) => {
+    const { error } = await supabase.from('sessions').update({ status }).eq('id', sessionId);
+    if (error) showToast(`${failMsg} ${error.message}`, true);
+    return !error;
+  };
+
   const handleConfirm = async (sessionId) => {
     setBusyId(sessionId);
-    await supabase.from('sessions').update({ status: 'confirmed' }).eq('id', sessionId);
+    await updateStatus(sessionId, 'confirmed', "Couldn't confirm the session.");
     setBusyId(null);
+    loadSessions();
+  };
+
+  // A tutor marks a confirmed session as done after it happens. This is what
+  // moves it to Past, lets the student leave a review, and bumps the tutor's
+  // completed-session count (supabase_schema.sql trigger).
+  const handleComplete = async (sessionId) => {
+    setBusyId(sessionId);
+    const done = await updateStatus(sessionId, 'completed', "Couldn't mark the session as done.");
+    setBusyId(null);
+    if (done) showToast('Session marked as done');
     loadSessions();
   };
 
@@ -120,7 +140,7 @@ export default function SessionsScreen({ navigation }) {
   const confirmCancel = async () => {
     if (!cancelConfirmId) return;
     setCancelling(true);
-    await supabase.from('sessions').update({ status: 'cancelled' }).eq('id', cancelConfirmId);
+    await updateStatus(cancelConfirmId, 'cancelled', "Couldn't cancel the session.");
     setCancelling(false);
     setCancelConfirmId(null);
     loadSessions();
@@ -155,6 +175,8 @@ export default function SessionsScreen({ navigation }) {
       <StatusBar barStyle="light-content" backgroundColor={colors.brand} />
 
       <View style={styles.header}>
+
+        <OrganicBackdrop />
         <View style={styles.headerRule} />
         <Text style={styles.headerTitle}>My Sessions</Text>
       </View>
@@ -209,6 +231,7 @@ export default function SessionsScreen({ navigation }) {
                 currentUserId={profile?.id}
                 busy={busyId === item.id}
                 onConfirm={handleConfirm}
+                onComplete={handleComplete}
                 onCancel={handleCancel}
                 onReview={(s) => setReviewSession(s)}
                 onAddToCalendar={handleAddToCalendar}
@@ -333,6 +356,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.offWhite },
 
   header: {
+    overflow: 'hidden',
     backgroundColor: colors.brand,
     paddingHorizontal: space.xl,
     paddingTop: space.lg,

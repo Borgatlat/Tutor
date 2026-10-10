@@ -68,19 +68,26 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
     borderWidth: border.control,
     borderColor: colors.line,
+    // A slightly thicker bottom edge on every chip, so the selected one can
+    // sit on a dark-green base (3D) without the row shifting.
+    borderBottomWidth: 3,
+    borderBottomColor: colors.stoneDeep,
     backgroundColor: colors.white,
     alignItems: 'center',
   },
   available: {
     borderColor: colors.brandTint,
+    borderBottomColor: colors.brandTintDeep,
     backgroundColor: colors.brandTint,
   },
   selected: {
     borderColor: colors.brand,
+    borderBottomColor: colors.brandDeep,
     backgroundColor: colors.brand,
   },
   disabled: {
     borderColor: colors.gray200,
+    borderBottomColor: colors.gray200,
     backgroundColor: colors.gray100,
   },
 

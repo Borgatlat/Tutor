@@ -7,6 +7,7 @@ import { supabase } from '../../lib/supabase';
 import colors from '../../theme/colors';
 import { space, hit, press } from '../../theme/layout';
 import { heading } from '../../theme/fonts';
+import { school } from '../../theme/school';
 import { SCHOOL_EMAIL_DOMAIN } from '../../constants';
 import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../../constants/legal';
 import {
@@ -16,7 +17,7 @@ import {
 const FEATURES = [
   { icon: 'search-outline',   text: 'Find tutors by subject & free period' },
   { icon: 'calendar-outline', text: 'Book sessions that fit your schedule' },
-  { icon: 'ribbon-outline',   text: 'Core classes, SAT & AP prep from fellow Crusaders' },
+  { icon: 'ribbon-outline',   text: `Core classes, SAT & AP prep from fellow ${school.memberPlural}` },
   { icon: 'star-outline',     text: 'Ratings & reviews for every tutor' },
 ];
 
@@ -63,8 +64,8 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <AuthShell
-      title={'Welcome back,\nCrusader'}
-      subtitle="Peer tutoring for Strake Jesuit students, by Strake Jesuit students"
+      title={`Welcome back,\n${school.memberName}`}
+      subtitle={`Peer tutoring for ${school.name} students, by ${school.name} students`}
       features={FEATURES}
     >
       <Text style={styles.cardTitle}>Sign In</Text>

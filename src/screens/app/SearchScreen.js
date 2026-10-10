@@ -9,11 +9,13 @@ import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { radii, space, border, press, hit, rule } from '../../theme/layout';
 import { heading, label } from '../../theme/fonts';
+import { school } from '../../theme/school';
 import AppTextInput from '../../components/AppTextInput';
 import TutorCard from '../../components/TutorCard';
 import SkeletonCard from '../../components/SkeletonCard';
 import {
   Chip, EmptyState, IconButton, SubjectPicker,
+  OrganicBackdrop,
 } from '../../components/ui';
 import { BLOCKS } from '../../constants';
 import { useResponsive } from '../../hooks/useResponsive';
@@ -129,7 +131,7 @@ export default function SearchScreen({ navigation }) {
             body={
               hasFilters || query
                 ? 'Try adjusting your search or clearing some filters.'
-                : 'No Crusaders have listed subjects yet. Check back soon.'
+                : `No ${school.memberPlural} have listed subjects yet. Check back soon.`
             }
             actionLabel={hasFilters ? 'Clear filters' : undefined}
             onAction={hasFilters ? clearFilters : undefined}
@@ -164,6 +166,7 @@ export default function SearchScreen({ navigation }) {
 
       {/* Header */}
       <View style={styles.header}>
+        <OrganicBackdrop />
         <View style={styles.headerRule} />
         <Text style={styles.headerTitle}>Find a Tutor</Text>
         <Text style={styles.headerSub}>Core classes · SAT · AP</Text>
@@ -250,6 +253,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.offWhite },
 
   header: {
+    overflow: 'hidden',
     backgroundColor: colors.brand,
     paddingHorizontal: space.xl,
     paddingTop: space.lg,

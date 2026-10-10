@@ -34,6 +34,18 @@ export default {
   offWhite: '#F1EFEC',     // app background — warm stone
   cream:    '#E9E5E0',     // recessed section background
 
+  // 3D button edges — the darker "base" a raised button sits on
+  brandDeep: '#002417',   // under Strake-green buttons
+  stoneDeep: '#C9C1B8',   // under white / outlined buttons
+  brandTintDeep: '#C3D6CB', // under light-green 'available' chips
+  mascotWingLight: '#4C8A6B', // owl wings when drawn on a green header
+  errorDeep: '#7E1810',   // under red buttons
+  buttonGlow: 'rgba(0,75,48,0.22)', // soft green-tinted shadow
+
+  // Organic header blobs — lighter shades of the same green, drawn over brand
+  blob:     'rgba(255,255,255,0.07)',
+  blobSoft: 'rgba(255,255,255,0.045)',
+
   // Rules / borders
   line:     '#D8D0C8',     // stone rule, input + outline borders
   lineSoft: '#EEEAE5',     // row dividers inside cards

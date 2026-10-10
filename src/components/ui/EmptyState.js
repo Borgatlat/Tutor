@@ -8,6 +8,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Button from './Button';
+import Mascot from './Mascot';
 import colors from '../../theme/colors';
 import { radii, space } from '../../theme/layout';
 
@@ -22,9 +23,13 @@ export default function EmptyState({
 }) {
   return (
     <View style={[styles.wrap, compact && styles.compact, style]}>
-      <View style={[styles.iconWrap, compact && styles.iconWrapCompact]}>
-        <Ionicons name={icon} size={compact ? 20 : 26} color={colors.brand} />
-      </View>
+      {compact ? (
+        <View style={[styles.iconWrap, styles.iconWrapCompact]}>
+          <Ionicons name={icon} size={20} color={colors.brand} />
+        </View>
+      ) : (
+        <Mascot size={96} mood="thinking" style={styles.mascot} />
+      )}
 
       <Text style={[styles.title, compact && styles.titleCompact]}>{title}</Text>
       {body ? <Text style={styles.body}>{body}</Text> : null}
@@ -58,6 +63,7 @@ const styles = StyleSheet.create({
     marginBottom: space.md,
   },
   iconWrapCompact: { width: 40, height: 40, marginBottom: space.sm },
+  mascot: { marginBottom: space.md },
 
   title: {
     fontSize: 15,

@@ -1,9 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Platform, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Mascot, OrganicBackdrop } from '../../components/ui';
 import colors from '../../theme/colors';
 import { radii, space, rule } from '../../theme/layout';
 import { heading } from '../../theme/fonts';
+import { school } from '../../theme/school';
 
 const useNativeDriver = Platform.OS !== 'web';
 
@@ -20,14 +21,13 @@ export default function SplashScreen() {
 
   return (
     <View style={styles.container}>
+      <OrganicBackdrop />
       <Animated.View style={[styles.content, { opacity, transform: [{ scale }] }]}>
-        <View style={styles.iconWrap}>
-          <Ionicons name="school" size={44} color={colors.white} />
-        </View>
-        <Text style={styles.school}>STRAKE JESUIT</Text>
+        <Mascot size={132} onDark style={styles.mascot} />
+        <Text style={styles.school}>{school.name.toUpperCase()}</Text>
         <View style={styles.rule} />
         <Text style={styles.title}>Tutor{'\n'}Marketplace</Text>
-        <Text style={styles.sub}>Crusaders helping Crusaders</Text>
+        <Text style={styles.sub}>{school.memberPlural} helping {school.memberPlural}</Text>
 
         {/* A real spinner — the old static dot read as a loading indicator but
             never moved, so a slow session restore looked frozen. */}
@@ -43,6 +43,7 @@ export default function SplashScreen() {
 
 const styles = StyleSheet.create({
   container: {
+    overflow: 'hidden',
     flex: 1,
     backgroundColor: colors.brand,
     alignItems: 'center',
@@ -50,16 +51,7 @@ const styles = StyleSheet.create({
   },
   content: { alignItems: 'center' },
 
-  iconWrap: {
-    width: 88,
-    height: 88,
-    borderRadius: radii.pill,
-    borderWidth: 1,
-    borderColor: colors.whiteAlpha[30],
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: space.xxl,
-  },
+  mascot: { marginBottom: space.lg },
   school: {
     color: colors.white,
     fontSize: 13,

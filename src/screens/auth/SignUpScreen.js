@@ -7,6 +7,7 @@ import { supabase } from '../../lib/supabase';
 import colors from '../../theme/colors';
 import { space, hit, press } from '../../theme/layout';
 import { heading } from '../../theme/fonts';
+import { school } from '../../theme/school';
 import { SCHOOL_EMAIL_DOMAIN } from '../../constants';
 import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../../constants/legal';
 import {
@@ -14,10 +15,10 @@ import {
 } from '../../components/ui';
 
 const FEATURES = [
-  { icon: 'people-outline',            text: 'Peer-to-peer tutoring from Crusaders' },
+  { icon: 'people-outline',            text: `Peer-to-peer tutoring from ${school.memberPlural}` },
   { icon: 'book-outline',              text: 'All subjects — core classes, AP, SAT & more' },
   { icon: 'time-outline',              text: 'Schedule around your free periods' },
-  { icon: 'shield-checkmark-outline',  text: 'Strake Jesuit email required' },
+  { icon: 'shield-checkmark-outline',  text: `${school.name} email required` },
 ];
 
 const schema = z.object({
@@ -70,7 +71,7 @@ export default function SignUpScreen({ navigation }) {
   return (
     <AuthShell
       title={'Join the\nCommunity'}
-      subtitle="Connect with fellow Crusaders as a tutor, a student, or both."
+      subtitle={`Connect with fellow ${school.memberPlural} as a tutor, a student, or both.`}
       features={FEATURES}
       headerRight={
         <IconButton

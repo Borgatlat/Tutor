@@ -7,11 +7,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase, searchTutors } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
-import { radii, space, border, press, rule } from '../../theme/layout';
+import { radii, space, border, press, rule, leaf } from '../../theme/layout';
 import { heading, label } from '../../theme/fonts';
+import { raised } from '../../theme/shadows';
+import { school } from '../../theme/school';
 import TutorCard from '../../components/TutorCard';
 import SkeletonCard from '../../components/SkeletonCard';
-import { Avatar, EmptyState, SectionHeader, StatusPill } from '../../components/ui';
+import { Avatar, EmptyState, OrganicBackdrop, SectionHeader, StatusPill } from '../../components/ui';
 import { useResponsive } from '../../hooks/useResponsive';
 
 export default function HomeScreen({ navigation }) {
@@ -22,7 +24,7 @@ export default function HomeScreen({ navigation }) {
   const [upcomingSessions, setUpcoming]   = useState([]);
   const [loadingTutors, setLoadingTutors] = useState(true);
 
-  const firstName = profile?.full_name?.split(' ')[0] ?? 'Crusader';
+  const firstName = profile?.full_name?.split(' ')[0] ?? school.memberName;
   const hour      = new Date().getHours();
   const greeting  = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const isTutor   = profile?.role === 'tutor' || profile?.role === 'both';
@@ -84,10 +86,11 @@ export default function HomeScreen({ navigation }) {
       accessibilityRole="button"
       accessibilityLabel="Browse tutors for core classes, SAT and AP"
     >
+      <OrganicBackdrop variant="panel" />
       <View style={styles.promoRule} />
       <Text style={styles.promoTitle}>Core Classes, SAT & AP</Text>
       <Text style={styles.promoSub}>
-        Algebra to AP Calc — help from fellow Crusaders.
+        Algebra to AP Calc — help from fellow {school.memberPlural}.
       </Text>
       <View style={styles.promoCta}>
         <Text style={styles.promoCtaText}>Browse tutors</Text>
@@ -128,7 +131,7 @@ export default function HomeScreen({ navigation }) {
         <EmptyState
           icon="people-outline"
           title="No tutors yet"
-          body="Once Crusaders add the subjects they can teach, they'll show up here."
+          body={`Once ${school.memberPlural} add the subjects they can teach, they'll show up here.`}
           actionLabel="Browse search"
           onAction={() => navigation.navigate('Search')}
         />
@@ -154,6 +157,7 @@ export default function HomeScreen({ navigation }) {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Hero */}
         <View style={styles.hero}>
+          <OrganicBackdrop />
           <View style={styles.heroRow}>
             <View style={styles.heroGreetingWrap}>
               <Text style={styles.heroGreeting}>{greeting},</Text>
@@ -226,6 +230,7 @@ const styles = StyleSheet.create({
   // ── Hero ──────────────────────────────────────────────────────────────────
   // Curved bottom edge so the green band flows into the page.
   hero: {
+    overflow: 'hidden',
     backgroundColor: colors.brand,
     paddingHorizontal: space.xl,
     paddingTop: space.xl,
@@ -264,6 +269,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     paddingHorizontal: space.lg, paddingVertical: space.md,
     borderRadius: radii.pill,
+    ...raised('white'),
   },
   qBtnText: { ...label.caps, fontSize: 11, letterSpacing: 1.8, color: colors.brand },
 
@@ -303,7 +309,8 @@ const styles = StyleSheet.create({
   // Green band with the gold rule — the site's "Take the Next Steps" panel.
   promo: {
     backgroundColor: colors.brandDark,
-    borderRadius: radii.xl,
+    ...leaf.lg,
+    overflow: 'hidden',
     padding: space.xxl,
   },
   promoRule: {
@@ -318,6 +325,7 @@ const styles = StyleSheet.create({
     marginTop: space.lg,
     backgroundColor: colors.white,
     borderRadius: radii.pill,
+    ...raised('white'),
     paddingHorizontal: space.xl,
     paddingVertical: space.md,
   },

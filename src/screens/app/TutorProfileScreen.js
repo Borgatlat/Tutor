@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
-import { radii, space, border, press, hit, rule } from '../../theme/layout';
+import { radii, space, border, press, hit, rule, leaf } from '../../theme/layout';
 import { modalShadow } from '../../theme/shadows';
 import { heading, label } from '../../theme/fonts';
 import SubjectBadge from '../../components/SubjectBadge';
@@ -17,6 +17,7 @@ import ReportModal from '../../components/ReportModal';
 import {
   Avatar, Button, EmptyState, IconButton, initialsOf,
   StatRow,
+  OrganicBackdrop,
 } from '../../components/ui';
 import { useResponsive } from '../../hooks/useResponsive';
 
@@ -109,6 +110,7 @@ export default function TutorProfileScreen({ route, navigation }) {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Profile hero */}
         <View style={styles.hero}>
+          <OrganicBackdrop />
           <View style={styles.heroAvatarRing}>
             <Avatar
               uri={tutor.avatar_url}
@@ -279,6 +281,7 @@ const styles = StyleSheet.create({
 
   // ── Hero ──────────────────────────────────────────────────────────────────
   hero: {
+    overflow: 'hidden',
     backgroundColor: colors.brand,
     alignItems: 'center',
     paddingBottom: space.xxxl,
@@ -307,7 +310,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     marginHorizontal: space.lg,
     marginTop: -space.xl,
-    borderRadius: radii.lg,
+    ...leaf.lg,
     borderWidth: 1,
     borderColor: colors.lineSoft,
     padding: space.xl,
