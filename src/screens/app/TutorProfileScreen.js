@@ -4,7 +4,7 @@ import {
   SafeAreaView, StatusBar, Image, Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { supabase } from '../../lib/supabase';
+import { supabase, PROFILE_COLUMNS, fetchSharedPhone } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { radii, space, border, press, hit, rule, leaf } from '../../theme/layout';
@@ -44,14 +44,16 @@ export default function TutorProfileScreen({ route, navigation }) {
 
   const loadDetails = async () => {
     const [profileRes, reviewsRes, availRes, subjectsRes] = await Promise.all([
-      supabase.from('profiles').select('*').eq('id', tutor.id).single(),
+      supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', tutor.id).single(),
       supabase.from('reviews').select('*, reviewer:profiles!reviews_reviewer_id_fkey(full_name,avatar_url)').eq('tutor_id', tutor.id).order('created_at', { ascending: false }).limit(5),
       supabase.from('tutor_availability').select('period').eq('tutor_id', tutor.id),
       supabase.from('tutor_subjects').select('subject, grade').eq('tutor_id', tutor.id),
     ]);
+    const shared = profileRes.data?.show_phone ? await fetchSharedPhone(tutor.id) : null;
     setTutor({
       ...tutor,
       ...profileRes.data,
+      phone: shared,
       // subjects is array of { subject, grade }
       subjects: subjectsRes.data ?? tutor.subjects ?? [],
     });

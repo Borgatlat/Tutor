@@ -38,13 +38,24 @@ export async function uploadAvatar(userId, uri) {
   return data.publicUrl;
 }
 
+/**
+ * Profile columns anyone signed in may read. Phone numbers are private in the
+ * database (migration 003), so `select('*')` on someone else's profile is
+ * refused: read these instead, and a shared number through shared_phone().
+ */
+export const PROFILE_COLUMNS =
+  'id,email,full_name,role,bio,avatar_url,avg_rating,review_count,session_count,created_at,setup_complete,show_phone,is_moderator';
+
+/** A tutor's phone number, only if they chose to share it (else null). */
+export async function fetchSharedPhone(userId) {
+  const { data } = await supabase.rpc('shared_phone', { uid: userId });
+  return data || null;
+}
+
 /** Fetch a full profile + subjects + availability for the signed-in user */
 export async function fetchMyProfile(userId) {
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .single();
+  // get_my_profile() returns the signed-in user's own row, phone included.
+  const { data: profile, error } = await supabase.rpc('get_my_profile').single();
   if (error) throw error;
 
   // All roles store blocks in tutor_availability (student_availability doesn't exist)

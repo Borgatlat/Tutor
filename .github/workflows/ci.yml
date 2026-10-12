@@ -27,3 +27,30 @@ jobs:
 
       - name: iOS bundle
         run: npx expo export --platform ios --output-dir dist-ios
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Screen tests (every screen and button of the web build)
+        run: npm run test:e2e
+
+  database:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Migrations (twice), demo seed (twice) and database tests
+        run: bash scripts/test-db.sh

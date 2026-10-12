@@ -67,7 +67,11 @@ schedule, "when are we both free?" takes a dozen texts.
   free block they share with the student. Blocked users are left out both
   ways. The top result is a good tutor you can actually meet.
 - **Privacy by default.** Row-level security means a student can only read and
-  change their own sessions. The Home impact numbers come from a
+  change their own sessions and chats. Phone numbers can't be read from the
+  profiles table at all; a tutor's number is only handed out when they
+  switch on "Show my phone number". Reviews can only come from the student
+  of a completed session. Anyone can delete their account and everything
+  tied to it from Profile. The Home impact numbers come from a
   `security definer` function that returns aggregate counts only.
 - **One design system.** Colours, type scale, spacing and the raised 3D
   buttons live in `src/theme/`; every screen is built from the shared
@@ -75,16 +79,22 @@ schedule, "when are we both free?" takes a dozen texts.
   editing `src/theme/school.js` and `src/theme/colors.js`.
 
 More detail: [ARCHITECTURE.md](ARCHITECTURE.md) · database:
-[supabase_schema.sql](supabase_schema.sql).
+[supabase/migrations](supabase/migrations).
 
 ## Quality
 
 - **Unit tests** (Jest + Testing Library): service hours, schedule maths,
   reminders and core components: `npm test`.
-- **CI** on every push: tests plus web and iOS bundles
+- **Screen tests** with Playwright against the web build: 111 checks that
+  press every screen's buttons and check what the app sends
+  (`npm run test:e2e`, in [e2e/](e2e/)).
+- **Database tests**: every migration is applied twice to a real Postgres,
+  the demo data is loaded twice, then 47 checks sign in as a tutor, a
+  student, a moderator, an outsider and a visitor and try everything they
+  should and shouldn't be able to do (`npm run test:db`, in
+  [supabase/tests/](supabase/tests/)).
+- **CI** on every push runs all of it, plus the web and iOS bundles
   ([.github/workflows/ci.yml](.github/workflows/ci.yml)).
-- **End-to-end checks** with Playwright against the web build: 102 checks
-  covering every screen and button.
 - **Accessibility**: screen-reader labels and roles on every control, Reduce
   Motion respected, and an axe-core (WCAG 2 AA) scan with no violations in
   both light and dark mode.
@@ -94,21 +104,31 @@ More detail: [ARCHITECTURE.md](ARCHITECTURE.md) · database:
 ```bash
 npm install
 npm test               # unit tests
+npx expo export --platform web --output-dir dist && npm run test:e2e   # screen tests
+PGHOST=localhost PGUSER=postgres npm run test:db                       # database tests
 npx expo start         # scan the QR code with Expo Go on your phone
 npx expo start --web   # or open it in the browser
 ```
 
 ### Database (Supabase)
 
-In your project's **SQL Editor**, run these in order:
+Every table, rule and function the app uses is in
+[supabase/migrations](supabase/migrations). In your project's **SQL Editor**,
+run them in order (each one is safe to run again):
 
-1. `supabase_schema.sql`: tables and security rules (skip on an existing project)
-2. `supabase/migrations/002_scheduling_messages_moderation.sql`: real session
-   dates, double-booking protection, in-app messages, push notifications,
-   moderator tools (safe to run more than once)
-3. `supabase/seed_demo.sql` *(optional)*: demo accounts, all with password
+1. `001_initial_schema.sql`: profiles, subjects, free blocks, sessions,
+   reviews, reports, blocks, profile photos and tutor search
+2. `002_scheduling_messages_moderation.sql`: real session dates,
+   double-booking protection, in-app messages, push notifications,
+   moderator tools
+3. `003_privacy_reviews_accounts.sql`: private phone numbers, reviews only
+   from real sessions, account deletion
+4. `supabase/seed_demo.sql` *(optional)*: demo accounts, all with password
    `DemoTutor2026!`. Sign in as `james.smith.demo@mail.strakejesuit.org`
    (student), `alex.kim.demo@…` (tutor) or `mr.thompson.demo@…` (moderator).
+
+Or with the Supabase CLI: `npx supabase link --project-ref <your ref>`, then
+`npx supabase db push`.
 
 Make a real teacher a moderator:
 

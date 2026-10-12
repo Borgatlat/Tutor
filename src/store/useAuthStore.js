@@ -109,6 +109,30 @@ const useAuthStore = create((set, get) => ({
     set({ setupComplete: true });
   },
 
+  /**
+   * Permanently delete the account and everything tied to it: profile,
+   * subjects, sessions, chats, reviews and push tokens (delete_my_account in
+   * migration 003). Throws if the server refuses, so the screen can say so.
+   */
+  deleteAccount: async () => {
+    const userId = get().session?.user?.id;
+    if (!userId) return;
+    // Storage files can't be removed from SQL, so clear the profile photo first.
+    try {
+      const { data: files } = await supabase.storage.from('avatars').list(userId);
+      if (files?.length) {
+        await supabase.storage.from('avatars').remove(files.map((f) => `${userId}/${f.name}`));
+      }
+    } catch (e) {
+      if (__DEV__) console.warn('[deleteAccount] avatar cleanup:', e);
+    }
+    const { error } = await supabase.rpc('delete_my_account');
+    if (error) throw error;
+    // The login no longer exists on the server, so only clear this device.
+    await supabase.auth.signOut({ scope: 'local' });
+    set({ session: null, profile: null, setupComplete: false });
+  },
+
   signOut: async () => {
     await unregisterPush(get().session?.user?.id);
     await supabase.auth.signOut();

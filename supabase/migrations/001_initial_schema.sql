@@ -1,16 +1,17 @@
 -- ============================================================
--- STRAKE JESUIT TUTOR MARKETPLACE: Complete Supabase Schema
+-- STRAKE JESUIT TUTORS: migration 001, the base schema
 -- ============================================================
--- Paste this entire file into:
---   Supabase Dashboard → SQL Editor → New query → Run
+-- Run the migrations in order in the Supabase SQL Editor
+-- (Dashboard → SQL Editor → New query → paste → Run):
 --
--- Then run, in order:
---   supabase/migrations/002_scheduling_messages_moderation.sql
---     (real session dates, messages, push, moderation; required by the app)
---   supabase/seed_demo.sql   (optional demo accounts and sessions)
+--   001_initial_schema.sql              tables, security rules, search
+--   002_scheduling_messages_moderation  real dates, chat, push, moderators
+--   003_privacy_reviews_accounts        private phones, honest reviews,
+--                                       account deletion
 --
--- Already have a database? Run just the migration; it is safe on an
--- existing project and safe to run twice.
+-- or, with the Supabase CLI: supabase link, then supabase db push.
+-- Every migration is safe to run again, as long as the later ones
+-- are re-run after it. Then, optionally, supabase/seed_demo.sql.
 -- ============================================================
 
 
@@ -43,15 +44,18 @@ create table if not exists public.profiles (
 alter table public.profiles enable row level security;
 
 -- Anyone logged-in can read any profile
+drop policy if exists "profiles: read all" on public.profiles;
 create policy "profiles: read all"
   on public.profiles for select
   using (true);
 
 -- Users can only insert / update their own row
+drop policy if exists "profiles: insert own" on public.profiles;
 create policy "profiles: insert own"
   on public.profiles for insert
   with check (auth.uid() = id);
 
+drop policy if exists "profiles: update own" on public.profiles;
 create policy "profiles: update own"
   on public.profiles for update
   using (auth.uid() = id);
@@ -70,10 +74,12 @@ create table if not exists public.tutor_subjects (
 
 alter table public.tutor_subjects enable row level security;
 
+drop policy if exists "tutor_subjects: read all" on public.tutor_subjects;
 create policy "tutor_subjects: read all"
   on public.tutor_subjects for select
   using (true);
 
+drop policy if exists "tutor_subjects: write own" on public.tutor_subjects;
 create policy "tutor_subjects: write own"
   on public.tutor_subjects for all
   using (auth.uid() = tutor_id)
@@ -93,10 +99,12 @@ create table if not exists public.tutor_availability (
 
 alter table public.tutor_availability enable row level security;
 
+drop policy if exists "availability: read all" on public.tutor_availability;
 create policy "availability: read all"
   on public.tutor_availability for select
   using (true);
 
+drop policy if exists "availability: write own" on public.tutor_availability;
 create policy "availability: write own"
   on public.tutor_availability for all
   using (auth.uid() = tutor_id)
@@ -122,16 +130,19 @@ create table if not exists public.sessions (
 alter table public.sessions enable row level security;
 
 -- Tutor or student involved can read their sessions
+drop policy if exists "sessions: read own" on public.sessions;
 create policy "sessions: read own"
   on public.sessions for select
   using (auth.uid() = tutor_id or auth.uid() = student_id);
 
 -- Only students can create sessions
+drop policy if exists "sessions: student insert" on public.sessions;
 create policy "sessions: student insert"
   on public.sessions for insert
   with check (auth.uid() = student_id);
 
 -- Tutor or student can update status
+drop policy if exists "sessions: update own" on public.sessions;
 create policy "sessions: update own"
   on public.sessions for update
   using (auth.uid() = tutor_id or auth.uid() = student_id);
@@ -153,10 +164,12 @@ create table if not exists public.reviews (
 
 alter table public.reviews enable row level security;
 
+drop policy if exists "reviews: read all" on public.reviews;
 create policy "reviews: read all"
   on public.reviews for select
   using (true);
 
+drop policy if exists "reviews: insert own" on public.reviews;
 create policy "reviews: insert own"
   on public.reviews for insert
   with check (auth.uid() = reviewer_id);
@@ -219,11 +232,13 @@ values ('avatars', 'avatars', true)
 on conflict (id) do nothing;
 
 -- Anyone can view avatars (public bucket)
+drop policy if exists "avatars: public read" on storage.objects;
 create policy "avatars: public read"
   on storage.objects for select
   using (bucket_id = 'avatars');
 
 -- Users can upload / replace their own avatar
+drop policy if exists "avatars: upload own" on storage.objects;
 create policy "avatars: upload own"
   on storage.objects for insert
   with check (
@@ -231,6 +246,7 @@ create policy "avatars: upload own"
     and auth.uid()::text = (storage.foldername(name))[1]
   );
 
+drop policy if exists "avatars: update own" on storage.objects;
 create policy "avatars: update own"
   on storage.objects for update
   using (
@@ -263,6 +279,7 @@ create table if not exists public.student_availability (
 alter table public.student_availability enable row level security;
 
 -- Users manage their own rows
+drop policy if exists "student_availability: manage own" on public.student_availability;
 create policy "student_availability: manage own"
   on public.student_availability for all
   using  (auth.uid() = student_id)
@@ -283,6 +300,8 @@ create index if not exists student_avail_student_idx on public.student_availabil
 --   • student_id  → adds per-overlap score boost (0.2 per shared slot)
 --   • match_schedule → hard-filter: only return tutors with ≥1 overlap
 -- ─────────────────────────────────────────────────────────────
+-- Dropped first so this file can be re-run after 002 changed the result columns.
+drop function if exists public.search_tutors(text, text, text, integer, uuid, boolean);
 create or replace function public.search_tutors(
   query_name     text    default '',
   filter_subject text    default null,
@@ -413,11 +432,13 @@ create table if not exists public.reports (
 alter table public.reports enable row level security;
 
 -- Any signed-in user can file a report
+drop policy if exists "reports: insert own" on public.reports;
 create policy "reports: insert own"
   on public.reports for insert
   with check (auth.uid() = reporter_id);
 
 -- Reporter can see their own reports
+drop policy if exists "reports: select own" on public.reports;
 create policy "reports: select own"
   on public.reports for select
   using (auth.uid() = reporter_id);
@@ -440,6 +461,7 @@ create table if not exists public.blocked_users (
 alter table public.blocked_users enable row level security;
 
 -- Users can manage their own block list
+drop policy if exists "blocked_users: manage own" on public.blocked_users;
 create policy "blocked_users: manage own"
   on public.blocked_users for all
   using  (auth.uid() = blocker_id)
