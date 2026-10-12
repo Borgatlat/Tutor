@@ -8,13 +8,16 @@
  */
 import { Platform } from 'react-native';
 import { nextSessionStart } from './calendar';
+import { blockStart } from './schedule';
 
 export const REMINDER_MINUTES_BEFORE = 10;
 const KIND = 'session-reminder';
 
 /** When to fire for a session, or null if that moment has already passed. */
 export function reminderTime(session, now = new Date()) {
-  const start = nextSessionStart(session?.period);
+  const start = session?.session_date
+    ? blockStart(session.session_date, session.period)
+    : nextSessionStart(session?.period);
   if (!start) return null;
   const at = new Date(start.getTime() - REMINDER_MINUTES_BEFORE * 60 * 1000);
   return at > now ? at : null;

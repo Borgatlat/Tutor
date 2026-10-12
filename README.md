@@ -26,6 +26,15 @@ schedule, "when are we both free?" takes a dozen texts.
 - **Reminders** 10 minutes before a confirmed block, plus *Add to calendar*.
 - **Service-hours log**: every session a tutor marks as done counts as one
   50-minute block; tutors download a CSV a moderator can check and sign.
+- **Real scheduling**: pick an actual school day and block; nobody can be
+  double-booked, and only the tutor can confirm or mark a session done
+  (on or after its date). All enforced in the database, not just the app.
+- **In-app messages** on every session, live, so nobody shares a phone
+  number or email. Reported chats can be read by a moderator.
+- **Push notifications** for new requests, confirmations, cancellations
+  and messages.
+- **Moderator tools** for teachers: verify service hours (so the log is
+  official) and review reports.
 - **Reviews** after a session, so the best tutors rise to the top.
 - **Safety and privacy for minors**: school-email sign-up only, report and
   block on every profile, email addresses never shown (students tap
@@ -74,7 +83,7 @@ More detail: [ARCHITECTURE.md](ARCHITECTURE.md) · database:
   reminders and core components: `npm test`.
 - **CI** on every push: tests plus web and iOS bundles
   ([.github/workflows/ci.yml](.github/workflows/ci.yml)).
-- **End-to-end checks** with Playwright against the web build: 90 checks
+- **End-to-end checks** with Playwright against the web build: 102 checks
   covering every screen and button.
 - **Accessibility**: screen-reader labels and roles on every control, Reduce
   Motion respected, and an axe-core (WCAG 2 AA) scan with no violations in
@@ -89,9 +98,31 @@ npx expo start         # scan the QR code with Expo Go on your phone
 npx expo start --web   # or open it in the browser
 ```
 
-To use your own backend, create a Supabase project, run
-`supabase_schema.sql` in its SQL editor, and put the project URL and anon key
-in `src/lib/supabase.js`.
+### Database (Supabase)
+
+In your project's **SQL Editor**, run these in order:
+
+1. `supabase_schema.sql`: tables and security rules (skip on an existing project)
+2. `supabase/migrations/002_scheduling_messages_moderation.sql`: real session
+   dates, double-booking protection, in-app messages, push notifications,
+   moderator tools (safe to run more than once)
+3. `supabase/seed_demo.sql` *(optional)*: demo accounts, all with password
+   `DemoTutor2026!`. Sign in as `james.smith.demo@mail.strakejesuit.org`
+   (student), `alex.kim.demo@…` (tutor) or `mr.thompson.demo@…` (moderator).
+
+Make a real teacher a moderator:
+
+```sql
+update public.profiles set is_moderator = true where email = 'teacher@mail.strakejesuit.org';
+```
+
+Then put the project URL and anon key in `src/lib/supabase.js`.
+
+### Push notifications
+
+Notifications are sent by the database itself (Expo push via `pg_net`). Phones
+can only register once the app is linked to an Expo project: run
+`npx eas init`, which fills in `extra.eas.projectId` in `app.json`.
 
 ## Built with
 

@@ -98,7 +98,9 @@ export default function SessionsScreen({ navigation }) {
       .select('*, tutor:profiles!sessions_tutor_id_fkey(id,full_name,avatar_url,email), student:profiles!sessions_student_id_fkey(id,full_name,avatar_url,email)')
       .or(`tutor_id.eq.${profile.id},student_id.eq.${profile.id}`)
       .in('status', statuses)
-      .order('created_at', { ascending: tab !== 'Upcoming' });
+      // Soonest first for Upcoming, most recent first for Past.
+      .order('session_date', { ascending: tab === 'Upcoming', nullsFirst: false })
+      .order('created_at', { ascending: tab === 'Upcoming' });
 
     if (error && __DEV__) console.warn('[SessionsScreen] loadSessions:', error);
 
@@ -266,6 +268,7 @@ export default function SessionsScreen({ navigation }) {
                 onComplete={handleComplete}
                 onCancel={handleCancel}
                 onReview={(s) => setReviewSession(s)}
+                onMessage={(s) => navigation.navigate('Chat', { session: s })}
                 onAddToCalendar={handleAddToCalendar}
                 calendarAdded={calendarAdded.has(item.id)}
               />

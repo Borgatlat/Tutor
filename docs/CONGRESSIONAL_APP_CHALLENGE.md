@@ -53,10 +53,10 @@ phone-sized browser window. Speak over it. Use **clear placeholder names**
 | 0:15–0:35 | Login screen with Ollie the owl | "At our school, getting help means texting around to find someone who's free during your block. Students who want to tutor also need service hours but have no way to be found. We built one app for both." |
 | 0:35–0:50 | Sign up with a school email, then the welcome tour | "You can only sign up with a school email, and Ollie gives a quick three-step tour." |
 | 0:50–1:20 | Search: type a subject, tap **Match my schedule**, open a tutor | "Search by class, from Algebra to AP Calc, or tap *Match my schedule*. Our search function ranks tutors by name match, rating and experience, and boosts anyone who shares your free blocks." |
-| 1:20–1:40 | Tutor profile: pick a free block, then **Book session** | "Their profile shows ratings, subjects and only the blocks they're free. Pick one and send the request." |
-| 1:40–2:00 | Switch to the tutor account: **Confirm**, **Add to calendar**, then **Mark as done** | "The tutor confirms, and both people get a reminder ten minutes before. Afterwards the tutor marks it done." |
-| 2:00–2:15 | Profile: **Service hours**, then **Download hours log** | "Every session counts toward service hours, and tutors can download a log their moderator signs." |
-| 2:15–2:35 | Quick shots: the code, the tests passing, the accessibility scan | "We built it in React Native with Expo, so it runs on iPhone, Android and the web, with a Supabase backend. Security rules keep each student's sessions private. It has 24 unit tests, 90 automated end-to-end checks, dark mode, and an accessibility scan with zero issues." |
+| 1:20–1:40 | Tutor profile: pick a free block, then **Book session** and a day | "Their profile shows ratings, subjects and only the blocks they're free. Pick a block and a day, and send the request. Nobody can be double-booked." |
+| 1:40–2:00 | Switch to the tutor account: the push notification, **Confirm**, then **Message** | "The tutor gets a notification, confirms, and they plan the session in the built-in chat, so no one shares a phone number." |
+| 2:00–2:15 | **Mark as done**, Profile **Service hours**, then the moderator account verifying | "Every session counts toward service hours. A teacher moderator verifies them in the app, and tutors download an official log." |
+| 2:15–2:35 | Quick shots: the code, the tests passing, the accessibility scan | "We built it in React Native with Expo, so it runs on iPhone, Android and the web, with a Supabase backend. Security rules keep each student's sessions private. It has 30 unit tests, 102 automated end-to-end checks, dark mode, and an accessibility scan with zero issues." |
 | 2:35–2:45 | Home screen | "Strake Jesuit Tutors: Crusaders helping Crusaders. Thanks for watching!" |
 
 Check before you upload:
@@ -74,7 +74,7 @@ Check before you upload:
 
 ## 7. Before you submit
 
-- [ ] Run `community_stats()` and the latest `supabase_schema.sql` changes on the real Supabase project, so the Home impact numbers appear.
-- [ ] Seed a few demo accounts and sessions so the app doesn't look empty to judges.
-- [ ] Test on a real iPhone: photo picker, calendar and reminders.
+- [ ] In the Supabase SQL Editor, run `supabase/migrations/002_scheduling_messages_moderation.sql`. Booking and free blocks need it.
+- [ ] Run `supabase/seed_demo.sql` so the app isn't empty, and record the video signed in as `james.smith.demo@mail.strakejesuit.org` (password `DemoTutor2026!`).
+- [ ] Run `npx eas init` so phones can register for push notifications, then test on a real iPhone: booking, chat, notifications, photo picker, calendar and reminders.
 - [ ] Confirm that every team member is registered for your district on the Congressional App Challenge site.

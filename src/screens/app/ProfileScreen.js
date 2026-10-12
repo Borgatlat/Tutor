@@ -22,7 +22,7 @@ import {
 } from '../../components/ui';
 import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../../constants/legal';
 
-export default function ProfileScreen() {
+export default function ProfileScreen({ navigation }) {
   const { profile, session, signOut, refreshProfile } = useAuthStore();
   const userId = session?.user?.id;
 
@@ -334,6 +334,26 @@ export default function ProfileScreen() {
             )}
           </View>
 
+          {/* Moderator tools (school moderators only) */}
+          {profile?.is_moderator ? (
+            <TouchableOpacity
+              style={styles.modCard}
+              onPress={() => navigation.navigate('Moderation')}
+              activeOpacity={press.opacity}
+              accessibilityRole="button"
+              accessibilityLabel="Open moderator tools"
+            >
+              <View style={styles.modIcon}>
+                <Ionicons name="shield-checkmark" size={20} color={colors.white} />
+              </View>
+              <View style={styles.flex1}>
+                <Text style={styles.modTitle}>Moderator tools</Text>
+                <Text style={styles.modSub}>Verify service hours and review reports</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.brandText} />
+            </TouchableOpacity>
+          ) : null}
+
           {/* Service hours (tutors) */}
           {isTutor ? (
             <ServiceHoursCard tutorId={userId} tutorName={profile?.full_name} />
@@ -573,6 +593,18 @@ const styles = StyleSheet.create({
     color: colors.gray500, marginBottom: 2,
   },
   fieldLabelSpaced: { marginTop: space.md },
+
+  modCard: {
+    flexDirection: 'row', alignItems: 'center', gap: space.md,
+    backgroundColor: colors.brandTint, borderRadius: radii.lg, padding: space.lg,
+  },
+  modIcon: {
+    width: 40, height: 40, borderRadius: 20, backgroundColor: colors.brand,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  flex1:    { flex: 1 },
+  modTitle: { ...type.body, fontWeight: '700', color: colors.brandText },
+  modSub:   { ...type.small, color: colors.gray600 },
 
   privacyRow: {
     flexDirection: 'row', alignItems: 'center', gap: space.md,

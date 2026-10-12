@@ -3,6 +3,14 @@
 -- ============================================================
 -- Paste this entire file into:
 --   Supabase Dashboard → SQL Editor → New query → Run
+--
+-- Then run, in order:
+--   supabase/migrations/002_scheduling_messages_moderation.sql
+--     (real session dates, messages, push, moderation; required by the app)
+--   supabase/seed_demo.sql   (optional demo accounts and sessions)
+--
+-- Already have a database? Run just the migration; it is safe on an
+-- existing project and safe to run twice.
 -- ============================================================
 
 

@@ -24,13 +24,28 @@ export function minutesToHours(minutes) {
 
 /**
  * Summary for the Profile card.
- * @returns {{ sessions: number, minutes: number, hours: number, students: number }}
+ * @returns {{ sessions, minutes, hours, students, verifiedSessions, verifiedHours }}
  */
 export function summarizeHours(sessions, tutorId) {
   const taught   = taughtSessions(sessions, tutorId);
   const minutes  = taught.length * BLOCK_MINUTES;
   const students = new Set(taught.map((s) => s.student_id)).size;
-  return { sessions: taught.length, minutes, hours: minutesToHours(minutes), students };
+  const verified = taught.filter((s) => s.verified_at).length;
+  return {
+    sessions: taught.length, minutes, hours: minutesToHours(minutes), students,
+    verifiedSessions: verified, verifiedHours: minutesToHours(verified * BLOCK_MINUTES),
+  };
+}
+
+/** The session's date (older rows without one use the day they were booked). */
+function sessionDay(s) {
+  return s.session_date ?? (s.created_at ? String(s.created_at).slice(0, 10) : '');
+}
+
+const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+function weekday(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  return DAYS[new Date(y, m - 1, d).getDay()];
 }
 
 /** Quote a CSV cell when it contains a comma, quote or newline. */
@@ -46,24 +61,26 @@ function csvCell(value) {
 export function buildHoursCsv(sessions, tutorId, tutorName = '') {
   const taught = taughtSessions(sessions, tutorId)
     .slice()
-    .sort((a, b) => String(a.created_at ?? '').localeCompare(String(b.created_at ?? '')));
+    .sort((a, b) => sessionDay(a).localeCompare(sessionDay(b)));
 
   const rows = [
     [`${school.name} peer tutoring: service hours`],
     ['Tutor', tutorName],
     [],
-    ['Date booked', 'Day', 'Block', 'Subject', 'Student', 'Minutes'],
+    ['Date', 'Day', 'Block', 'Subject', 'Student', 'Minutes', 'Verified'],
     ...taught.map((s) => [
-      s.created_at ? String(s.created_at).slice(0, 10) : '',
-      s.day ?? '',
+      sessionDay(s),
+      s.session_date ? weekday(s.session_date) : (s.day ?? ''),
       s.period ?? '',
       s.subject ?? '',
       s.student?.full_name ?? '',
       BLOCK_MINUTES,
+      s.verified_at ? 'Yes' : '',
     ]),
     [],
     ['Total sessions', taught.length],
     ['Total hours', minutesToHours(taught.length * BLOCK_MINUTES)],
+    ['Verified hours', minutesToHours(taught.filter((s) => s.verified_at).length * BLOCK_MINUTES)],
     [],
     ['Moderator signature', ''],
   ];

@@ -13,17 +13,7 @@
 import { Platform } from 'react-native';
 import { school } from '../theme/school';
 
-// ─── Block start/end times (24-hour, based on Strake Jesuit block schedule) ──
-const BLOCK_TIMES = {
-  1: { startH: 8,  startM: 0,  endH: 8,  endM: 50 },
-  2: { startH: 9,  startM: 0,  endH: 9,  endM: 50 },
-  3: { startH: 10, startM: 0,  endH: 10, endM: 50 },
-  4: { startH: 11, startM: 0,  endH: 11, endM: 50 },
-  5: { startH: 12, startM: 0,  endH: 12, endM: 50 },
-  6: { startH: 13, startM: 0,  endH: 13, endM: 50 },
-  7: { startH: 14, startM: 0,  endH: 14, endM: 50 },
-  8: { startH: 15, startM: 0,  endH: 15, endM: 50 },
-};
+import { BLOCK_TIMES, blockStart } from './schedule';
 
 /**
  * Returns a Date for the next weekday (Mon–Fri) at hour:minute.
@@ -204,10 +194,18 @@ export async function addSessionToCalendar(session, otherName) {
     return { success: false, error: `Unknown block: ${session.period}` };
   }
 
-  // Block schedule has no fixed day: schedule the event for the next weekday
-  // at the block's time so the calendar entry is still useful
-  const startDate = nextWeekdayAtTime(times.startH, times.startM);
-  const endDate   = nextWeekdayAtTime(times.endH,   times.endM);
+  // Booked sessions have a real date. Older undated ones fall back to the
+  // next weekday at the block's time so the entry is still useful.
+  let startDate;
+  let endDate;
+  if (session.session_date) {
+    startDate = blockStart(session.session_date, session.period);
+    endDate   = new Date(startDate);
+    endDate.setHours(times.endH, times.endM, 0, 0);
+  } else {
+    startDate = nextWeekdayAtTime(times.startH, times.startM);
+    endDate   = nextWeekdayAtTime(times.endH,   times.endM);
+  }
 
   if (Platform.OS === 'web') {
     return addToWebCalendar(session, otherName, startDate, endDate);

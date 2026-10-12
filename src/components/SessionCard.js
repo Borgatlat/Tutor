@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import colors from '../theme/colors';
 import { space } from '../theme/layout';
 import { type } from '../theme/fonts';
@@ -7,6 +8,7 @@ import Card from './ui/Card';
 import Avatar from './ui/Avatar';
 import Button from './ui/Button';
 import StatusPill from './ui/StatusPill';
+import { canMarkDone, sessionWhen } from '../utils/schedule';
 
 export default function SessionCard({
   session,
@@ -15,6 +17,7 @@ export default function SessionCard({
   onComplete,
   onCancel,
   onReview,
+  onMessage,
   onAddToCalendar,
   calendarAdded,
   busy = false,
@@ -24,7 +27,7 @@ export default function SessionCard({
   const hasActions =
        session.status === 'pending'
     || session.status === 'confirmed'
-    || (session.status === 'completed' && !isTutor && !session.reviewed);
+    || (session.status === 'completed' && (!!onMessage || (!isTutor && !session.reviewed)));
 
   return (
     <Card style={styles.card}>
@@ -42,8 +45,12 @@ export default function SessionCard({
           <Text style={styles.name} numberOfLines={1}>{otherUser?.full_name ?? 'Unknown'}</Text>
           {/* One compact line instead of separate subject / block tiles */}
           <Text style={styles.meta} numberOfLines={1}>
-            {isTutor ? 'Student' : 'Tutor'} · {session.subject || 'Subject'} · Block {session.period}
+            {isTutor ? 'Student' : 'Tutor'} · {session.subject || 'Subject'}
           </Text>
+          <View style={styles.when}>
+            <Ionicons name="calendar-outline" size={13} color={colors.brandText} />
+            <Text style={styles.whenText}>{sessionWhen(session)}</Text>
+          </View>
         </View>
 
         <StatusPill status={session.status} />
@@ -88,7 +95,7 @@ export default function SessionCard({
           />
         )}
 
-        {session.status === 'confirmed' && isTutor && (
+        {session.status === 'confirmed' && isTutor && canMarkDone(session) && (
           <Button
             label="Mark as done"
             icon="checkmark-done"
@@ -108,6 +115,17 @@ export default function SessionCard({
             onPress={() => onAddToCalendar?.(session)}
           />
         )}
+
+        {session.status !== 'cancelled' && onMessage ? (
+          <Button
+            label="Message"
+            icon="chatbubble-ellipses-outline"
+            size="sm"
+            variant="secondary"
+            accessibilityLabel={`Message ${otherUser?.full_name ?? 'them'}`}
+            onPress={() => onMessage(session)}
+          />
+        ) : null}
 
         {session.status === 'completed' && !isTutor && !session.reviewed && (
           <Button
@@ -132,6 +150,8 @@ const styles = StyleSheet.create({
   info:   { flex: 1, marginRight: space.sm },
   name:   { ...type.body, fontWeight: '700', color: colors.black },
   meta:   { ...type.small, color: colors.gray500, marginTop: 2 },
+  when:     { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  whenText: { ...type.small, fontWeight: '600', color: colors.brandText },
 
   notes: { ...type.small, color: colors.gray600, marginTop: space.md },
 

@@ -15,6 +15,7 @@ import TutorCard from '../../components/TutorCard';
 import SkeletonCard from '../../components/SkeletonCard';
 import WelcomeTour from '../../components/WelcomeTour';
 import GettingStarted from '../../components/GettingStarted';
+import { sessionWhen } from '../../utils/schedule';
 import { Avatar, EmptyState, FadeIn, OrganicBackdrop, SectionHeader, StatRow, StatusPill } from '../../components/ui';
 import { useResponsive } from '../../hooks/useResponsive';
 
@@ -68,6 +69,7 @@ export default function HomeScreen({ navigation }) {
       .select('*, tutor:profiles!sessions_tutor_id_fkey(full_name,avatar_url), student:profiles!sessions_student_id_fkey(full_name,avatar_url)')
       .or(`tutor_id.eq.${profile.id},student_id.eq.${profile.id}`)
       .in('status', ['pending', 'confirmed'])
+      .order('session_date', { ascending: true, nullsFirst: false })
       .limit(3);
     setUpcoming(data ?? []);
     setSessionsLoaded(true);
@@ -90,7 +92,7 @@ export default function HomeScreen({ navigation }) {
         />
         <View style={styles.sessionInfo}>
           <Text style={styles.sessionName} numberOfLines={1}>{other?.full_name}</Text>
-          <Text style={styles.sessionDetail}>{s.subject} · Block {s.period}</Text>
+          <Text style={styles.sessionDetail}>{s.subject} · {sessionWhen(s)}</Text>
         </View>
         <StatusPill status={s.status} />
       </View>

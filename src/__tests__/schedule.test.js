@@ -50,3 +50,45 @@ describe('reminders', () => {
     expect(reminderTime(null)).toBeNull();
   });
 });
+
+describe('real session dates', () => {
+  const S = require('../utils/schedule');
+  const NOW = new Date(2026, 9, 9, 11, 0); // Friday Oct 9, 11:00
+
+  test('bookable days skip weekends and a block that already started today', () => {
+    expect(S.bookableDays({ period: 3, count: 3, now: NOW })).toEqual(['2026-10-12', '2026-10-13', '2026-10-14']);
+    expect(S.bookableDays({ period: 6, count: 2, now: NOW })).toEqual(['2026-10-09', '2026-10-12']);
+  });
+
+  test('never offers more than the booking window', () => {
+    expect(S.bookableDays({ period: 1, count: 100, now: NOW }).length).toBe(20); // 4 weeks of school days
+  });
+
+  test('friendly labels', () => {
+    expect(S.formatSessionDate('2026-10-09', NOW)).toBe('Today');
+    expect(S.formatSessionDate('2026-10-10', NOW)).toBe('Tomorrow');
+    expect(S.formatSessionDate('2026-10-15', NOW)).toBe('Thu, Oct 15');
+    expect(S.chipLabel('2026-10-13', NOW)).toBe('Tue 13');
+    expect(S.sessionWhen({ session_date: '2026-10-15', period: 3 }, NOW)).toBe('Thu, Oct 15 · Block 3');
+    expect(S.sessionWhen({ period: 3 }, NOW)).toBe('Block 3');
+  });
+
+  test('block start uses the real date', () => {
+    const d = S.blockStart('2026-10-15', 2);
+    expect([d.getMonth(), d.getDate(), d.getHours()]).toEqual([9, 15, 9]);
+  });
+
+  test('done only on or after the date', () => {
+    expect(S.canMarkDone({ session_date: '2026-10-09' }, NOW)).toBe(true);
+    expect(S.canMarkDone({ session_date: '2026-10-12' }, NOW)).toBe(false);
+    expect(S.canMarkDone({}, NOW)).toBe(true);
+  });
+});
+
+describe('reminders use the real date', () => {
+  const { reminderTime } = require('../utils/reminders');
+  test('10 minutes before the dated block', () => {
+    const r = reminderTime({ session_date: '2099-03-02', period: 4 }, new Date(2099, 2, 1));
+    expect([r.getDate(), r.getHours(), r.getMinutes()]).toEqual([2, 10, 50]);
+  });
+});
