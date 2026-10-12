@@ -18,3 +18,4 @@ export { default as StatRow }       from './StatRow';
 export { default as StatusPill }    from './StatusPill';
 export { default as SubjectPicker } from './SubjectPicker';
 export { default as Logo }         from './Logo';
+export { default as FadeIn }       from './FadeIn';

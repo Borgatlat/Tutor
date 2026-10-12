@@ -17,7 +17,7 @@ import { sheetShadow, cardShadow } from '../../theme/shadows';
 import { heading, label, type } from '../../theme/fonts';
 import SessionCard from '../../components/SessionCard';
 import {
-  Button, EmptyState, ErrorBanner, Field, Sheet,
+  Button, EmptyState, ErrorBanner, FadeIn, Field, Sheet,
   OrganicBackdrop,
 } from '../../components/ui';
 import { addSessionToCalendar, getSessionTimeLabel } from '../../utils/calendar';
@@ -255,8 +255,9 @@ export default function SessionsScreen({ navigation }) {
               onAction={() => navigation.navigate('Search')}
             />
           }
-          renderItem={({ item }) => (
+          renderItem={({ item, index }) => (
             <View style={columns > 1 ? styles.gridItem : undefined}>
+              <FadeIn index={index}>
               <SessionCard
                 session={item}
                 currentUserId={profile?.id}
@@ -268,6 +269,7 @@ export default function SessionsScreen({ navigation }) {
                 onAddToCalendar={handleAddToCalendar}
                 calendarAdded={calendarAdded.has(item.id)}
               />
+              </FadeIn>
             </View>
           )}
         />

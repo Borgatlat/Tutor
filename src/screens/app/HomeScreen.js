@@ -14,7 +14,8 @@ import { school } from '../../theme/school';
 import TutorCard from '../../components/TutorCard';
 import SkeletonCard from '../../components/SkeletonCard';
 import WelcomeTour from '../../components/WelcomeTour';
-import { Avatar, EmptyState, OrganicBackdrop, SectionHeader, StatRow, StatusPill } from '../../components/ui';
+import GettingStarted from '../../components/GettingStarted';
+import { Avatar, EmptyState, FadeIn, OrganicBackdrop, SectionHeader, StatRow, StatusPill } from '../../components/ui';
 import { useResponsive } from '../../hooks/useResponsive';
 
 export default function HomeScreen({ navigation }) {
@@ -183,13 +184,13 @@ export default function HomeScreen({ navigation }) {
         />
       ) : (
         <View style={isWide ? styles.grid : undefined}>
-          {topTutors.map((t) => (
-            <View key={t.id} style={isWide ? styles.gridItem : undefined}>
+          {topTutors.map((t, i) => (
+            <FadeIn key={t.id} index={i} style={isWide ? styles.gridItem : undefined}>
               <TutorCard
                 tutor={t}
                 onPress={() => navigation.navigate('TutorProfile', { tutor: t })}
               />
-            </View>
+            </FadeIn>
           ))}
         </View>
       )}
@@ -268,9 +269,10 @@ export default function HomeScreen({ navigation }) {
             single stack, so the blocks themselves are never duplicated. */}
         <View style={[styles.body, isWide && styles.bodyWide]}>
           <View style={[styles.col, isWide && styles.colNarrow]}>
+            <GettingStarted profile={profile} isTutor={isTutor} navigation={navigation} />
             {promoBanner}
-            {impactSection}
-            {sessionsSection}
+            {impactSection ? <FadeIn>{impactSection}</FadeIn> : null}
+            {sessionsSection ? <FadeIn>{sessionsSection}</FadeIn> : null}
           </View>
           <View style={[styles.col, isWide && styles.colWide]}>
             {tutorsSection}

@@ -27,7 +27,12 @@ schedule, "when are we both free?" takes a dozen texts.
 - **Service-hours log**: every session a tutor marks as done counts as one
   50-minute block; tutors download a CSV a moderator can check and sign.
 - **Reviews** after a session, so the best tutors rise to the top.
-- **Safety**: school-email sign-up only, report and block on every profile.
+- **Safety and privacy for minors**: school-email sign-up only, report and
+  block on every profile, email addresses never shown (students tap
+  *Message*), and phone numbers private unless the owner opts in.
+- **Guided start**: a three-step setup with Ollie, then a *Get started*
+  checklist (add your classes or free blocks, invite a friend, host or book
+  your first session).
 - **Ollie the owl** guides new users through a three-step welcome tour.
 - **Feels like a real app**: confetti when a session is confirmed or done,
   tutor badges (Top tutor, 10+ hours), pull to refresh, loading placeholders,
@@ -69,7 +74,7 @@ More detail: [ARCHITECTURE.md](ARCHITECTURE.md) · database:
   reminders and core components: `npm test`.
 - **CI** on every push: tests plus web and iOS bundles
   ([.github/workflows/ci.yml](.github/workflows/ci.yml)).
-- **End-to-end checks** with Playwright against the web build: 75 checks
+- **End-to-end checks** with Playwright against the web build: 90 checks
   covering every screen and button.
 - **Accessibility**: screen-reader labels and roles on every control, Reduce
   Motion respected, and an axe-core (WCAG 2 AA) scan with no violations in

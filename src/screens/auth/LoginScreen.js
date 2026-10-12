@@ -36,8 +36,9 @@ export default function LoginScreen({ navigation }) {
   const [loading, setLoading]         = useState(false);
   const [showPw, setShowPw]           = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [resetNote, setResetNote]     = useState('');
 
-  const { control, handleSubmit, formState: { errors } } = useForm({
+  const { control, handleSubmit, getValues, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
   });
 
@@ -60,6 +61,20 @@ export default function LoginScreen({ navigation }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Sends a reset link to the school email typed above.
+  const handleForgot = async () => {
+    const email = (getValues('email') ?? '').toLowerCase().trim();
+    setSubmitError('');
+    setResetNote('');
+    if (!email.endsWith(SCHOOL_EMAIL_DOMAIN)) {
+      setSubmitError(`Type your ${SCHOOL_EMAIL_DOMAIN} email above, then tap "Forgot password?" again.`);
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) setSubmitError(error.message);
+    else setResetNote(`We sent a reset link to ${email}.`);
   };
 
   return (
@@ -121,6 +136,21 @@ export default function LoginScreen({ navigation }) {
         )}
       />
 
+      <TouchableOpacity
+        style={styles.forgot}
+        onPress={handleForgot}
+        hitSlop={hit.slop}
+        activeOpacity={press.opacity}
+        accessibilityRole="button"
+        accessibilityLabel="Forgot password? Send a reset link to my school email"
+      >
+        <Text style={styles.forgotText}>Forgot password?</Text>
+      </TouchableOpacity>
+
+      {resetNote ? (
+        <Text style={styles.resetNote} accessibilityLiveRegion="polite">{resetNote}</Text>
+      ) : null}
+
       <Button
         label="Sign in"
         onPress={handleSubmit(onSubmit)}
@@ -170,6 +200,9 @@ const styles = StyleSheet.create({
     color: colors.black,
     marginBottom: space.xxl,
   },
+  forgot:     { alignSelf: 'flex-end', marginTop: -space.sm, marginBottom: space.md },
+  forgotText: { ...type.small, fontWeight: '600', color: colors.brandText },
+  resetNote:  { ...type.small, color: colors.brandText, marginBottom: space.md },
   submit: { marginTop: space.sm },
 
   legalRow: {

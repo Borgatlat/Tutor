@@ -446,6 +446,16 @@ create index if not exists blocked_users_blocker_idx on public.blocked_users (bl
 
 
 -- ─────────────────────────────────────────────────────────────
+-- 11b. CONTACT PRIVACY
+-- ─────────────────────────────────────────────────────────────
+-- Students are minors: a phone number is private unless its owner opts in
+-- from Profile ("Show my phone number"). The app never prints email
+-- addresses; students use the Message button instead.
+alter table public.profiles
+  add column if not exists show_phone boolean not null default false;
+
+
+-- ─────────────────────────────────────────────────────────────
 -- 12. COMMUNITY STATS (Home screen impact strip)
 -- ─────────────────────────────────────────────────────────────
 -- Sessions are private (RLS: read own), so the school-wide totals come from a

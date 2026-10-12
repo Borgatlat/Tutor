@@ -21,7 +21,6 @@ import { heading, label, type } from '../../theme/fonts';
 import { school } from '../../theme/school';
 import { rule } from '../../theme/layout';
 import OrganicBackdrop from './OrganicBackdrop';
-import Mascot from './Mascot';
 import Logo from './Logo';
 import { useResponsive } from '../../hooks/useResponsive';
 
@@ -57,7 +56,6 @@ export default function AuthShell({
       <View style={styles.wideRoot}>
         <View style={styles.wideLeft}>
           <OrganicBackdrop />
-          <Mascot size={150} onDark style={styles.mascotWide} />
           {brand(false)}
 
           {features?.length ? (
@@ -95,7 +93,6 @@ export default function AuthShell({
     >
       <View style={styles.hero}>
         <OrganicBackdrop />
-        <Mascot size={80} onDark style={styles.mascotPeek} />
         {headerRight ? <View style={styles.heroTop}>{headerRight}</View> : null}
         {brand(true)}
       </View>
@@ -181,8 +178,6 @@ const styles = StyleSheet.create({
   },
 
   // The owl perches in the top-right of the green header, clear of the text.
-  mascotPeek: { position: 'absolute', right: space.lg, top: space.lg },
-  mascotWide: { position: 'absolute', right: 48, bottom: 48 },
 
   // ── Desktop ───────────────────────────────────────────────────────────────
   wideRoot: {

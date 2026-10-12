@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  SafeAreaView, StatusBar, ScrollView, Linking,
+  SafeAreaView, StatusBar, ScrollView, Linking, Switch,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,6 +14,7 @@ import { heading, label, type } from '../../theme/fonts';
 import SubjectBadge from '../../components/SubjectBadge';
 import AvailabilityGrid from '../../components/AvailabilityGrid';
 import ServiceHoursCard from '../../components/ServiceHoursCard';
+import { select } from '../../utils/haptics';
 import {
   Avatar, Button, Divider, EmptyState, ErrorBanner,
   Field, RoleSelector, SubjectPicker,
@@ -29,6 +30,9 @@ export default function ProfileScreen() {
   const [savingBio, setSavingBio] = useState(false);
   const [bio, setBio]             = useState(profile?.bio ?? '');
   const [phone, setPhone]         = useState(profile?.phone ?? '');
+  // Private by default: a phone number is only shown to others if the user
+  // switches this on (profiles.show_phone).
+  const [showPhone, setShowPhone] = useState(!!profile?.show_phone);
   const [avatarUri, setAvatarUri] = useState(null);
   const [saveError, setSaveError] = useState('');
 
@@ -94,6 +98,8 @@ export default function ProfileScreen() {
       const { error: updateError } = await supabase.from('profiles').update({
         bio:   bio   || null,
         phone: phone || null,
+        // Only sent when changed, so saving a bio never depends on the column.
+        ...(showPhone !== !!profile?.show_phone && { show_phone: showPhone }),
         ...(avatarUrl && { avatar_url: avatarUrl }),
       }).eq('id', userId);
 
@@ -279,7 +285,25 @@ export default function ProfileScreen() {
                   keyboardType="phone-pad"
                   value={phone}
                   onChangeText={setPhone}
+                  hint="Private. Only shown if you switch it on below."
                 />
+                <View style={styles.privacyRow}>
+                  <View style={styles.privacyText}>
+                    <Text style={styles.privacyTitle}>Show my phone number</Text>
+                    <Text style={styles.privacySub}>
+                      Lets students text you from your tutor profile. Off by default.
+                    </Text>
+                  </View>
+                  <Switch
+                    value={showPhone}
+                    onValueChange={(v) => { select(); setShowPhone(v); }}
+                    disabled={!phone}
+                    trackColor={{ false: colors.gray200, true: colors.brand }}
+                    thumbColor={colors.white}
+                    ios_backgroundColor={colors.gray200}
+                    accessibilityLabel="Show my phone number on my tutor profile"
+                  />
+                </View>
                 <Button
                   label="Save changes"
                   onPress={handleSaveProfile}
@@ -294,6 +318,18 @@ export default function ProfileScreen() {
 
                 <Text style={[styles.fieldLabel, styles.fieldLabelSpaced]}>Phone</Text>
                 <Text style={styles.fieldValue}>{profile?.phone || 'Not provided'}</Text>
+                {profile?.phone ? (
+                  <View style={styles.privacyNote}>
+                    <Ionicons
+                      name={profile?.show_phone ? 'eye-outline' : 'lock-closed-outline'}
+                      size={13}
+                      color={colors.gray500}
+                    />
+                    <Text style={styles.privacyNoteText}>
+                      {profile?.show_phone ? 'Shown on your tutor profile' : 'Private: only you can see this'}
+                    </Text>
+                  </View>
+                ) : null}
               </>
             )}
           </View>
@@ -537,6 +573,17 @@ const styles = StyleSheet.create({
     color: colors.gray500, marginBottom: 2,
   },
   fieldLabelSpaced: { marginTop: space.md },
+
+  privacyRow: {
+    flexDirection: 'row', alignItems: 'center', gap: space.md,
+    backgroundColor: colors.offWhite, borderRadius: radii.sm,
+    padding: space.md, marginBottom: space.lg,
+  },
+  privacyText:  { flex: 1 },
+  privacyTitle: { ...type.small, fontWeight: '700', color: colors.black },
+  privacySub:   { ...type.small, color: colors.gray500 },
+  privacyNote:  { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
+  privacyNoteText: { ...type.small, color: colors.gray500 },
   fieldValue: { ...type.body, color: colors.gray700 },
 
   hint: { ...type.small, color: colors.gray500, marginBottom: space.md },

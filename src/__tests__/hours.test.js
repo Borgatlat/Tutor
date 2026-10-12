@@ -69,3 +69,24 @@ describe('tutor badges', () => {
     expect(labels({ avg_rating: 4.7, review_count: 20, session_count: 2 })).toEqual([]);
   });
 });
+
+describe('getting started checklist', () => {
+  const { gettingStartedSteps } = require('../utils/gettingStarted');
+
+  test('tutors: teach + host, students: free blocks + book', () => {
+    expect(gettingStartedSteps({ isTutor: true }).map((s) => s.key)).toEqual(['profile', 'teach', 'invite', 'session']);
+    expect(gettingStartedSteps({ isTutor: false }).map((s) => s.key)).toEqual(['profile', 'free', 'invite', 'session']);
+    expect(gettingStartedSteps({ isTutor: false })[3].label).toBe('Book your first session');
+  });
+
+  test('steps tick off from real data', () => {
+    const steps = gettingStartedSteps({
+      isTutor: true,
+      invited: true,
+      sessionCount: 0,
+      profile: { bio: 'Hi', subjects: [{ subject: 'SAT Math' }], session_count: 3 },
+    });
+    expect(steps.every((s) => s.done)).toBe(true);
+    expect(gettingStartedSteps({ isTutor: true, profile: {} }).filter((s) => s.done)).toEqual([]);
+  });
+});

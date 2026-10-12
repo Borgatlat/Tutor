@@ -15,7 +15,7 @@ import AppTextInput from '../../components/AppTextInput';
 import TutorCard from '../../components/TutorCard';
 import SkeletonCard from '../../components/SkeletonCard';
 import {
-  Chip, EmptyState, IconButton, SubjectPicker,
+  Chip, EmptyState, FadeIn, IconButton, SubjectPicker,
   OrganicBackdrop,
 } from '../../components/ui';
 import { BLOCKS } from '../../constants';
@@ -154,15 +154,17 @@ export default function SearchScreen({ navigation }) {
           />
         ) : null
       }
-      renderItem={({ item }) => (
+      renderItem={({ item, index }) => (
         <View style={columns > 1 ? styles.gridItem : undefined}>
           {loading ? (
             <SkeletonCard />
           ) : (
-            <TutorCard
-              tutor={item}
-              onPress={() => navigation.navigate('TutorProfile', { tutor: item })}
-            />
+            <FadeIn index={index}>
+              <TutorCard
+                tutor={item}
+                onPress={() => navigation.navigate('TutorProfile', { tutor: item })}
+              />
+            </FadeIn>
           )}
         </View>
       )}

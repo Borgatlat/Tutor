@@ -1,3 +1,14 @@
+/**
+ * ProfileSetupScreen: a short, guided setup after sign-up.
+ *
+ *   Tutors / both:  1 About you → 2 What you teach → 3 When you're free
+ *   Students:       1 About you → 2 When you're free
+ *
+ * Ollie explains each step, a progress bar shows how far along you are, and
+ * everything is saved in one go at the end. "Skip for now" is always there.
+ * Phone numbers are not asked for here: they're private and optional, and can
+ * be added later from Profile.
+ */
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -7,9 +18,25 @@ import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { radii, space, border, press, hit } from '../../theme/layout';
 import AvailabilityGrid from '../../components/AvailabilityGrid';
+import { type } from '../../theme/fonts';
 import {
-  AuthShell, Button, ErrorBanner, Field, SubjectPicker,
+  AuthShell, Button, ErrorBanner, FadeIn, Field, Mascot, SubjectPicker,
 } from '../../components/ui';
+
+const STEP_COPY = {
+  about: {
+    title: 'About you',
+    ollie: "Hi! I'm Ollie. Add a photo and a line about yourself so people know who they're meeting.",
+  },
+  teach: {
+    title: 'What you teach',
+    ollie: 'Pick the classes you can help with. Add your grade if you like; it builds trust.',
+  },
+  free: {
+    title: "When you're free",
+    ollie: 'Tap the blocks you usually have free. This is how we match tutors and students.',
+  },
+};
 
 export default function ProfileSetupScreen() {
   const { session, profile, refreshProfile, completeSetup } = useAuthStore();
@@ -18,9 +45,14 @@ export default function ProfileSetupScreen() {
   const role = profile?.role ?? session?.user?.user_metadata?.role ?? 'student';
   const isTutor = role === 'tutor' || role === 'both';
 
+  const steps = isTutor ? ['about', 'teach', 'free'] : ['about', 'free'];
+  const [stepIndex, setStepIndex] = useState(0);
+  const step   = steps[stepIndex];
+  const isLast = stepIndex === steps.length - 1;
+  const copy   = STEP_COPY[step];
+
   const [avatarUri, setAvatarUri] = useState(null);
   const [bio, setBio]             = useState(profile?.bio ?? '');
-  const [phone, setPhone]         = useState(profile?.phone ?? '');
 
   // Pre-populate subjects from saved profile
   const savedSubjects = (profile?.subjects ?? []).map((s) =>
@@ -95,7 +127,6 @@ export default function ProfileSetupScreen() {
         .update({
           setup_complete: true,
           ...(bio       ? { bio }       : {}),
-          ...(phone     ? { phone }     : {}),
           ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
         })
         .eq('id', userId);
@@ -148,103 +179,119 @@ export default function ProfileSetupScreen() {
 
   return (
     <AuthShell
-      title="Set up your profile"
-      subtitle="All fields are optional, and you can update these later"
+      title={copy.title}
+      subtitle={`Step ${stepIndex + 1} of ${steps.length}`}
     >
+      {/* Progress */}
+      <View
+        style={styles.progressTrack}
+        accessibilityRole="progressbar"
+        accessibilityLabel={`Setup step ${stepIndex + 1} of ${steps.length}`}
+        accessibilityValue={{ min: 1, max: steps.length, now: stepIndex + 1 }}
+      >
+        {steps.map((s, i) => (
+          <View key={s} style={[styles.progressSeg, i <= stepIndex && styles.progressSegOn]} />
+        ))}
+      </View>
+
+      {/* Ollie explains the step */}
+      <FadeIn key={`ollie-${step}`} style={styles.guide}>
+        <Mascot size={52} mood={isLast ? 'happy' : 'default'} />
+        <View style={styles.bubble}>
+          <Text style={styles.bubbleText}>{copy.ollie}</Text>
+        </View>
+      </FadeIn>
+
       <ErrorBanner message={saveError} />
 
-      {/* Avatar */}
-      <View style={styles.avatarSection}>
-        <TouchableOpacity
-          style={styles.avatarWrap}
-          onPress={pickImage}
-          activeOpacity={press.opacity}
-          hitSlop={hit.slop}
-          accessibilityRole="button"
-          accessibilityLabel="Add a profile photo"
-        >
-          {avatarUri ? (
-            <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
-          ) : (
-            <View style={styles.avatarPlaceholder}>
-              <Ionicons name="person" size={42} color={colors.gray300} />
+      <FadeIn key={step}>
+        {step === 'about' ? (
+          <>
+            <View style={styles.avatarSection}>
+              <TouchableOpacity
+                style={styles.avatarWrap}
+                onPress={pickImage}
+                activeOpacity={press.opacity}
+                hitSlop={hit.slop}
+                accessibilityRole="button"
+                accessibilityLabel="Add a profile photo"
+              >
+                {avatarUri ? (
+                  <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
+                ) : (
+                  <View style={styles.avatarPlaceholder}>
+                    <Ionicons name="person" size={42} color={colors.gray300} />
+                  </View>
+                )}
+                <View style={styles.avatarEditBadge}>
+                  <Ionicons name="camera" size={16} color={colors.white} />
+                </View>
+              </TouchableOpacity>
+              <Text style={styles.avatarHint}>Tap to add a photo (optional)</Text>
             </View>
-          )}
-          <View style={styles.avatarEditBadge}>
-            <Ionicons name="camera" size={16} color={colors.white} />
-          </View>
-        </TouchableOpacity>
-        <Text style={styles.avatarHint}>Tap to add a photo</Text>
-      </View>
 
-      <Field
-        label="Bio"
-        placeholder="Tell students a little about yourself…"
-        multiline
-        numberOfLines={3}
-        value={bio}
-        onChangeText={setBio}
-      />
-
-      <Field
-        label="Phone number"
-        icon="call-outline"
-        placeholder="(713) 555-0100"
-        keyboardType="phone-pad"
-        autoComplete="tel"
-        textContentType="telephoneNumber"
-        value={phone}
-        onChangeText={setPhone}
-      />
-
-      {/* Subjects */}
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel}>Subjects You Can Teach</Text>
-        <Text style={styles.hint}>
-          Core classes, SAT and AP. Select all that apply. Skip if you're only a student.
-        </Text>
-        <SubjectPicker
-          selected={selectedSubjects}
-          onToggle={toggleSubject}
-          grades={gradeMap}
-          onGradeChange={setGrade}
-        />
-      </View>
-
-      {/* Free blocks */}
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel}>
-          {isTutor ? 'Your Free Blocks (Availability)' : 'Your Free Blocks'}
-        </Text>
-        <Text style={styles.hint}>
-          {isTutor
-            ? 'Students can book sessions during these blocks'
-            : 'Tutors with matching free blocks rank higher in search'}
-        </Text>
-
-        <AvailabilityGrid
-          availability={availabilitySlots}
-          onToggle={toggleBlock}
-        />
-
-        {selectedBlocks.size > 0 ? (
-          <View style={styles.availCount}>
-            <Ionicons name="checkmark-circle" size={14} color={colors.brandText} />
-            <Text style={styles.availCountText}>
-              {selectedBlocks.size} block{selectedBlocks.size === 1 ? '' : 's'} selected
-            </Text>
-          </View>
+            <Field
+              label="Bio"
+              placeholder={isTutor
+                ? 'e.g. Junior, strong in Algebra 2 and SAT Math'
+                : 'e.g. Sophomore, working on Chemistry'}
+              multiline
+              numberOfLines={3}
+              value={bio}
+              onChangeText={setBio}
+            />
+          </>
         ) : null}
-      </View>
 
-      <Button
-        label="Looks good"
-        icon="arrow-forward"
-        onPress={handleSave}
-        loading={loading}
-        fullWidth
-        style={styles.save}
-      />
+        {step === 'teach' ? (
+          <SubjectPicker
+            selected={selectedSubjects}
+            onToggle={toggleSubject}
+            grades={gradeMap}
+            onGradeChange={setGrade}
+          />
+        ) : null}
+
+        {step === 'free' ? (
+          <>
+            <Text style={styles.hint}>
+              {isTutor
+                ? 'Students can book you during these blocks.'
+                : 'Tutors who share your free blocks show up first.'}
+            </Text>
+            <AvailabilityGrid
+              availability={availabilitySlots}
+              onToggle={toggleBlock}
+            />
+            {selectedBlocks.size > 0 ? (
+              <View style={styles.availCount}>
+                <Ionicons name="checkmark-circle" size={14} color={colors.brandText} />
+                <Text style={styles.availCountText}>
+                  {selectedBlocks.size} block{selectedBlocks.size === 1 ? '' : 's'} selected
+                </Text>
+              </View>
+            ) : null}
+          </>
+        ) : null}
+      </FadeIn>
+
+      <View style={styles.nav}>
+        {stepIndex > 0 ? (
+          <Button
+            label="Back"
+            variant="secondary"
+            onPress={() => setStepIndex(stepIndex - 1)}
+            style={styles.navBack}
+          />
+        ) : null}
+        <Button
+          label={isLast ? 'Finish setup' : 'Next'}
+          icon={isLast ? 'checkmark' : 'arrow-forward'}
+          onPress={isLast ? handleSave : () => setStepIndex(stepIndex + 1)}
+          loading={isLast && loading}
+          style={styles.navNext}
+        />
+      </View>
 
       <TouchableOpacity
         style={styles.skipBtn}
@@ -277,31 +324,35 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 2, borderColor: colors.white,
   },
-  avatarHint: { fontSize: 13, color: colors.gray500 },
+  avatarHint: { ...type.small, color: colors.gray500 },
 
-  section: {
-    marginBottom: space.xxl,
-    paddingTop: space.xl,
-    borderTopWidth: border.hairline,
-    borderTopColor: colors.line,
+  progressTrack: { flexDirection: 'row', gap: 6, marginBottom: space.xl },
+  progressSeg:   { flex: 1, height: 6, borderRadius: 3, backgroundColor: colors.gray200 },
+  progressSegOn: { backgroundColor: colors.gold },
+
+  guide:  { flexDirection: 'row', alignItems: 'flex-end', gap: space.sm, marginBottom: space.xl },
+  bubble: {
+    flex: 1,
+    backgroundColor: colors.brandTint,
+    borderRadius: radii.lg,
+    borderBottomLeftRadius: 4,
+    paddingVertical: space.md,
+    paddingHorizontal: space.lg,
   },
-  sectionLabel: {
-    fontSize: 11, fontWeight: '700', letterSpacing: 1.8, textTransform: 'uppercase',
-    color: colors.black,
-  },
-  hint: {
-    fontSize: 12, color: colors.gray500,
-    marginTop: space.xs, marginBottom: space.md, lineHeight: 17,
-  },
+  bubbleText: { ...type.small, color: colors.black },
+
+  hint: { ...type.small, color: colors.gray500, marginBottom: space.md },
 
   availCount: {
     flexDirection: 'row', alignItems: 'center',
     gap: space.xs, marginTop: space.md,
   },
-  availCountText: { fontSize: 12, color: colors.brandText, fontWeight: '700' },
+  availCountText: { ...type.small, color: colors.brandText, fontWeight: '700' },
 
-  save: { marginTop: space.xs },
+  nav:     { flexDirection: 'row', gap: space.sm, marginTop: space.xxl },
+  navBack: { flex: 1 },
+  navNext: { flex: 2 },
 
   skipBtn:  { alignItems: 'center', marginTop: space.lg },
-  skipText: { fontSize: 14, color: colors.gray500, textDecorationLine: 'underline' },
+  skipText: { ...type.small, color: colors.gray500, textDecorationLine: 'underline' },
 });

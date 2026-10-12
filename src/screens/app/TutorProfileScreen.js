@@ -13,6 +13,7 @@ import { heading, label, type } from '../../theme/fonts';
 import SubjectBadge from '../../components/SubjectBadge';
 import TutorBadge from '../../components/TutorBadge';
 import { getTutorBadges } from '../../utils/badges';
+import { school } from '../../theme/school';
 import { SkeletonLines } from '../../components/SkeletonCard';
 import RatingStars from '../../components/RatingStars';
 import AvailabilityGrid from '../../components/AvailabilityGrid';
@@ -37,6 +38,7 @@ export default function TutorProfileScreen({ route, navigation }) {
 
   const { isWide } = useResponsive();
   const isSelf = myProfile?.id === tutor.id;
+  const firstName = tutor.full_name?.split(' ')[0] ?? 'tutor';
 
   useEffect(() => { loadDetails(); }, []);
 
@@ -91,14 +93,6 @@ export default function TutorProfileScreen({ route, navigation }) {
         {!isSelf ? (
           <View style={styles.navActions}>
             <IconButton
-              icon="mail-outline"
-              label={`Email ${tutor.full_name}`}
-              onPress={() => tutor.email && Linking.openURL(`mailto:${tutor.email}`)}
-              size={18}
-              color={colors.white}
-              style={styles.navBtn}
-            />
-            <IconButton
               icon="flag-outline"
               label="Report or block this user"
               onPress={() => setReportVisible(true)}
@@ -124,12 +118,39 @@ export default function TutorProfileScreen({ route, navigation }) {
           </View>
           <View style={styles.heroRule} />
           <Text style={styles.heroName}>{tutor.full_name}</Text>
-          <Text style={styles.heroEmail}>{tutor.email}</Text>
-          {tutor.phone ? <Text style={styles.heroPhone}>{tutor.phone}</Text> : null}
           <RatingStars rating={tutor.avg_rating} count={tutor.review_count} size={15} onDark />
           {getTutorBadges(tutor).length ? (
             <View style={styles.heroBadges}>
               {getTutorBadges(tutor).map((b) => <TutorBadge key={b.key} badge={b} onDark />)}
+            </View>
+          ) : null}
+
+          {/* Contact without exposing details: the email address is never
+              printed, and a phone number only appears as a button when the
+              tutor has chosen to share it (show_phone). */}
+          {!isSelf ? (
+            <View style={styles.heroActions}>
+              {tutor.email ? (
+                <Button
+                  label={`Message ${firstName}`}
+                  icon="mail-outline"
+                  size="sm"
+                  variant="secondary"
+                  onPress={() => Linking.openURL(
+                    `mailto:${tutor.email}?subject=${encodeURIComponent(`Peer tutoring (${school.name} Tutors)`)}`,
+                  )}
+                />
+              ) : null}
+              {tutor.show_phone && tutor.phone ? (
+                <Button
+                  label="Text"
+                  icon="chatbubble-outline"
+                  size="sm"
+                  variant="secondary"
+                  accessibilityLabel={`Text ${firstName}`}
+                  onPress={() => Linking.openURL(`sms:${tutor.phone}`)}
+                />
+              ) : null}
             </View>
           ) : null}
         </View>
@@ -310,9 +331,8 @@ const styles = StyleSheet.create({
     marginBottom: space.md,
   },
   heroName:  { ...type.title, color: colors.white, marginBottom: space.xs },
-  heroEmail: { color: colors.whiteAlpha[80], fontSize: 13, marginBottom: 2 },
+  heroActions: { flexDirection: 'row', gap: space.sm, marginTop: space.lg },
   heroBadges: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: space.sm, marginTop: space.md },
-  heroPhone: { color: colors.whiteAlpha[65], fontSize: 13, marginBottom: space.sm },
 
   // ── Stats ─────────────────────────────────────────────────────────────────
   // Floating card that overlaps the curved hero edge.
