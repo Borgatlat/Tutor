@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
   SafeAreaView, StatusBar, ScrollView,
@@ -6,6 +6,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import Celebration from '../../components/Celebration';
+import { bookableDays, chipLabel, formatSessionDate } from '../../utils/schedule';
+import { getSessionTimeLabel } from '../../utils/calendar';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { cardShadow } from '../../theme/shadows';
@@ -30,8 +32,29 @@ export default function BookSessionScreen({ route, navigation }) {
   const [celebrate, setCelebrate] = useState(false);
   const [bookError, setBookError] = useState('');
 
+  // Real dates: the next school days this block can still be booked, with
+  // the ones the tutor is already booked in greyed out.
+  const days = useMemo(() => bookableDays({ period: slot.period, count: 10 }), [slot.period]);
+  const [busy, setBusy] = useState(() => new Set());
+  const [date, setDate] = useState(null);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const { data } = await supabase.rpc('tutor_booked_slots', {
+        tutor: tutor.id, from_date: days[0], to_date: days[days.length - 1],
+      });
+      if (!alive) return;
+      const taken = new Set((data ?? []).filter((r) => r.period === slot.period).map((r) => r.session_date));
+      setBusy(taken);
+      setDate((d) => d ?? days.find((x) => !taken.has(x)) ?? null);
+    })();
+    return () => { alive = false; };
+  }, [tutor.id, slot.period, days]);
+
   const handleBook = async () => {
     if (!subject) { setBookError('Please select a subject before continuing.'); return; }
+    if (!date)    { setBookError('Pick a day for the session.'); return; }
     setLoading(true);
     setBookError('');
     const { error } = await supabase.from('sessions').insert({
@@ -39,11 +62,19 @@ export default function BookSessionScreen({ route, navigation }) {
       student_id: profile.id,
       subject,
       period: slot.period,
+      session_date: date,
       notes:  notes || null,
       status: 'pending',
     });
     setLoading(false);
-    if (error) { setBookError(error.message); return; }
+    if (error) {
+      // 23505 = someone took this block on this day a moment ago.
+      setBookError(error.code === '23505'
+        ? 'That block was just booked. Pick another day.'
+        : error.message);
+      if (error.code === '23505') setBusy((b) => new Set([...b, date]));
+      return;
+    }
     setBooked(true);
     setCelebrate(true);
   };
@@ -65,7 +96,8 @@ export default function BookSessionScreen({ route, navigation }) {
             {[
               { icon: 'person-outline',   text: tutor.full_name },
               { icon: 'book-outline',     text: subject },
-              { icon: 'calendar-outline', text: `Block ${slot.period}` },
+              { icon: 'calendar-outline', text: `${formatSessionDate(date)} · Block ${slot.period}` },
+              { icon: 'time-outline',     text: getSessionTimeLabel(null, slot.period).split(' · ')[1] },
             ].map((row) => (
               <View key={row.icon} style={styles.confirmRow}>
                 <Ionicons name={row.icon} size={15} color={colors.gray500} />
@@ -117,7 +149,7 @@ export default function BookSessionScreen({ route, navigation }) {
         <View style={styles.header}>
           <OrganicBackdrop />
           <View style={styles.headerRule} />
-          <Text style={styles.headerTitle}>Book a Session</Text>
+          <Text style={styles.headerTitle}>Book a session</Text>
         </View>
 
         <View style={styles.card}>
@@ -126,15 +158,40 @@ export default function BookSessionScreen({ route, navigation }) {
             <Avatar uri={tutor.avatar_url} name={tutor.full_name} size={52} />
             <View style={styles.tutorMeta}>
               <Text style={styles.tutorName}>{tutor.full_name}</Text>
-              <Text style={styles.tutorEmail}>{tutor.email}</Text>
+              <Text style={styles.tutorEmail}>Peer tutor</Text>
             </View>
           </View>
 
           {/* Slot summary */}
           <View style={styles.slotBanner}>
-            <Ionicons name="calendar" size={20} color={colors.accentDark} />
-            <Text style={styles.slotText}>Block {slot.period}</Text>
+            <Ionicons name="calendar" size={20} color={colors.brandText} />
+            <View>
+              <Text style={styles.slotText}>
+                {date ? `${formatSessionDate(date)} · ` : ''}Block {slot.period}
+              </Text>
+              <Text style={styles.slotSub}>{getSessionTimeLabel(null, slot.period).split(' · ')[1]}</Text>
+            </View>
           </View>
+
+          {/* Day */}
+          <Text style={styles.label}>Day</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.dayRow}
+            style={styles.dayScroll}
+          >
+            {days.map((d) => (
+              <Chip
+                key={d}
+                label={chipLabel(d)}
+                selected={date === d}
+                disabled={busy.has(d)}
+                onPress={() => { setDate(d); setBookError(''); }}
+                accessibilityLabel={`${formatSessionDate(d)}${busy.has(d) ? ', already booked' : ''}`}
+              />
+            ))}
+          </ScrollView>
 
           <ErrorBanner message={bookError} />
 
@@ -177,8 +234,8 @@ export default function BookSessionScreen({ route, navigation }) {
           <View style={styles.contactNote}>
             <Ionicons name="information-circle-outline" size={15} color={colors.gray500} />
             <Text style={styles.contactNoteText}>
-              After confirming, you and {tutor.full_name?.split(' ')[0]} can contact each
-              other at <Text style={styles.emailHighlight}>{tutor.email}</Text>
+              Once it's booked, you and {tutor.full_name?.split(' ')[0]} can message each other
+              in the session's chat. No phone numbers or emails needed.
             </Text>
           </View>
 
@@ -187,7 +244,7 @@ export default function BookSessionScreen({ route, navigation }) {
             icon="checkmark-circle"
             onPress={handleBook}
             loading={loading}
-            disabled={!subject}
+            disabled={!subject || !date}
             fullWidth
             style={styles.submit}
           />
@@ -240,6 +297,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brandTint,
     borderRadius: radii.lg, padding: space.lg, marginBottom: space.xl,
   },
+  slotSub:  { ...type.small, color: colors.gray600 },
+  dayScroll: { marginHorizontal: -space.xxl, marginBottom: space.xl },
+  dayRow:    { gap: space.sm, paddingHorizontal: space.xxl },
   slotText: { fontSize: 16, fontWeight: '800', color: colors.brandText },
 
   label: { ...type.small, fontWeight: '600', color: colors.gray700, marginBottom: space.sm },
@@ -253,7 +313,6 @@ const styles = StyleSheet.create({
     borderRadius: radii.sm, padding: space.md,
   },
   contactNoteText: { flex: 1, fontSize: 12, color: colors.gray500, lineHeight: 18 },
-  emailHighlight:  { color: colors.brandText, fontWeight: '600' },
 
   submit: { marginTop: space.xl },
 

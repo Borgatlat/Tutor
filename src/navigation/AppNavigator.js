@@ -11,6 +11,8 @@ import TutorProfileScreen from '../screens/app/TutorProfileScreen';
 import BookSessionScreen  from '../screens/app/BookSessionScreen';
 import SessionsScreen     from '../screens/app/SessionsScreen';
 import ProfileScreen      from '../screens/app/ProfileScreen';
+import ChatScreen         from '../screens/app/ChatScreen';
+import ModerationScreen   from '../screens/app/ModerationScreen';
 import { useResponsive, SIDEBAR_WIDTH } from '../hooks/useResponsive';
 import colors             from '../theme/colors';
 import { school }        from '../theme/school';
@@ -37,6 +39,24 @@ function SearchStack() {
       <Stack.Screen name="SearchMain"   component={SearchScreen} />
       <Stack.Screen name="TutorProfile" component={TutorProfileScreen} />
       <Stack.Screen name="BookSession"  component={BookSessionScreen} />
+    </Stack.Navigator>
+  );
+}
+
+function SessionsStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="SessionsMain" component={SessionsScreen} />
+      <Stack.Screen name="Chat"         component={ChatScreen} />
+    </Stack.Navigator>
+  );
+}
+
+function ProfileStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="ProfileMain" component={ProfileScreen} />
+      <Stack.Screen name="Moderation"  component={ModerationScreen} />
     </Stack.Navigator>
   );
 }
@@ -177,8 +197,8 @@ export default function AppNavigator() {
     >
       <Tab.Screen name="Home"     component={HomeStack}     />
       <Tab.Screen name="Search"   component={SearchStack}   />
-      <Tab.Screen name="Sessions" component={SessionsScreen} />
-      <Tab.Screen name="Profile"  component={ProfileScreen} />
+      <Tab.Screen name="Sessions" component={SessionsStack} />
+      <Tab.Screen name="Profile"  component={ProfileStack}  />
     </Tab.Navigator>
   );
 }

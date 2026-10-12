@@ -48,15 +48,16 @@ export default function ServiceHoursCard({ tutorId, tutorName }) {
     <View style={styles.card}>
       <Text style={styles.title}>Service hours</Text>
       <Text style={styles.hint}>
-        Every session you mark as done counts as one 50-minute block.
+        Every session you mark as done counts as one 50-minute block. A
+        moderator verifies them so your log is official.
       </Text>
 
       <StatRow
         style={styles.stats}
         stats={[
-          { value: String(summary.hours),    label: 'Hours' },
-          { value: String(summary.sessions), label: 'Sessions' },
-          { value: String(summary.students), label: 'Students helped' },
+          { value: String(summary.hours),         label: 'Hours' },
+          { value: String(summary.verifiedHours), label: 'Verified' },
+          { value: String(summary.students),      label: 'Students helped' },
         ]}
       />
 

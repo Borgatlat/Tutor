@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { supabase, fetchMyProfile } from '../lib/supabase';
+import { unregisterPush } from '../utils/push';
 
 // ─── NO persist middleware: setupComplete comes from Supabase, not local storage ───
 // Local storage can't be trusted because of hydration race conditions.
@@ -109,6 +110,7 @@ const useAuthStore = create((set, get) => ({
   },
 
   signOut: async () => {
+    await unregisterPush(get().session?.user?.id);
     await supabase.auth.signOut();
     set({ session: null, profile: null, setupComplete: false });
   },

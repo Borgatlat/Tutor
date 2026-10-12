@@ -1,7 +1,8 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
+import { registerForPush, onNotificationTap } from './src/utils/push';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { registerRootComponent } from 'expo';
@@ -138,6 +139,9 @@ const MONTSERRAT = {
 
 const SPLASH_MIN_MS = 1700;
 
+// Lets a tapped push notification open a screen from outside React.
+const navigationRef = createNavigationContainerRef();
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 function App() {
@@ -166,6 +170,16 @@ function App() {
     return () => clearTimeout(t);
   }, []);
 
+  // Push: register this phone once the user is signed in and set up, and
+  // open the right screen when a notification is tapped.
+  const userId = session?.user?.id;
+  useEffect(() => {
+    if (userId && setupComplete) registerForPush(userId);
+  }, [userId, setupComplete]);
+  useEffect(() => onNotificationTap((name, params) => {
+    if (navigationRef.isReady()) navigationRef.navigate(name, params);
+  }), []);
+
   // On web fontsLoaded is true from the first render (isLoaded() finds the
   // @font-face we injected above).  The check still guards native cold-start.
   if (loading || !fontsLoaded || !introDone) return <SplashScreen />;
@@ -173,7 +187,7 @@ function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar style="light" />
-      <NavigationContainer>
+      <NavigationContainer ref={navigationRef}>
         {!session
           ? <AuthNavigator />
           : !setupComplete
