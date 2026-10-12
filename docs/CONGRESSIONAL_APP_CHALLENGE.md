@@ -56,7 +56,7 @@ phone-sized browser window. Speak over it. Use **clear placeholder names**
 | 1:20–1:40 | Tutor profile: pick a free block, then **Book session** | "Their profile shows ratings, subjects and only the blocks they're free. Pick one and send the request." |
 | 1:40–2:00 | Switch to the tutor account: **Confirm**, **Add to calendar**, then **Mark as done** | "The tutor confirms, and both people get a reminder ten minutes before. Afterwards the tutor marks it done." |
 | 2:00–2:15 | Profile: **Service hours**, then **Download hours log** | "Every session counts toward service hours, and tutors can download a log their moderator signs." |
-| 2:15–2:35 | Quick shots: the code, the tests passing, the accessibility scan | "We built it in React Native with Expo, so it runs on iPhone, Android and the web, with a Supabase backend. Security rules keep each student's sessions private. It has 17 unit tests, 72 automated end-to-end checks and an accessibility scan with zero issues." |
+| 2:15–2:35 | Quick shots: the code, the tests passing, the accessibility scan | "We built it in React Native with Expo, so it runs on iPhone, Android and the web, with a Supabase backend. Security rules keep each student's sessions private. It has 22 unit tests, 75 automated end-to-end checks, dark mode, and an accessibility scan with zero issues." |
 | 2:35–2:45 | Home screen | "Strake Jesuit Tutors: Crusaders helping Crusaders. Thanks for watching!" |
 
 Check before you upload:
