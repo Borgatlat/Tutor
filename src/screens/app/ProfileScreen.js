@@ -23,7 +23,7 @@ import {
 import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../../constants/legal';
 
 export default function ProfileScreen({ navigation }) {
-  const { profile, session, signOut, refreshProfile } = useAuthStore();
+  const { profile, session, signOut, deleteAccount, refreshProfile } = useAuthStore();
   const userId = session?.user?.id;
 
   const [editing, setEditing]     = useState(false);
@@ -75,6 +75,20 @@ export default function ProfileScreen({ navigation }) {
   const canTeach = selectedRole === 'tutor' || selectedRole === 'both';
 
   const [confirmSignOut, setConfirmSignOut] = useState(false);
+  const [confirmDelete, setConfirmDelete]   = useState(false);
+  const [deleting, setDeleting]             = useState(false);
+  const [accountError, setAccountError]     = useState('');
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    setAccountError('');
+    try {
+      await deleteAccount();
+    } catch (e) {
+      setDeleting(false);
+      setAccountError(`Couldn't delete your account. ${e?.message ?? ''}`.trim());
+    }
+  };
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -510,6 +524,48 @@ export default function ProfileScreen({ navigation }) {
                 style={styles.signOutBtn}
               />
             )}
+
+            <Divider />
+
+            {confirmDelete ? (
+              <View>
+                <Text style={styles.deleteTitle}>Delete your account?</Text>
+                <Text style={styles.signOutPrompt}>
+                  This permanently removes your profile, sessions, messages, reviews and
+                  service-hours log. Download your hours log first if you need it.
+                  This can't be undone.
+                </Text>
+                <ErrorBanner message={accountError} style={styles.deleteError} />
+                <View style={styles.rowActions}>
+                  <Button
+                    label="Keep account"
+                    variant="neutral"
+                    size="sm"
+                    onPress={() => { setConfirmDelete(false); setAccountError(''); }}
+                    disabled={deleting}
+                    style={styles.grow}
+                  />
+                  <Button
+                    label="Delete forever"
+                    variant="dangerSolid"
+                    size="sm"
+                    loading={deleting}
+                    onPress={handleDeleteAccount}
+                    style={styles.grow}
+                  />
+                </View>
+              </View>
+            ) : (
+              <TouchableOpacity
+                onPress={() => setConfirmDelete(true)}
+                hitSlop={hit.slop}
+                activeOpacity={press.opacity}
+                accessibilityRole="button"
+                accessibilityLabel="Delete account"
+              >
+                <Text style={styles.deleteLink}>Delete account</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
@@ -632,6 +688,9 @@ const styles = StyleSheet.create({
 
   signOutPrompt: { fontSize: 14, color: colors.gray700, marginBottom: space.md },
   signOutBtn:    { alignSelf: 'flex-start' },
+  deleteTitle:   { ...type.body, fontWeight: '700', color: colors.errorText, marginBottom: space.xs },
+  deleteError:   { marginBottom: space.md },
+  deleteLink:    { ...label.ui, fontSize: 13, color: colors.errorText, textDecorationLine: 'underline' },
   rowActions:    { flexDirection: 'row', gap: space.sm },
   grow:          { flex: 1 },
 

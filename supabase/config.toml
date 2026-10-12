@@ -1,0 +1,4 @@
+# Supabase CLI settings. Link this folder to your project with
+#   npx supabase link --project-ref lmavnypvqdomdefpjbok
+# then apply the migrations with: npx supabase db push
+project_id = "strake-jesuit-tutors"
