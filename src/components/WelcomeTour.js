@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 380,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderRadius: radii.xl,
     padding: space.xxl,
     alignItems: 'center',
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   skip:     { alignSelf: 'flex-end' },
   skipText: { ...label.ui, fontSize: 14, color: colors.gray500 },
   owl:      { marginBottom: space.lg },
-  title:    { ...type.heading, color: colors.brand, textAlign: 'center', marginBottom: space.sm },
+  title:    { ...type.heading, color: colors.brandText, textAlign: 'center', marginBottom: space.sm },
   body:     { ...type.body, color: colors.gray600, textAlign: 'center', marginBottom: space.xl },
   dots:     { flexDirection: 'row', gap: space.sm, marginBottom: space.xl },
   dot:      { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.gray200 },

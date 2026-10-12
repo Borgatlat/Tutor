@@ -24,7 +24,7 @@ export default function Card({ style, padded = true, flat = false, children, ...
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderRadius: radii.lg,
   },
   // A flat card has no shadow, so it gets the hairline instead.

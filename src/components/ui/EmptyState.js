@@ -25,7 +25,7 @@ export default function EmptyState({
     <View style={[styles.wrap, compact && styles.compact, style]}>
       {compact ? (
         <View style={[styles.iconWrap, styles.iconWrapCompact]}>
-          <Ionicons name={icon} size={20} color={colors.brand} />
+          <Ionicons name={icon} size={20} color={colors.brandText} />
         </View>
       ) : (
         <Mascot size={96} mood="thinking" style={styles.mascot} />

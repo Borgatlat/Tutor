@@ -209,9 +209,9 @@ const styles = StyleSheet.create({
     fontSize: 11, color: colors.gray500,
     textAlign: 'center', lineHeight: 17, marginTop: space.lg,
   },
-  legalLink: { color: colors.brand, fontWeight: '600', textDecorationLine: 'underline' },
+  legalLink: { color: colors.brandText, fontWeight: '600', textDecorationLine: 'underline' },
 
   loginLink:       { alignItems: 'center', marginTop: space.xl },
   loginLinkText:   { fontSize: 13, color: colors.gray500 },
-  loginLinkStrong: { color: colors.brand, fontWeight: '700' },
+  loginLinkStrong: { color: colors.brandText, fontWeight: '700' },
 });

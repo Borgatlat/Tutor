@@ -69,7 +69,7 @@ export default function TutorCard({ tutor, onPress }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderRadius: radii.lg,
     padding: space.lg,
     marginBottom: space.md,
@@ -91,6 +91,6 @@ const styles = StyleSheet.create({
   },
   moreText: { fontSize: 12, fontWeight: '600', color: colors.gray500 },
 
-  availText:      { ...type.small, fontWeight: '600', color: colors.brand },
+  availText:      { ...type.small, fontWeight: '600', color: colors.brandText },
   availTextEmpty: { color: colors.gray500 },
 });

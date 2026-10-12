@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     borderWidth: border.control,
     borderColor: colors.line,
     borderRadius: radii.sm,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     paddingHorizontal: space.sm,
   },
   gradeInput: {

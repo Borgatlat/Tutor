@@ -9,14 +9,14 @@ import colors from '../theme/colors';
 import { radii, space } from '../theme/layout';
 
 export default function TutorBadge({ badge, onDark = false }) {
-  const fg = onDark ? colors.white : colors.starText;
+  const fg = onDark ? colors.white : colors.goldText;
   return (
     <View
       style={[styles.pill, onDark && styles.pillDark]}
       accessible
       accessibilityLabel={`Badge: ${badge.label}`}
     >
-      <Ionicons name={badge.icon} size={12} color={onDark ? colors.gold : colors.starText} />
+      <Ionicons name={badge.icon} size={12} color={onDark ? colors.gold : colors.goldText} />
       <Text style={[styles.text, { color: fg }]}>{badge.label}</Text>
     </View>
   );

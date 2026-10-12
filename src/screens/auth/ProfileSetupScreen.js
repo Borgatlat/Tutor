@@ -229,7 +229,7 @@ export default function ProfileSetupScreen() {
 
         {selectedBlocks.size > 0 ? (
           <View style={styles.availCount}>
-            <Ionicons name="checkmark-circle" size={14} color={colors.brand} />
+            <Ionicons name="checkmark-circle" size={14} color={colors.brandText} />
             <Text style={styles.availCountText}>
               {selectedBlocks.size} block{selectedBlocks.size === 1 ? '' : 's'} selected
             </Text>
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center',
     gap: space.xs, marginTop: space.md,
   },
-  availCountText: { fontSize: 12, color: colors.brand, fontWeight: '700' },
+  availCountText: { fontSize: 12, color: colors.brandText, fontWeight: '700' },
 
   save: { marginTop: space.xs },
 

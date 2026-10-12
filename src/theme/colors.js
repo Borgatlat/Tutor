@@ -9,9 +9,22 @@
 //
 // Every color in the app comes from this file. If you need a shade that isn't
 // here, add it here rather than inlining a hex somewhere else.
+//
+// Light and dark: the app follows the device's appearance setting. The dark
+// palette below overrides only what changes; green headers, green buttons, the
+// gold accents and the logo look the same in both. Pick tokens by role:
+//   surface    card / sheet / input background   (white in light mode)
+//   white      text and icons ON green or coloured fills (always white)
+//   black      primary text                       (near-white in dark mode)
+//   brand      green FILLS: headers, buttons      (same in both)
+//   brandText  green TEXT and icons on a surface  (lighter green in dark mode)
+//   errorText  red text on a surface
+// The scheme is read once at launch, before any StyleSheet is created, so a
+// change to the device setting applies the next time the app opens.
 // ─────────────────────────────────────────────────────────────────────────────
+import { Appearance } from 'react-native';
 
-export default {
+const light = {
   // Primary brand: Strake green
   brand:      '#004B30',   // hero / header backgrounds, sidebar
   brandDark:  '#003521',   // pressed state
@@ -29,9 +42,16 @@ export default {
   maroonTint: '#F6E9E9',
   gold:       '#C49A2C',   // accent rule above titles, active tab marker
   goldTint:   '#F6EFDD',   // tutor badge background
+  goldText:   '#735610',   // tutor badge text on goldTint
 
   // Base
-  white:    '#FFFFFF',
+  white:    '#FFFFFF',     // text/icons on green: never changes
+  surface:  '#FFFFFF',     // cards, sheets, inputs
+  brandText:'#004B30',     // green text and icons on surfaces
+  errorText:'#B42318',     // red text on surfaces
+  paper:    '#F1EFEC',     // Ollie's face and belly (same in both schemes)
+  ink:      '#1A1C1E',     // Ollie's eyes (same in both schemes)
+  paperLine:'#D8D0C8',     // chevrons on Ollie's belly
   offWhite: '#F1EFEC',     // app background: warm stone
   cream:    '#E9E5E0',     // recessed section background
 
@@ -95,3 +115,56 @@ export default {
 
   shadow: 'rgba(0,0,0,0.06)',
 };
+
+const dark = {
+  ...light,
+  brandTint:     '#173A2B',
+  accentTint:    '#14301F',
+  maroonTint:    '#3A1E1E',
+  goldTint:      '#3A3016',
+  goldText:      '#F0D27E',
+
+  surface:   '#17211C',
+  brandText: '#7FC4A0',
+  errorText: '#F2857B',
+
+  offWhite: '#0E1512',   // app background
+  cream:    '#1E2924',   // recessed tracks (segmented controls)
+
+  stoneDeep:     '#060A08',
+  brandTintDeep: '#0B2318',
+  buttonGlow:    'rgba(0,0,0,0.45)',
+
+  line:     '#33413A',
+  lineSoft: '#25312B',
+
+  gray100: '#1F2A25',
+  gray200: '#2C3832',
+  gray300: '#5C6862',
+  gray400: '#87928C',
+  gray500: '#A9B3AE',
+  gray600: '#C0C8C4',
+  gray700: '#D5DBD8',
+  black:   '#EEF2EF',
+
+  starText:    '#E2BF62',
+  pendingTint: '#3A1E1E',
+  errorMuted:  '#33191A',
+  errorBorder: '#6E2B26',
+
+  focus: '#7FC4A0',
+
+  subject: {
+    mathBg:    '#173A2B', mathText:    '#9AD5B5',
+    scienceBg: '#163126', scienceText: '#A6D8BE',
+    englishBg: '#3A1E1E', englishText: '#F0B4B4',
+    socialBg:  '#2E2A22', socialText:  '#E0D2B8',
+    langBg:    '#1F2B2A', langText:    '#B8D0CF',
+  },
+
+  shadow: 'rgba(0,0,0,0.4)',
+};
+
+export const isDark = Appearance.getColorScheme() === 'dark';
+
+export default isDark ? dark : light;

@@ -135,7 +135,7 @@ export default function SearchScreen({ navigation }) {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          tintColor={colors.brand}
+          tintColor={colors.brandText}
           colors={[colors.brand]}
         />
       }
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
   },
   searchWrap: {
     flex: 1, flexDirection: 'row', alignItems: 'center',
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderRadius: radii.pill,
     paddingHorizontal: space.lg,
     borderWidth: border.control, borderColor: colors.line,
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
 
   filterToggle: {
     width: 48, height: 48, borderRadius: radii.pill,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: border.control, borderColor: colors.line,
   },
@@ -322,14 +322,14 @@ const styles = StyleSheet.create({
     width: 300,
     flexGrow: 0,
     flexShrink: 0,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderRightWidth: border.hairline, borderRightColor: colors.gray200,
   },
   sidebarInner: { paddingHorizontal: space.lg, paddingVertical: space.xl },
   wideResults:  { flex: 1 },
 
   mobileFilterPanel: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     marginHorizontal: space.lg, marginBottom: space.sm,
     padding: space.lg,
     borderRadius: radii.lg,
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
 
   clearBtn:     { alignSelf: 'flex-start', marginTop: space.lg },
   clearBtnText: {
-    fontSize: 13, color: colors.accent,
+    fontSize: 13, color: colors.brandText,
     fontWeight: '600', textDecorationLine: 'underline',
   },
 

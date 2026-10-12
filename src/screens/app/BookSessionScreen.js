@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
 
   card: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     margin: space.lg,
     borderRadius: radii.xl,
     ...cardShadow,
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brandTint,
     borderRadius: radii.lg, padding: space.lg, marginBottom: space.xl,
   },
-  slotText: { fontSize: 16, fontWeight: '800', color: colors.brand },
+  slotText: { fontSize: 16, fontWeight: '800', color: colors.brandText },
 
   label: { ...type.small, fontWeight: '600', color: colors.gray700, marginBottom: space.sm },
   subjectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.sm, padding: space.md,
   },
   contactNoteText: { flex: 1, fontSize: 12, color: colors.gray500, lineHeight: 18 },
-  emailHighlight:  { color: colors.accent, fontWeight: '600' },
+  emailHighlight:  { color: colors.brandText, fontWeight: '600' },
 
   submit: { marginTop: space.xl },
 
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   successScreen: {
     flex: 1, alignItems: 'center', justifyContent: 'center',
     paddingHorizontal: space.xxxl,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
   },
   successMascot: { marginBottom: space.lg },
   successTitle: { ...heading.lg, fontSize: 26, color: colors.black, marginBottom: space.sm },
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
 
   backLink:     { marginTop: space.lg },
   backLinkText: {
-    color: colors.accent, fontWeight: '600',
+    color: colors.brandText, fontWeight: '600',
     fontSize: 14, textDecorationLine: 'underline',
   },
 });

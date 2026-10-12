@@ -245,7 +245,7 @@ export default function HomeScreen({ navigation }) {
               accessibilityRole="button"
               accessibilityLabel="Find a tutor"
             >
-              <Ionicons name="search" size={17} color={colors.brand} />
+              <Ionicons name="search" size={17} color={colors.brandText} />
               <Text style={styles.qBtnText}>Find a tutor</Text>
             </TouchableOpacity>
 
@@ -257,7 +257,7 @@ export default function HomeScreen({ navigation }) {
                 accessibilityRole="button"
                 accessibilityLabel="My sessions"
               >
-                <Ionicons name="calendar" size={17} color={colors.brand} />
+                <Ionicons name="calendar" size={17} color={colors.brandText} />
                 <Text style={styles.qBtnText}>My sessions</Text>
               </TouchableOpacity>
             ) : null}
@@ -319,12 +319,12 @@ const styles = StyleSheet.create({
   quickActions: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
   qBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     paddingHorizontal: space.lg, paddingVertical: space.md,
     borderRadius: radii.pill,
     ...raised('white'),
   },
-  qBtnText: { ...label.ui, fontSize: 14, color: colors.brand },
+  qBtnText: { ...label.ui, fontSize: 14, color: colors.brandText },
 
   // ── Body ──────────────────────────────────────────────────────────────────
   body:     { padding: space.lg, gap: space.lg },
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
   gridItem: { flex: 1, minWidth: 260 },
 
   section: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     padding: space.xl,
     borderRadius: radii.lg,
     ...cardShadow,
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gold,
     marginBottom: space.lg,
   },
-  promoTitle: { ...type.heading, color: colors.brand, marginBottom: space.xs },
+  promoTitle: { ...type.heading, color: colors.brandText, marginBottom: space.xs },
   promoSub:   { ...type.small, color: colors.gray600 },
   promoCta: {
     alignSelf: 'flex-start',

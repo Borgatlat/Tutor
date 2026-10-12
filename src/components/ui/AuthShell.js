@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
 
   sheet: {
     flexGrow: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderTopLeftRadius: radii.xxl,
     borderTopRightRadius: radii.xxl,
     padding: space.xxl,
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   panel: {
     width: '100%',
     maxWidth: 480,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderRadius: radii.xl,
     padding: space.xxxl,
     ...panelShadow,

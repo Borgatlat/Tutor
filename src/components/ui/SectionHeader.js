@@ -32,7 +32,7 @@ export default function SectionHeader({ title, actionLabel, onAction, ruled = fa
           accessibilityLabel={actionLabel}
         >
           <Text style={styles.actionText}>{actionLabel}</Text>
-          <Ionicons name="chevron-forward" size={13} color={colors.brand} />
+          <Ionicons name="chevron-forward" size={13} color={colors.brandText} />
         </TouchableOpacity>
       ) : null}
     </View>
@@ -54,5 +54,5 @@ const styles = StyleSheet.create({
   },
   title: { ...type.heading, color: colors.black },
   action: { flexDirection: 'row', alignItems: 'center', gap: 2, paddingBottom: 2 },
-  actionText: { ...label.ui, fontSize: 13, color: colors.brand },
+  actionText: { ...label.ui, fontSize: 13, color: colors.brandText },
 });

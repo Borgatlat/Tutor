@@ -31,7 +31,7 @@ export default function Chip({
   const textColor =
       selected   ? colors.white
     : disabled   ? colors.gray400
-    : available  ? colors.brand
+    : available  ? colors.brandText
     : colors.gray700;
 
   return (
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     // sit on a dark-green base (3D) without the row shifting.
     borderBottomWidth: 3,
     borderBottomColor: colors.stoneDeep,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     alignItems: 'center',
   },
   available: {

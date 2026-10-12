@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
   // ── Stats ─────────────────────────────────────────────────────────────────
   // Floating card that overlaps the curved hero edge.
   statsBar: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     marginHorizontal: space.lg,
     marginTop: -space.xl,
     ...leaf.lg,
@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
   colFlex:  { flex: 1 },
 
   section: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderRadius: radii.lg,
     ...cardShadow,
     padding: space.xl,
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
   // ── Sticky book bar ───────────────────────────────────────────────────────
   bookBar: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

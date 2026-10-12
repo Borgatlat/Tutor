@@ -29,6 +29,9 @@ schedule, "when are we both free?" takes a dozen texts.
 - **Reviews** after a session, so the best tutors rise to the top.
 - **Safety**: school-email sign-up only, report and block on every profile.
 - **Ollie the owl** guides new users through a three-step welcome tour.
+- **Feels like a real app**: confetti when a session is confirmed or done,
+  tutor badges (Top tutor, 10+ hours), pull to refresh, loading placeholders,
+  haptic feedback, and a full **dark mode** that follows your phone.
 
 ## How it works
 
@@ -66,10 +69,11 @@ More detail: [ARCHITECTURE.md](ARCHITECTURE.md) · database:
   reminders and core components: `npm test`.
 - **CI** on every push: tests plus web and iOS bundles
   ([.github/workflows/ci.yml](.github/workflows/ci.yml)).
-- **End-to-end checks** with Playwright against the web build: 72 checks
+- **End-to-end checks** with Playwright against the web build: 75 checks
   covering every screen and button.
-- **Accessibility**: screen-reader labels and roles on every control, and an
-  axe-core (WCAG 2 AA) scan with no violations.
+- **Accessibility**: screen-reader labels and roles on every control, Reduce
+  Motion respected, and an axe-core (WCAG 2 AA) scan with no violations in
+  both light and dark mode.
 
 ## Run it
 

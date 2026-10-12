@@ -128,7 +128,7 @@ function MobileTabBar({ state, navigation }) {
           if (!isFocused && !event.defaultPrevented) navigation.navigate(route.name);
         };
 
-        const tint = isFocused ? colors.brand : colors.gray500;
+        const tint = isFocused ? colors.brandText : colors.gray500;
         return (
           <TouchableOpacity
             key={route.key}
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   // ── Mobile tab bar ────────────────────────────────────────────────────────
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderTopWidth: border.hairline,
     borderTopColor: colors.gray200,
   },

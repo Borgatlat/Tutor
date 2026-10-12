@@ -76,7 +76,7 @@ export default function ServiceHoursCard({ tutorId, tutorName }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderRadius: radii.lg,
     padding: space.xl,
     ...cardShadow,

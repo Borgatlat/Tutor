@@ -47,7 +47,7 @@ export default function Field({
           <Ionicons
             name={icon}
             size={18}
-            color={focused ? colors.brand : colors.gray400}
+            color={focused ? colors.brandText : colors.gray400}
             style={styles.icon}
           />
         ) : null}
@@ -90,17 +90,17 @@ const styles = StyleSheet.create({
     borderWidth: border.control,
     borderColor: colors.line,
     borderRadius: radii.sm,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     paddingHorizontal: space.md,
   },
   boxMultiline: { alignItems: 'flex-start', paddingVertical: space.xs },
   // Green border plus a 1px outer ring on web, so focus reads as a 2px line
   // without the box changing size.
   boxFocused: {
-    borderColor: colors.brand,
-    ...Platform.select({ web: { boxShadow: `0 0 0 1px ${colors.brand}` }, default: {} }),
+    borderColor: colors.focus,
+    ...Platform.select({ web: { boxShadow: `0 0 0 1px ${colors.focus}` }, default: {} }),
   },
-  boxError: { borderColor: colors.error },
+  boxError: { borderColor: colors.errorText },
 
   icon: { marginRight: space.sm },
 
@@ -112,6 +112,6 @@ const styles = StyleSheet.create({
   },
   inputMultiline: { height: 92, textAlignVertical: 'top' },
 
-  error: { fontSize: 12, color: colors.error,   marginTop: space.xs },
+  error: { fontSize: 12, color: colors.errorText,   marginTop: space.xs },
   hint:  { fontSize: 12, color: colors.gray500, marginTop: space.xs },
 });

@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     ...heading.xl,
     fontSize: 28,
     lineHeight: 34,
-    color: colors.brand,
+    color: colors.brandText,
   },
   valueLg: { fontSize: 40, lineHeight: 48 },
   label: {

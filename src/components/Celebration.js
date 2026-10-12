@@ -104,13 +104,13 @@ const styles = StyleSheet.create({
   piece: { position: 'absolute', borderRadius: 2 },
   card: {
     alignItems: 'center',
-    backgroundColor: colors.surface ?? colors.white,
+    backgroundColor: colors.surface,
     borderRadius: radii.xl,
     paddingVertical: space.xl,
     paddingHorizontal: space.xxl,
     minWidth: 220,
     ...sheetShadow,
   },
-  title: { ...type.heading, color: colors.brandText ?? colors.brand, marginTop: space.sm, textAlign: 'center' },
+  title: { ...type.heading, color: colors.brandText, marginTop: space.sm, textAlign: 'center' },
   sub:   { ...type.small, color: colors.gray600, marginTop: 2, textAlign: 'center' },
 });

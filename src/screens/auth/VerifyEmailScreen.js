@@ -51,7 +51,7 @@ export default function VerifyEmailScreen({ route }) {
           {STEPS.map((s) => (
             <View key={s.text} style={styles.step}>
               <View style={styles.stepIconWrap}>
-                <Ionicons name={s.icon} size={20} color={colors.brand} />
+                <Ionicons name={s.icon} size={20} color={colors.brandText} />
               </View>
               <Text style={styles.stepText}>{s.text}</Text>
             </View>
@@ -62,7 +62,7 @@ export default function VerifyEmailScreen({ route }) {
 
         {resent ? (
           <View style={styles.resentBanner}>
-            <Ionicons name="checkmark-circle" size={16} color={colors.brand} />
+            <Ionicons name="checkmark-circle" size={16} color={colors.brandText} />
             <Text style={styles.resentText}>New link sent! Check your inbox.</Text>
           </View>
         ) : null}
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
 
   card: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderTopLeftRadius: radii.xxl,
     borderTopRightRadius: radii.xxl,
     padding: space.xxxl,
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brandTint,
     borderRadius: radii.sm, padding: space.md, marginBottom: space.lg,
   },
-  resentText: { fontSize: 13, color: colors.brand, fontWeight: '600' },
+  resentText: { fontSize: 13, color: colors.brandText, fontWeight: '600' },
 
   resendLabel: {
     fontSize: 13, color: colors.gray500,

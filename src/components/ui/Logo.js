@@ -27,8 +27,8 @@ export const LOGO_PATHS = {
 };
 
 export default function Logo({ size = 64, onDark = false, layer = 'all', style }) {
-  const main = onDark ? colors.white : colors.brand;
-  const page = onDark ? colors.whiteAlpha[90] : colors.brand;
+  const main = onDark ? colors.white : colors.brandText;
+  const page = onDark ? colors.whiteAlpha[90] : colors.brandText;
   const show = (part) => layer === 'all' || layer === part;
   const p = LOGO_PATHS;
 

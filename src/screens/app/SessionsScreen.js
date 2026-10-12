@@ -238,7 +238,7 @@ export default function SessionsScreen({ navigation }) {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor={colors.brand}
+              tintColor={colors.brandText}
               colors={[colors.brand]}
             />
           }
@@ -281,7 +281,7 @@ export default function SessionsScreen({ navigation }) {
         <Ionicons
           name="alert-circle-outline"
           size={40}
-          color={colors.error}
+          color={colors.errorText}
           style={styles.cancelIcon}
         />
         <Text style={styles.centerTitle}>Cancel this session?</Text>
@@ -422,9 +422,9 @@ const styles = StyleSheet.create({
     flex: 1, paddingVertical: space.md, alignItems: 'center',
     borderRadius: radii.pill,
   },
-  tabActive:     { backgroundColor: colors.white, ...cardShadow },
+  tabActive:     { backgroundColor: colors.surface, ...cardShadow },
   tabText:       { ...label.ui, fontSize: 14, color: colors.gray500 },
-  tabTextActive: { color: colors.brand, fontWeight: '700' },
+  tabTextActive: { color: colors.brandText, fontWeight: '700' },
 
   list:          { padding: space.lg, paddingBottom: space.xxxl },
   listWide:      { maxWidth: 1100, alignSelf: 'center', width: '100%' },

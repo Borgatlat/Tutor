@@ -18,8 +18,8 @@ import colors from '../../theme/colors';
 import { school } from '../../theme/school';
 
 export default function Mascot({ size = 96, mood = 'default', onDark = false, style }) {
-  const ink = colors.black;
-  const face = colors.offWhite;
+  const ink = colors.ink;
+  const face = colors.paper;
   const body = onDark ? colors.accentLight : colors.brand;
   const wing = onDark ? colors.mascotWingLight : colors.brandLight;
 
@@ -46,7 +46,7 @@ export default function Mascot({ size = 96, mood = 'default', onDark = false, st
 
       {/* Belly with feather chevrons */}
       <Ellipse cx="60" cy="94" rx="21" ry="15" fill={face} />
-      <G stroke={colors.line} strokeWidth="2" strokeLinecap="round" fill="none">
+      <G stroke={colors.paperLine} strokeWidth="2" strokeLinecap="round" fill="none">
         <Path d="M52 90 L56 94 L60 90 L64 94 L68 90" />
         <Path d="M54 98 L58 102 L62 98 L66 102" />
       </G>

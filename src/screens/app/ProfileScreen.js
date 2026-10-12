@@ -202,7 +202,7 @@ export default function ProfileScreen() {
         <Ionicons
           name={active ? 'close' : 'create-outline'}
           size={15}
-          color={colors.brand}
+          color={colors.brandText}
         />
         <Text style={styles.editLinkText}>{active ? 'Cancel' : 'Edit'}</Text>
       </View>
@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
   // ── Sections ──────────────────────────────────────────────────────────────
   body: { padding: space.lg, gap: space.md },
   section: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderRadius: radii.lg,
     ...cardShadow,
     padding: space.xl,
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
     backgroundColor: colors.brandTint,
   },
-  editLinkText: { ...label.ui, fontSize: 13, color: colors.brand },
+  editLinkText: { ...label.ui, fontSize: 13, color: colors.brandText },
 
   fieldLabel: {
     ...label.ui, fontSize: 13,
@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
   // ── Account ───────────────────────────────────────────────────────────────
   legalRow:  { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   legalLink: {
-    fontSize: 13, color: colors.brand,
+    fontSize: 13, color: colors.brandText,
     fontWeight: '600', textDecorationLine: 'underline',
   },
   legalSep: { fontSize: 13, color: colors.gray300 },

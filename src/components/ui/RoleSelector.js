@@ -58,10 +58,10 @@ const styles = StyleSheet.create({
     paddingVertical: space.md,
     borderRadius: radii.pill,
   },
-  optionActive: { backgroundColor: colors.white, ...cardShadow },
+  optionActive: { backgroundColor: colors.surface, ...cardShadow },
 
   label:       { ...label.ui, fontSize: 14, color: colors.gray500 },
-  labelActive: { color: colors.brand, fontWeight: '700' },
+  labelActive: { color: colors.brandText, fontWeight: '700' },
 
   desc: { ...type.small, color: colors.gray500, textAlign: 'center', marginTop: space.sm },
 });

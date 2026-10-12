@@ -42,9 +42,9 @@ export default function Button({
   const filled = variant === 'primary' || variant === 'dangerSolid';
   const contentColor =
       filled                 ? colors.white
-    : variant === 'danger'   ? colors.error
+    : variant === 'danger'   ? colors.errorText
     : variant === 'neutral'  ? colors.gray700
-    : colors.brand;
+    : colors.brandText;
   const spinnerColor = filled ? colors.white : contentColor;
   const base =
       variant === 'primary'                          ? 'green'
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brand,
   },
   secondary: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderWidth: border.control,
     borderColor: colors.line,
   },
@@ -118,15 +118,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   danger: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderWidth: border.control,
-    borderColor: colors.error,
+    borderColor: colors.errorText,
   },
   dangerSolid: {
     backgroundColor: colors.error,
   },
   neutral: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderWidth: border.control,
     borderColor: colors.line,
   },
