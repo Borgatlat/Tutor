@@ -103,6 +103,15 @@ async function ctxFor(browser, mode, failWrites = false, tour = false) {
   });
   if (mode !== 'signedOut') await ctx.addInitScript((s) => localStorage.setItem('sb-lmavnypvqdomdefpjbok-auth-token', s), JSON.stringify(session));
   if (!tour) await ctx.addInitScript(() => localStorage.setItem('welcomeTour.seen.v1', '1'));
+  // Record links the app opens in a new tab, and answer outside sites locally
+  // so the checks never wait on the network.
+  await ctx.addInitScript(() => {
+    const open = window.open.bind(window);
+    window.__opened = [];
+    window.open = (url, ...rest) => { window.__opened.push(String(url)); return open(url, ...rest); };
+  });
+  await ctx.route((url) => !/^(localhost|127\.0\.0\.1)$/.test(url.hostname) && !url.hostname.endsWith('supabase.co'),
+    (route) => route.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><title>external</title>' }));
   const page = await ctx.newPage(); page.setDefaultTimeout(6000);
   page.on('pageerror', (e) => ok(`no JS crash (${mode})`, false, e.message));
   page.on('popup', (p) => { page._popups = (page._popups || []).concat(p.url()); });
@@ -135,7 +144,8 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     await page.getByRole('button', { name: 'Sign In' }).filter({ visible: true }).first().click(); await wait(page, 1500);
     ok('Login: wrong password shows server error', await seen(page, 'Invalid login credentials'));
     await V(page, 'Privacy Policy').click(); await wait(page, 800);
-    ok('Login: Privacy Policy link opens', (page._popups || []).length > 0, (page._popups||[]).join(','));
+    { const opened = await page.evaluate(() => window.__opened);
+      ok('Login: Privacy Policy link opens', opened.includes('https://betterullc.com/privacy'), opened.join(',')); }
     await page.getByRole('button', { name: 'Create an Account' }).filter({ visible: true }).first().click(); await wait(page);
     ok('Login → Sign up navigation', await seen(page, 'Create Account'));
     await page.getByRole('button', { name: 'Create Account' }).filter({ visible: true }).first().click(); await wait(page);
