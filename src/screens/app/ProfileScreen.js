@@ -372,7 +372,9 @@ export default function ProfileScreen() {
                 <EmptyState
                   icon="book-outline"
                   title="No subjects yet"
-                  body="Tap Edit to pick the classes you can help with: core classes, SAT and AP."
+                  body="Pick the classes you can help with so students can find you."
+                  actionLabel="Add your first subject"
+                  onAction={() => { setEditingSubjects(true); setSubjectError(''); }}
                   compact
                 />
               )}

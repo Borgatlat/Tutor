@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, StatusBar,
-  FlatList, TouchableOpacity, ActivityIndicator, Animated, Platform,
+  FlatList, TouchableOpacity, Animated, Platform, RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import { syncSessionReminders } from '../../utils/reminders';
+import { warn } from '../../utils/haptics';
+import { BLOCK_MINUTES, minutesToHours } from '../../utils/hours';
+import Celebration from '../../components/Celebration';
+import { SkeletonSession } from '../../components/SkeletonCard';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { radii, space, border, press, hit, rule } from '../../theme/layout';
@@ -28,6 +32,7 @@ export default function SessionsScreen({ navigation }) {
   const [tab, setTab]           = useState('Upcoming');
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading]   = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Which session has a request in flight. It disables that card's actions so
   // Confirm/Decline can't be double-tapped.
@@ -47,9 +52,11 @@ export default function SessionsScreen({ navigation }) {
   // Calendar: tracks which session IDs have been added
   const [calendarAdded, setCalendarAdded] = useState(new Set());
   const [toast, setToast]                 = useState(null); // { message, isError }
+  const [party, setParty]                 = useState(null); // { title, subtitle }
   const toastOpacity = useRef(new Animated.Value(0)).current;
 
   const showToast = (message, isError = false) => {
+    if (isError) warn();
     setToast({ message, isError });
     Animated.sequence([
       Animated.timing(toastOpacity, { toValue: 1, duration: 200, useNativeDriver }),
@@ -78,9 +85,10 @@ export default function SessionsScreen({ navigation }) {
 
   useEffect(() => { loadSessions(); }, [tab, profile?.id]);
 
-  const loadSessions = useCallback(async () => {
+  // `silent` reloads keep the list on screen (pull to refresh).
+  const loadSessions = useCallback(async (silent = false) => {
     if (!profile?.id) return;
-    setLoading(true);
+    if (!silent) setLoading(true);
     const statuses = tab === 'Upcoming'
       ? ['pending', 'confirmed']
       : ['completed', 'cancelled'];
@@ -124,10 +132,17 @@ export default function SessionsScreen({ navigation }) {
     return !error;
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadSessions(true);
+    setRefreshing(false);
+  };
+
   const handleConfirm = async (sessionId) => {
     setBusyId(sessionId);
-    await updateStatus(sessionId, 'confirmed', "Couldn't confirm the session.");
+    const ok = await updateStatus(sessionId, 'confirmed', "Couldn't confirm the session.");
     setBusyId(null);
+    if (ok) setParty({ title: 'Session confirmed!', subtitle: "You'll both get a reminder before it starts." });
     loadSessions();
   };
 
@@ -138,7 +153,7 @@ export default function SessionsScreen({ navigation }) {
     setBusyId(sessionId);
     const done = await updateStatus(sessionId, 'completed', "Couldn't mark the session as done.");
     setBusyId(null);
-    if (done) showToast('Session marked as done');
+    if (done) setParty({ title: 'Session done!', subtitle: `+${minutesToHours(BLOCK_MINUTES)} service hours` });
     loadSessions();
   };
 
@@ -174,6 +189,7 @@ export default function SessionsScreen({ navigation }) {
     setSubmitting(false);
     if (error) { setReviewError(error.message); return; }
     closeReview();
+    setParty({ title: 'Thanks for the review!', subtitle: 'It helps other students find great tutors.' });
     loadSessions();
   };
 
@@ -206,8 +222,8 @@ export default function SessionsScreen({ navigation }) {
       </View>
 
       {loading ? (
-        <View style={styles.loader}>
-          <ActivityIndicator color={colors.accent} size="large" />
+        <View style={[styles.list, isWide && styles.listWide]}>
+          {[0, 1, 2].map((i) => <SkeletonSession key={i} />)}
         </View>
       ) : (
         <FlatList
@@ -218,6 +234,14 @@ export default function SessionsScreen({ navigation }) {
           columnWrapperStyle={columns > 1 ? styles.columnWrapper : undefined}
           contentContainerStyle={[styles.list, isWide && styles.listWide]}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.brand}
+              colors={[colors.brand]}
+            />
+          }
           ListEmptyComponent={
             <EmptyState
               icon="calendar-outline"
@@ -225,10 +249,10 @@ export default function SessionsScreen({ navigation }) {
               body={
                 tab === 'Upcoming'
                   ? 'Book a session with a tutor and it will show up here.'
-                  : 'Completed and cancelled sessions will appear here.'
+                  : 'Finished and cancelled sessions will appear here.'
               }
-              actionLabel={tab === 'Upcoming' ? 'Find a tutor' : undefined}
-              onAction={tab === 'Upcoming' ? () => navigation.navigate('Search') : undefined}
+              actionLabel="Find a tutor"
+              onAction={() => navigation.navigate('Search')}
             />
           }
           renderItem={({ item }) => (
@@ -355,6 +379,12 @@ export default function SessionsScreen({ navigation }) {
           <Text style={styles.toastText} numberOfLines={2}>{toast.message}</Text>
         </Animated.View>
       ) : null}
+      <Celebration
+        visible={!!party}
+        title={party?.title}
+        subtitle={party?.subtitle}
+        onDone={() => setParty(null)}
+      />
     </SafeAreaView>
   );
 }
@@ -395,8 +425,6 @@ const styles = StyleSheet.create({
   tabActive:     { backgroundColor: colors.white, ...cardShadow },
   tabText:       { ...label.ui, fontSize: 14, color: colors.gray500 },
   tabTextActive: { color: colors.brand, fontWeight: '700' },
-
-  loader: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
   list:          { padding: space.lg, paddingBottom: space.xxxl },
   listWide:      { maxWidth: 1100, alignSelf: 'center', width: '100%' },

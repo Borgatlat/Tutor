@@ -12,6 +12,7 @@ import { radii, space, press } from '../../theme/layout';
 import { label, type } from '../../theme/fonts';
 import { cardShadow } from '../../theme/shadows';
 import { ROLES } from '../../constants';
+import { select } from '../../utils/haptics';
 
 export default function RoleSelector({ value, onChange, style }) {
   const current = ROLES.find((r) => r.key === value);
@@ -26,7 +27,7 @@ export default function RoleSelector({ value, onChange, style }) {
             <TouchableOpacity
               key={r.key}
               style={[styles.option, active && styles.optionActive]}
-              onPress={() => onChange(r.key)}
+              onPress={() => { select(); onChange(r.key); }}
               activeOpacity={press.opacity}
               accessibilityRole="radio"
               accessibilityLabel={`${r.label}: ${r.description}`}

@@ -7,7 +7,7 @@ import { cardShadow } from '../theme/shadows';
 // Web can't use the native driver for opacity animations.
 const useNativeDriver = Platform.OS !== 'web';
 
-function Shimmer({ style }) {
+export function Shimmer({ style }) {
   const anim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -63,3 +63,32 @@ const styles = StyleSheet.create({
   badge:  { height: 22, width: 80, borderRadius: radii.xs },
   bio:    { height: 11, borderRadius: radii.sm, width: '90%' },
 });
+
+// Same outline as SessionCard (avatar, two lines, status pill, one button),
+// for the Sessions list while it loads.
+export function SkeletonSession() {
+  return (
+    <View style={styles.card} accessibilityLabel="Loading session">
+      <View style={[styles.top, { marginBottom: space.lg }]}>
+        <Shimmer style={[styles.avatar, { width: 44, height: 44 }]} />
+        <View style={styles.lines}>
+          <Shimmer style={styles.line1} />
+          <Shimmer style={styles.line2} />
+        </View>
+        <Shimmer style={[styles.badge, { marginLeft: space.sm }]} />
+      </View>
+      <Shimmer style={[styles.badge, { width: 140, height: 38, borderRadius: radii.pill }]} />
+    </View>
+  );
+}
+
+// A few grey lines, for small sections (free blocks, reviews) still loading.
+export function SkeletonLines({ count = 2 }) {
+  return (
+    <View style={{ gap: space.sm }} accessibilityLabel="Loading">
+      {Array.from({ length: count }, (_, i) => (
+        <Shimmer key={i} style={[styles.line1, { width: i === count - 1 ? '60%' : '90%', height: 14 }]} />
+      ))}
+    </View>
+  );
+}

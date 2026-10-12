@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  SafeAreaView, StatusBar, FlatList, ScrollView,
+  SafeAreaView, StatusBar, FlatList, ScrollView, RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { searchTutors } from '../../lib/supabase';
@@ -36,8 +36,8 @@ export default function SearchScreen({ navigation }) {
 
   const debounceRef = React.useRef(null);
 
-  const runSearch = useCallback(async (q, s, b, match) => {
-    setLoading(true);
+  const runSearch = useCallback(async (q, s, b, match, silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const data = await searchTutors({
         query: q, subject: s, period: b,
@@ -60,6 +60,13 @@ export default function SearchScreen({ navigation }) {
     setQuery(text);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => runSearch(text, subject, block, matchSchedule), 300);
+  };
+
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await runSearch(query, subject, block, matchSchedule, true);
+    setRefreshing(false);
   };
 
   const clearFilters = () => { setSubject(null); setBlock(null); setMatchSchedule(false); };
@@ -124,6 +131,14 @@ export default function SearchScreen({ navigation }) {
       columnWrapperStyle={columns > 1 ? styles.columnWrapper : undefined}
       contentContainerStyle={styles.list}
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={colors.brand}
+          colors={[colors.brand]}
+        />
+      }
       ListEmptyComponent={
         !loading ? (
           <EmptyState

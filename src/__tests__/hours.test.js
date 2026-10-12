@@ -47,3 +47,25 @@ describe('service hours', () => {
     expect(csv).not.toContain('Biology');
   });
 });
+
+describe('tutor badges', () => {
+  const { getTutorBadges } = require('../utils/badges');
+  const labels = (t) => getTutorBadges(t).map((b) => b.label);
+
+  test('new tutors get a welcome badge instead of looking inactive', () => {
+    expect(labels({ session_count: 0 })).toEqual(['New tutor']);
+    expect(labels({})).toEqual(['New tutor']);
+  });
+
+  test('only the highest hour milestone is shown', () => {
+    expect(labels({ session_count: 6 })).toEqual(['5+ hours']);   // 5 h
+    expect(labels({ session_count: 12 })).toEqual(['10+ hours']); // 10 h
+    expect(labels({ session_count: 4 })).toEqual([]);             // 3.3 h
+  });
+
+  test('top tutor needs a high rating and enough reviews', () => {
+    expect(labels({ avg_rating: 4.9, review_count: 12, session_count: 24 })).toEqual(['Top tutor', '10+ hours']);
+    expect(labels({ avg_rating: 5, review_count: 2, session_count: 2 })).toEqual([]);
+    expect(labels({ avg_rating: 4.7, review_count: 20, session_count: 2 })).toEqual([]);
+  });
+});

@@ -11,6 +11,9 @@ import { radii, space, border, press, hit, rule, leaf } from '../../theme/layout
 import { modalShadow, cardShadow } from '../../theme/shadows';
 import { heading, label, type } from '../../theme/fonts';
 import SubjectBadge from '../../components/SubjectBadge';
+import TutorBadge from '../../components/TutorBadge';
+import { getTutorBadges } from '../../utils/badges';
+import { SkeletonLines } from '../../components/SkeletonCard';
 import RatingStars from '../../components/RatingStars';
 import AvailabilityGrid from '../../components/AvailabilityGrid';
 import ReportModal from '../../components/ReportModal';
@@ -124,6 +127,11 @@ export default function TutorProfileScreen({ route, navigation }) {
           <Text style={styles.heroEmail}>{tutor.email}</Text>
           {tutor.phone ? <Text style={styles.heroPhone}>{tutor.phone}</Text> : null}
           <RatingStars rating={tutor.avg_rating} count={tutor.review_count} size={15} onDark />
+          {getTutorBadges(tutor).length ? (
+            <View style={styles.heroBadges}>
+              {getTutorBadges(tutor).map((b) => <TutorBadge key={b.key} badge={b} onDark />)}
+            </View>
+          ) : null}
         </View>
 
         {/* "At a glance" stats, as on the school site */}
@@ -158,6 +166,8 @@ export default function TutorProfileScreen({ route, navigation }) {
                 <EmptyState
                   icon="book-outline"
                   title="No subjects listed yet"
+                  actionLabel={isSelf ? 'Add subjects' : undefined}
+                  onAction={isSelf ? () => navigation.navigate('Profile') : undefined}
                   compact
                 />
               )}
@@ -182,7 +192,9 @@ export default function TutorProfileScreen({ route, navigation }) {
                       : 'No free blocks set yet'
                   }
                 />
-              ) : null}
+              ) : (
+                <SkeletonLines count={1} />
+              )}
             </View>
           </View>
 
@@ -190,7 +202,9 @@ export default function TutorProfileScreen({ route, navigation }) {
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Reviews</Text>
 
-              {reviews.length ? (
+              {loading ? (
+                <SkeletonLines count={3} />
+              ) : reviews.length ? (
                 reviews.map((r) => (
                   <View key={r.id} style={styles.reviewCard}>
                     <View style={styles.reviewTop}>
@@ -297,6 +311,7 @@ const styles = StyleSheet.create({
   },
   heroName:  { ...type.title, color: colors.white, marginBottom: space.xs },
   heroEmail: { color: colors.whiteAlpha[80], fontSize: 13, marginBottom: 2 },
+  heroBadges: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: space.sm, marginTop: space.md },
   heroPhone: { color: colors.whiteAlpha[65], fontSize: 13, marginBottom: space.sm },
 
   // ── Stats ─────────────────────────────────────────────────────────────────

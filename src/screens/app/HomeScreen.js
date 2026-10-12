@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  SafeAreaView, StatusBar,
+  SafeAreaView, StatusBar, RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase, searchTutors } from '../../lib/supabase';
@@ -25,6 +25,7 @@ export default function HomeScreen({ navigation }) {
   const [upcomingSessions, setUpcoming]   = useState([]);
   const [loadingTutors, setLoadingTutors] = useState(true);
   const [community, setCommunity]         = useState(null);
+  const [sessionsLoaded, setSessionsLoaded] = useState(false);
 
   const firstName = profile?.full_name?.split(' ')[0] ?? school.memberName;
   const hour      = new Date().getHours();
@@ -32,6 +33,13 @@ export default function HomeScreen({ navigation }) {
   const isTutor   = profile?.role === 'tutor' || profile?.role === 'both';
 
   useEffect(() => { loadTopTutors(); loadUpcomingSessions(); loadCommunity(); }, []);
+
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([loadTopTutors(), loadUpcomingSessions(), loadCommunity()]);
+    setRefreshing(false);
+  };
 
   const loadTopTutors = async () => {
     try {
@@ -61,6 +69,7 @@ export default function HomeScreen({ navigation }) {
       .in('status', ['pending', 'confirmed'])
       .limit(3);
     setUpcoming(data ?? []);
+    setSessionsLoaded(true);
   };
 
   const renderSessionRow = (s, i, arr) => {
@@ -130,6 +139,19 @@ export default function HomeScreen({ navigation }) {
       />
       {upcomingSessions.map(renderSessionRow)}
     </View>
+  ) : sessionsLoaded ? (
+    <View style={styles.section}>
+      <EmptyState
+        icon="calendar-outline"
+        title="No upcoming sessions"
+        body={isTutor
+          ? 'Keep your free blocks up to date so students can book you.'
+          : 'Find a tutor who is free when you are and book a block.'}
+        actionLabel={isTutor ? 'Update free blocks' : 'Find a tutor'}
+        onAction={() => navigation.navigate(isTutor ? 'Profile' : 'Search')}
+        compact
+      />
+    </View>
   ) : null;
 
   // Tutor cards are already cards, so this section sits straight on the page
@@ -179,7 +201,17 @@ export default function HomeScreen({ navigation }) {
       <StatusBar barStyle="light-content" backgroundColor={colors.brand} />
       <WelcomeTour />
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.white}
+            colors={[colors.brand]}
+          />
+        }
+      >
         {/* Hero */}
         <View style={styles.hero}>
           <OrganicBackdrop />

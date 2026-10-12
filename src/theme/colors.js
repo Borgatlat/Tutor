@@ -28,6 +28,7 @@ export default {
   maroon:     '#9B2C2C',   // date / status tags
   maroonTint: '#F6E9E9',
   gold:       '#C49A2C',   // accent rule above titles, active tab marker
+  goldTint:   '#F6EFDD',   // tutor badge background
 
   // Base
   white:    '#FFFFFF',

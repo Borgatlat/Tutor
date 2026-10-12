@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
+import Celebration from '../../components/Celebration';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { cardShadow } from '../../theme/shadows';
@@ -26,6 +27,7 @@ export default function BookSessionScreen({ route, navigation }) {
   const [notes, setNotes]         = useState('');
   const [loading, setLoading]     = useState(false);
   const [booked, setBooked]       = useState(false);
+  const [celebrate, setCelebrate] = useState(false);
   const [bookError, setBookError] = useState('');
 
   const handleBook = async () => {
@@ -43,6 +45,7 @@ export default function BookSessionScreen({ route, navigation }) {
     setLoading(false);
     if (error) { setBookError(error.message); return; }
     setBooked(true);
+    setCelebrate(true);
   };
 
   // ── Success state ───────────────────────────────────────────────────────────
@@ -50,8 +53,9 @@ export default function BookSessionScreen({ route, navigation }) {
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.successScreen}>
+          <Celebration visible={celebrate} confettiOnly onDone={() => setCelebrate(false)} />
           <Mascot size={128} mood="happy" style={styles.successMascot} />
-          <Text style={styles.successTitle}>Session Requested</Text>
+          <Text style={styles.successTitle}>Session requested</Text>
           <Text style={styles.successSub}>
             Your request has been sent to {tutor.full_name}.{'\n'}
             They'll confirm it shortly.
@@ -153,6 +157,8 @@ export default function BookSessionScreen({ route, navigation }) {
               icon="book-outline"
               title="This tutor hasn't listed any subjects"
               body="Ask them to add subjects to their profile before booking."
+              actionLabel="Back to their profile"
+              onAction={() => navigation.goBack()}
               compact
             />
           )}

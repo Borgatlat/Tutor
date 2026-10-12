@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import colors from '../../theme/colors';
 import { radii, space, border, press, hit } from '../../theme/layout';
 import { label as labelPreset } from '../../theme/fonts';
+import { select } from '../../utils/haptics';
 
 export default function Chip({
   label,
@@ -43,7 +44,7 @@ export default function Chip({
         minWidth != null && { minWidth, justifyContent: 'center' },
         style,
       ]}
-      onPress={interactive ? onPress : undefined}
+      onPress={interactive ? (e) => { select(); onPress(e); } : undefined}
       disabled={!interactive}
       activeOpacity={interactive ? press.opacity : 1}
       hitSlop={hit.slop}

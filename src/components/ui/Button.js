@@ -22,6 +22,7 @@ import colors from '../../theme/colors';
 import { radii, space, border, control } from '../../theme/layout';
 import { raised } from '../../theme/shadows';
 import { label as labelPreset } from '../../theme/fonts';
+import { tap } from '../../utils/haptics';
 
 export default function Button({
   label,
@@ -62,7 +63,7 @@ export default function Button({
         isOff && styles.off,
         style,
       ]}
-      onPress={onPress}
+      onPress={onPress ? (e) => { tap(); onPress(e); } : undefined}
       disabled={isOff}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}

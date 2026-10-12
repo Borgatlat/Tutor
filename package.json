@@ -23,6 +23,7 @@
     "expo-asset": "~10.0.10",
     "expo-calendar": "~13.0.4",
     "expo-font": "~12.0.10",
+    "expo-haptics": "~13.0.1",
     "expo-image-picker": "~15.1.0",
     "expo-notifications": "~0.28.19",
     "expo-status-bar": "~1.12.1",

@@ -7,6 +7,8 @@ import { cardShadow } from '../theme/shadows';
 import { type } from '../theme/fonts';
 import Avatar from './ui/Avatar';
 import SubjectBadge from './SubjectBadge';
+import TutorBadge from './TutorBadge';
+import { getTutorBadges } from '../utils/badges';
 import RatingStars from './RatingStars';
 
 // List cards stay short: name, rating, two subjects and how many blocks are
@@ -18,6 +20,7 @@ export default function TutorCard({ tutor, onPress }) {
   const shown     = subjects.slice(0, MAX_BADGES);
   const overflow  = subjects.length - shown.length;
   const freeCount = tutor.availability?.length ?? 0;
+  const badge     = getTutorBadges(tutor)[0];
 
   return (
     <TouchableOpacity
@@ -38,6 +41,7 @@ export default function TutorCard({ tutor, onPress }) {
         <View style={styles.info}>
           <Text style={styles.name} numberOfLines={1}>{tutor.full_name}</Text>
           <RatingStars rating={tutor.avg_rating} count={tutor.review_count} size={12} />
+          {badge ? <TutorBadge badge={badge} /> : null}
         </View>
 
         <Ionicons name="chevron-forward" size={18} color={colors.gray300} />
