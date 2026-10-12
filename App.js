@@ -1,5 +1,5 @@
 import 'react-native-gesture-handler';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
@@ -136,6 +136,8 @@ const MONTSERRAT = {
   Montserrat_700Bold, Montserrat_800ExtraBold,
 };
 
+const SPLASH_MIN_MS = 1700;
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 function App() {
@@ -156,9 +158,17 @@ function App() {
     return unsub;
   }, []);
 
+  // Let the logo animation on the loading screen finish once per launch,
+  // even when the session restores instantly.
+  const [introDone, setIntroDone] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setIntroDone(true), SPLASH_MIN_MS);
+    return () => clearTimeout(t);
+  }, []);
+
   // On web fontsLoaded is true from the first render (isLoaded() finds the
   // @font-face we injected above).  The check still guards native cold-start.
-  if (loading || !fontsLoaded) return <SplashScreen />;
+  if (loading || !fontsLoaded || !introDone) return <SplashScreen />;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

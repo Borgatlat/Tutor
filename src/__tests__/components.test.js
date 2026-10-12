@@ -40,3 +40,17 @@ describe('subject colours', () => {
     expect(getSubjectColors(null)).toEqual({ bg: colors.gray100, text: colors.gray600 });
   });
 });
+
+describe('Logo', () => {
+  const Logo = require('../components/ui/Logo').default;
+
+  test('full logo is one labelled image', () => {
+    const { getByLabelText } = render(<Logo size={48} />);
+    expect(getByLabelText('Strake Jesuit Tutors logo')).toBeTruthy();
+  });
+
+  test('animation layers are hidden from screen readers', () => {
+    const { queryByLabelText } = render(<Logo size={48} layer="left" />);
+    expect(queryByLabelText('Strake Jesuit Tutors logo')).toBeNull();
+  });
+});

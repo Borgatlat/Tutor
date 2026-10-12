@@ -22,6 +22,7 @@ import { school } from '../../theme/school';
 import { rule } from '../../theme/layout';
 import OrganicBackdrop from './OrganicBackdrop';
 import Mascot from './Mascot';
+import Logo from './Logo';
 import { useResponsive } from '../../hooks/useResponsive';
 
 export default function AuthShell({
@@ -36,12 +37,10 @@ export default function AuthShell({
   const brand = (compact) => (
     <>
       <View style={styles.lockup}>
-        <View style={[styles.badge, compact && styles.badgeCompact]}>
-          <Ionicons name="school" size={compact ? 20 : 24} color={colors.white} />
-        </View>
+        <Logo size={compact ? 40 : 48} onDark />
         <View>
           <Text style={styles.school}>{school.name.toUpperCase()}</Text>
-          <Text style={styles.schoolSub}>Peer Tutoring</Text>
+          <Text style={styles.schoolSub}>Tutors</Text>
         </View>
       </View>
       <View style={[styles.rule, compact && styles.ruleCompact]} />
@@ -132,12 +131,6 @@ const styles = StyleSheet.create({
 
   // ── Brand ─────────────────────────────────────────────────────────────────
   lockup: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  badge: {
-    width: 48, height: 48, borderRadius: radii.pill,
-    borderWidth: 1, borderColor: colors.whiteAlpha[30],
-    alignItems: 'center', justifyContent: 'center',
-  },
-  badgeCompact: { width: 40, height: 40 },
 
   school: {
     color: colors.white,

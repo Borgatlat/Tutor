@@ -16,6 +16,7 @@ import colors             from '../theme/colors';
 import { school }        from '../theme/school';
 import { radii, space, border, press } from '../theme/layout';
 import { sidebarShadow }  from '../theme/shadows';
+import Logo               from '../components/ui/Logo';
 
 const Tab   = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -64,9 +65,7 @@ function DesktopSidebar({ state, navigation }) {
     <View style={styles.sidebar}>
       {/* Brand */}
       <View style={styles.brand}>
-        <View style={styles.brandIconWrap}>
-          <NavIcon name="school" size={22} color={colors.white} />
-        </View>
+        <Logo size={40} onDark />
         <View>
           <Text style={styles.brandLine1}>{school.name.toUpperCase()}</Text>
           <Text style={styles.brandLine2}>Tutors</Text>
@@ -212,11 +211,6 @@ const styles = StyleSheet.create({
     gap: space.md,
     paddingHorizontal: 6,
     paddingBottom: space.xxl,
-  },
-  brandIconWrap: {
-    width: 40, height: 40, borderRadius: radii.pill,
-    borderWidth: 1, borderColor: colors.whiteAlpha[30],
-    alignItems: 'center', justifyContent: 'center',
   },
   brandLine1: {
     color: colors.white,

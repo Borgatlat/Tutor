@@ -17,3 +17,4 @@ export { default as Sheet }         from './Sheet';
 export { default as StatRow }       from './StatRow';
 export { default as StatusPill }    from './StatusPill';
 export { default as SubjectPicker } from './SubjectPicker';
+export { default as Logo }         from './Logo';

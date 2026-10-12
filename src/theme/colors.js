@@ -67,6 +67,7 @@ export default {
     30: 'rgba(255,255,255,0.30)',   // outlined controls on green
     65: 'rgba(255,255,255,0.70)',   // secondary text / inactive icons
     80: 'rgba(255,255,255,0.85)',   // body text on brand
+    90: 'rgba(255,255,255,0.92)',   // logo book pages on brand
   },
 
   // Semantic

@@ -132,7 +132,7 @@ export default function LoginScreen({ navigation }) {
       <Divider label="New here?" />
 
       <Button
-        label="Create an Account"
+        label="Create an account"
         variant="secondary"
         onPress={() => navigation.navigate('SignUp')}
         fullWidth
