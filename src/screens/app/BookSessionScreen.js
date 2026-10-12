@@ -5,12 +5,15 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
+import Celebration from '../../components/Celebration';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
+import { cardShadow } from '../../theme/shadows';
 import { radii, space, border, press, hit, rule } from '../../theme/layout';
-import { heading, label } from '../../theme/fonts';
+import { heading, label, type } from '../../theme/fonts';
 import {
-  Avatar, Button, Chip, EmptyState, ErrorBanner, Field,
+  Avatar, Button, Chip, EmptyState, ErrorBanner, Field, Mascot,
+  OrganicBackdrop,
 } from '../../components/ui';
 
 export default function BookSessionScreen({ route, navigation }) {
@@ -24,6 +27,7 @@ export default function BookSessionScreen({ route, navigation }) {
   const [notes, setNotes]         = useState('');
   const [loading, setLoading]     = useState(false);
   const [booked, setBooked]       = useState(false);
+  const [celebrate, setCelebrate] = useState(false);
   const [bookError, setBookError] = useState('');
 
   const handleBook = async () => {
@@ -41,6 +45,7 @@ export default function BookSessionScreen({ route, navigation }) {
     setLoading(false);
     if (error) { setBookError(error.message); return; }
     setBooked(true);
+    setCelebrate(true);
   };
 
   // ── Success state ───────────────────────────────────────────────────────────
@@ -48,10 +53,9 @@ export default function BookSessionScreen({ route, navigation }) {
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.successScreen}>
-          <View style={styles.successCircle}>
-            <Ionicons name="checkmark" size={44} color={colors.white} />
-          </View>
-          <Text style={styles.successTitle}>Session Requested</Text>
+          <Celebration visible={celebrate} confettiOnly onDone={() => setCelebrate(false)} />
+          <Mascot size={128} mood="happy" style={styles.successMascot} />
+          <Text style={styles.successTitle}>Session requested</Text>
           <Text style={styles.successSub}>
             Your request has been sent to {tutor.full_name}.{'\n'}
             They'll confirm it shortly.
@@ -71,7 +75,7 @@ export default function BookSessionScreen({ route, navigation }) {
           </View>
 
           <Button
-            label="View My Sessions"
+            label="View my sessions"
             onPress={() => navigation.navigate('Sessions')}
             fullWidth
           />
@@ -111,6 +115,7 @@ export default function BookSessionScreen({ route, navigation }) {
 
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
+          <OrganicBackdrop />
           <View style={styles.headerRule} />
           <Text style={styles.headerTitle}>Book a Session</Text>
         </View>
@@ -152,6 +157,8 @@ export default function BookSessionScreen({ route, navigation }) {
               icon="book-outline"
               title="This tutor hasn't listed any subjects"
               body="Ask them to add subjects to their profile before booking."
+              actionLabel="Back to their profile"
+              onAction={() => navigation.goBack()}
               compact
             />
           )}
@@ -176,7 +183,7 @@ export default function BookSessionScreen({ route, navigation }) {
           </View>
 
           <Button
-            label="Send Request"
+            label="Send request"
             icon="checkmark-circle"
             onPress={handleBook}
             loading={loading}
@@ -195,9 +202,10 @@ const styles = StyleSheet.create({
 
   navBar:   { backgroundColor: colors.brand, paddingHorizontal: space.lg, paddingVertical: space.sm },
   backBtn:  { flexDirection: 'row', alignItems: 'center', gap: space.xs },
-  backText: { ...label.caps, color: colors.white, fontSize: 11, letterSpacing: 1.8 },
+  backText: { ...label.ui, color: colors.white, fontSize: 15 },
 
   header: {
+    overflow: 'hidden',
     backgroundColor: colors.brand,
     paddingHorizontal: space.xl,
     paddingBottom: space.xxl,
@@ -210,15 +218,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gold,
     marginBottom: space.md,
   },
-  headerTitle: { ...heading.xl, color: colors.white, fontSize: 28 },
+  headerTitle: { ...type.title, color: colors.white },
 
   card: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     margin: space.lg,
     borderRadius: radii.xl,
-    borderWidth: 1,
-    borderColor: colors.lineSoft,
+    ...cardShadow,
     padding: space.xxl,
     paddingBottom: space.xxxl,
   },
@@ -233,12 +240,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brandTint,
     borderRadius: radii.lg, padding: space.lg, marginBottom: space.xl,
   },
-  slotText: { fontSize: 16, fontWeight: '800', color: colors.brand },
+  slotText: { fontSize: 16, fontWeight: '800', color: colors.brandText },
 
-  label: {
-    ...label.caps, fontSize: 11, letterSpacing: 1.6,
-    color: colors.gray600, marginBottom: space.sm,
-  },
+  label: { ...type.small, fontWeight: '600', color: colors.gray700, marginBottom: space.sm },
   subjectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
 
   notesField: { marginTop: space.xl },
@@ -249,7 +253,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.sm, padding: space.md,
   },
   contactNoteText: { flex: 1, fontSize: 12, color: colors.gray500, lineHeight: 18 },
-  emailHighlight:  { color: colors.accent, fontWeight: '600' },
+  emailHighlight:  { color: colors.brandText, fontWeight: '600' },
 
   submit: { marginTop: space.xl },
 
@@ -257,14 +261,9 @@ const styles = StyleSheet.create({
   successScreen: {
     flex: 1, alignItems: 'center', justifyContent: 'center',
     paddingHorizontal: space.xxxl,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
   },
-  successCircle: {
-    width: 88, height: 88, borderRadius: radii.pill,
-    backgroundColor: colors.brand,
-    alignItems: 'center', justifyContent: 'center',
-    marginBottom: space.xl,
-  },
+  successMascot: { marginBottom: space.lg },
   successTitle: { ...heading.lg, fontSize: 26, color: colors.black, marginBottom: space.sm },
   successSub: {
     fontSize: 15, color: colors.gray500,
@@ -283,7 +282,7 @@ const styles = StyleSheet.create({
 
   backLink:     { marginTop: space.lg },
   backLinkText: {
-    color: colors.accent, fontWeight: '600',
+    color: colors.brandText, fontWeight: '600',
     fontSize: 14, textDecorationLine: 'underline',
   },
 });

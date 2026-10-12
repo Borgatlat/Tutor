@@ -1,18 +1,24 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, StatusBar,
-  FlatList, TouchableOpacity, ActivityIndicator, Animated, Platform,
+  FlatList, TouchableOpacity, Animated, Platform, RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
+import { syncSessionReminders } from '../../utils/reminders';
+import { warn } from '../../utils/haptics';
+import { BLOCK_MINUTES, minutesToHours } from '../../utils/hours';
+import Celebration from '../../components/Celebration';
+import { SkeletonSession } from '../../components/SkeletonCard';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { radii, space, border, press, hit, rule } from '../../theme/layout';
-import { sheetShadow } from '../../theme/shadows';
-import { heading, label } from '../../theme/fonts';
+import { sheetShadow, cardShadow } from '../../theme/shadows';
+import { heading, label, type } from '../../theme/fonts';
 import SessionCard from '../../components/SessionCard';
 import {
-  Button, EmptyState, ErrorBanner, Field, Sheet,
+  Button, EmptyState, ErrorBanner, FadeIn, Field, Sheet,
+  OrganicBackdrop,
 } from '../../components/ui';
 import { addSessionToCalendar, getSessionTimeLabel } from '../../utils/calendar';
 import { useResponsive } from '../../hooks/useResponsive';
@@ -26,8 +32,9 @@ export default function SessionsScreen({ navigation }) {
   const [tab, setTab]           = useState('Upcoming');
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading]   = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Which session has a request in flight — disables that card's actions so
+  // Which session has a request in flight. It disables that card's actions so
   // Confirm/Decline can't be double-tapped.
   const [busyId, setBusyId] = useState(null);
 
@@ -42,12 +49,14 @@ export default function SessionsScreen({ navigation }) {
   const [submitting, setSubmitting]       = useState(false);
   const [reviewError, setReviewError]     = useState('');
 
-  // Calendar — tracks which session IDs have been added
+  // Calendar: tracks which session IDs have been added
   const [calendarAdded, setCalendarAdded] = useState(new Set());
   const [toast, setToast]                 = useState(null); // { message, isError }
+  const [party, setParty]                 = useState(null); // { title, subtitle }
   const toastOpacity = useRef(new Animated.Value(0)).current;
 
   const showToast = (message, isError = false) => {
+    if (isError) warn();
     setToast({ message, isError });
     Animated.sequence([
       Animated.timing(toastOpacity, { toValue: 1, duration: 200, useNativeDriver }),
@@ -76,9 +85,10 @@ export default function SessionsScreen({ navigation }) {
 
   useEffect(() => { loadSessions(); }, [tab, profile?.id]);
 
-  const loadSessions = useCallback(async () => {
+  // `silent` reloads keep the list on screen (pull to refresh).
+  const loadSessions = useCallback(async (silent = false) => {
     if (!profile?.id) return;
-    setLoading(true);
+    if (!silent) setLoading(true);
     const statuses = tab === 'Upcoming'
       ? ['pending', 'confirmed']
       : ['completed', 'cancelled'];
@@ -104,14 +114,46 @@ export default function SessionsScreen({ navigation }) {
       setSessions(data.map((s) => ({ ...s, reviewed: reviewed.has(s.id) })));
     } else {
       setSessions(data ?? []);
+      // Upcoming list is the source of truth for reminders (native only).
+      if (tab === 'Upcoming' && !error) {
+        syncSessionReminders(data ?? [], profile.id).catch((e) => {
+          if (__DEV__) console.warn('[SessionsScreen] reminders:', e);
+        });
+      }
     }
     setLoading(false);
   }, [tab, profile?.id]);
 
+  // Status changes report failures instead of silently doing nothing. A
+  // blocked update (e.g. a row-level-security rule) used to look like success.
+  const updateStatus = async (sessionId, status, failMsg) => {
+    const { error } = await supabase.from('sessions').update({ status }).eq('id', sessionId);
+    if (error) showToast(`${failMsg} ${error.message}`, true);
+    return !error;
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadSessions(true);
+    setRefreshing(false);
+  };
+
   const handleConfirm = async (sessionId) => {
     setBusyId(sessionId);
-    await supabase.from('sessions').update({ status: 'confirmed' }).eq('id', sessionId);
+    const ok = await updateStatus(sessionId, 'confirmed', "Couldn't confirm the session.");
     setBusyId(null);
+    if (ok) setParty({ title: 'Session confirmed!', subtitle: "You'll both get a reminder before it starts." });
+    loadSessions();
+  };
+
+  // A tutor marks a confirmed session as done after it happens. This is what
+  // moves it to Past, lets the student leave a review, and bumps the tutor's
+  // completed-session count (supabase_schema.sql trigger).
+  const handleComplete = async (sessionId) => {
+    setBusyId(sessionId);
+    const done = await updateStatus(sessionId, 'completed', "Couldn't mark the session as done.");
+    setBusyId(null);
+    if (done) setParty({ title: 'Session done!', subtitle: `+${minutesToHours(BLOCK_MINUTES)} service hours` });
     loadSessions();
   };
 
@@ -120,7 +162,7 @@ export default function SessionsScreen({ navigation }) {
   const confirmCancel = async () => {
     if (!cancelConfirmId) return;
     setCancelling(true);
-    await supabase.from('sessions').update({ status: 'cancelled' }).eq('id', cancelConfirmId);
+    await updateStatus(cancelConfirmId, 'cancelled', "Couldn't cancel the session.");
     setCancelling(false);
     setCancelConfirmId(null);
     loadSessions();
@@ -147,6 +189,7 @@ export default function SessionsScreen({ navigation }) {
     setSubmitting(false);
     if (error) { setReviewError(error.message); return; }
     closeReview();
+    setParty({ title: 'Thanks for the review!', subtitle: 'It helps other students find great tutors.' });
     loadSessions();
   };
 
@@ -155,12 +198,14 @@ export default function SessionsScreen({ navigation }) {
       <StatusBar barStyle="light-content" backgroundColor={colors.brand} />
 
       <View style={styles.header}>
+
+        <OrganicBackdrop />
         <View style={styles.headerRule} />
-        <Text style={styles.headerTitle}>My Sessions</Text>
+        <Text style={styles.headerTitle}>My sessions</Text>
       </View>
 
       {/* Tabs */}
-      <View style={styles.tabBar}>
+      <View style={styles.tabBar} accessibilityRole="tablist">
         {TABS.map((t) => (
           <TouchableOpacity
             key={t}
@@ -177,8 +222,8 @@ export default function SessionsScreen({ navigation }) {
       </View>
 
       {loading ? (
-        <View style={styles.loader}>
-          <ActivityIndicator color={colors.accent} size="large" />
+        <View style={[styles.list, isWide && styles.listWide]}>
+          {[0, 1, 2].map((i) => <SkeletonSession key={i} />)}
         </View>
       ) : (
         <FlatList
@@ -189,6 +234,14 @@ export default function SessionsScreen({ navigation }) {
           columnWrapperStyle={columns > 1 ? styles.columnWrapper : undefined}
           contentContainerStyle={[styles.list, isWide && styles.listWide]}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.brandText}
+              colors={[colors.brand]}
+            />
+          }
           ListEmptyComponent={
             <EmptyState
               icon="calendar-outline"
@@ -196,24 +249,27 @@ export default function SessionsScreen({ navigation }) {
               body={
                 tab === 'Upcoming'
                   ? 'Book a session with a tutor and it will show up here.'
-                  : 'Completed and cancelled sessions will appear here.'
+                  : 'Finished and cancelled sessions will appear here.'
               }
-              actionLabel={tab === 'Upcoming' ? 'Find a Tutor' : undefined}
-              onAction={tab === 'Upcoming' ? () => navigation.navigate('Search') : undefined}
+              actionLabel="Find a tutor"
+              onAction={() => navigation.navigate('Search')}
             />
           }
-          renderItem={({ item }) => (
+          renderItem={({ item, index }) => (
             <View style={columns > 1 ? styles.gridItem : undefined}>
+              <FadeIn index={index}>
               <SessionCard
                 session={item}
                 currentUserId={profile?.id}
                 busy={busyId === item.id}
                 onConfirm={handleConfirm}
+                onComplete={handleComplete}
                 onCancel={handleCancel}
                 onReview={(s) => setReviewSession(s)}
                 onAddToCalendar={handleAddToCalendar}
                 calendarAdded={calendarAdded.has(item.id)}
               />
+              </FadeIn>
             </View>
           )}
         />
@@ -227,7 +283,7 @@ export default function SessionsScreen({ navigation }) {
         <Ionicons
           name="alert-circle-outline"
           size={40}
-          color={colors.error}
+          color={colors.errorText}
           style={styles.cancelIcon}
         />
         <Text style={styles.centerTitle}>Cancel this session?</Text>
@@ -236,7 +292,7 @@ export default function SessionsScreen({ navigation }) {
         </Text>
         <View style={styles.rowActions}>
           <Button
-            label="Keep It"
+            label="Keep it"
             variant="neutral"
             onPress={() => setCancelConfirmId(null)}
             disabled={cancelling}
@@ -256,7 +312,7 @@ export default function SessionsScreen({ navigation }) {
       <Sheet
         visible={!!reviewSession}
         onClose={closeReview}
-        title="Leave a Review"
+        title="Leave a review"
         subtitle={`How was your session with ${reviewSession?.tutor?.full_name ?? 'your tutor'}?`}
       >
         <View
@@ -325,6 +381,12 @@ export default function SessionsScreen({ navigation }) {
           <Text style={styles.toastText} numberOfLines={2}>{toast.message}</Text>
         </Animated.View>
       ) : null}
+      <Celebration
+        visible={!!party}
+        title={party?.title}
+        subtitle={party?.subtitle}
+        onDone={() => setParty(null)}
+      />
     </SafeAreaView>
   );
 }
@@ -333,6 +395,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.offWhite },
 
   header: {
+    overflow: 'hidden',
     backgroundColor: colors.brand,
     paddingHorizontal: space.xl,
     paddingTop: space.lg,
@@ -346,7 +409,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gold,
     marginBottom: space.md,
   },
-  headerTitle: { ...heading.xl, color: colors.white, fontSize: 28 },
+  headerTitle: { ...type.title, color: colors.white },
 
   // Pill segmented control on the stone background.
   tabBar: {
@@ -361,11 +424,9 @@ const styles = StyleSheet.create({
     flex: 1, paddingVertical: space.md, alignItems: 'center',
     borderRadius: radii.pill,
   },
-  tabActive:     { backgroundColor: colors.white },
-  tabText:       { ...label.caps, fontSize: 11, letterSpacing: 1.8, color: colors.gray500 },
-  tabTextActive: { color: colors.brand, fontWeight: '700' },
-
-  loader: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  tabActive:     { backgroundColor: colors.surface, ...cardShadow },
+  tabText:       { ...label.ui, fontSize: 14, color: colors.gray500 },
+  tabTextActive: { color: colors.brandText, fontWeight: '700' },
 
   list:          { padding: space.lg, paddingBottom: space.xxxl },
   listWide:      { maxWidth: 1100, alignSelf: 'center', width: '100%' },

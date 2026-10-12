@@ -1,23 +1,23 @@
 /**
- * ReportModal — Apple App Store guideline 5.1.1 / 1.2
+ * ReportModal: Apple App Store guideline 5.1.1 / 1.2
  * Required for any app with user-generated content.
  * Lets signed-in users report inappropriate users and block them.
  */
 import React, { useState } from 'react';
 import { Modal, View, Text, StyleSheet, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
 import useAuthStore from '../store/useAuthStore';
 import colors from '../theme/colors';
 import { radii, space } from '../theme/layout';
 import { sheetShadow } from '../theme/shadows';
-import { heading } from '../theme/fonts';
+import { heading, label, type } from '../theme/fonts';
 import Button from './ui/Button';
 import Chip from './ui/Chip';
 import Field from './ui/Field';
 import Divider from './ui/Divider';
 import ErrorBanner from './ui/ErrorBanner';
 import IconButton from './ui/IconButton';
+import Mascot from './ui/Mascot';
 
 const REPORT_REASONS = [
   'Inappropriate content',
@@ -79,9 +79,7 @@ export default function ReportModal({ visible, onClose, reportedUser }) {
           {done ? (
             /* ── Success state ── */
             <View style={styles.doneWrap}>
-              <View style={styles.doneCircle}>
-                <Ionicons name="checkmark" size={30} color={colors.white} />
-              </View>
+              <Mascot size={104} mood="happy" style={styles.doneMascot} />
               <Text style={styles.doneTitle}>
                 {done === 'blocked' ? 'User Blocked' : 'Report Submitted'}
               </Text>
@@ -128,7 +126,7 @@ export default function ReportModal({ visible, onClose, reportedUser }) {
               />
 
               <Button
-                label="Submit Report"
+                label="Submit report"
                 icon="flag"
                 onPress={handleReport}
                 disabled={!reason}
@@ -167,7 +165,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderTopLeftRadius: radii.xxl,
     borderTopRightRadius: radii.xxl,
     paddingHorizontal: space.xxl,
@@ -189,16 +187,13 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 14, color: colors.gray500, marginBottom: space.xl },
   userName: { fontWeight: '700', color: colors.black },
 
-  label: {
-    fontSize: 11, fontWeight: '600', letterSpacing: 1.6, textTransform: 'uppercase',
-    color: colors.gray600, marginBottom: space.sm,
-  },
+  label: { ...type.small, fontWeight: '600', color: colors.gray700, marginBottom: space.sm },
 
   reasonGrid:   { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   detailsField: { marginTop: space.lg },
 
   blockNote: {
-    fontSize: 11, color: colors.gray400,
+    fontSize: 11, color: colors.gray500,
     textAlign: 'center', marginTop: space.md, lineHeight: 16,
   },
   bottomSpacer: { height: space.xxxl },
@@ -209,12 +204,7 @@ const styles = StyleSheet.create({
     paddingVertical: space.huge,
     paddingHorizontal: space.lg,
   },
-  doneCircle: {
-    width: 72, height: 72, borderRadius: radii.pill,
-    backgroundColor: colors.brand,
-    alignItems: 'center', justifyContent: 'center',
-    marginBottom: space.xl,
-  },
+  doneMascot: { marginBottom: space.lg },
   doneTitle: { ...heading.lg, fontSize: 22, color: colors.black, marginBottom: space.sm },
   doneSub: {
     fontSize: 14, color: colors.gray500,

@@ -1,48 +1,136 @@
+/**
+ * SplashScreen: the animated loading screen.
+ *
+ * The logo builds itself: the book opens, the two people slide in and meet
+ * to form the heart, then the heart beats gently while the session loads.
+ * With Reduce Motion on, everything simply appears.
+ */
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Platform, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, StyleSheet, Animated, Easing, Platform, AccessibilityInfo } from 'react-native';
+import { Logo, OrganicBackdrop } from '../../components/ui';
 import colors from '../../theme/colors';
-import { radii, space, rule } from '../../theme/layout';
-import { heading } from '../../theme/fonts';
+import { space, rule } from '../../theme/layout';
+import { heading, label, type } from '../../theme/fonts';
+import { school } from '../../theme/school';
 
 const useNativeDriver = Platform.OS !== 'web';
+const MARK = 148;
 
 export default function SplashScreen() {
-  const opacity = useRef(new Animated.Value(0)).current;
-  const scale   = useRef(new Animated.Value(0.8)).current;
+  const book   = useRef(new Animated.Value(0)).current;  // 0 closed → 1 open
+  const join   = useRef(new Animated.Value(0)).current;  // 0 apart  → 1 heart
+  const words  = useRef(new Animated.Value(0)).current;  // wordmark fade-up
+  const beat   = useRef(new Animated.Value(0)).current;  // looping heartbeat
+  const dots   = useRef(new Animated.Value(0)).current;  // looping loader
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(opacity, { toValue: 1, duration: 700, useNativeDriver }),
-      Animated.spring(scale,   { toValue: 1, tension: 60, friction: 8, useNativeDriver }),
-    ]).start();
+    let loops = [];
+    let cancelled = false;
+
+    const startLoops = () => {
+      const heartbeat = Animated.loop(Animated.sequence([
+        Animated.timing(beat, { toValue: 1, duration: 180, easing: Easing.out(Easing.quad), useNativeDriver }),
+        Animated.timing(beat, { toValue: 0, duration: 220, easing: Easing.in(Easing.quad), useNativeDriver }),
+        Animated.timing(beat, { toValue: 0.6, duration: 160, easing: Easing.out(Easing.quad), useNativeDriver }),
+        Animated.timing(beat, { toValue: 0, duration: 260, easing: Easing.in(Easing.quad), useNativeDriver }),
+        Animated.delay(700),
+      ]));
+      const loader = Animated.loop(
+        Animated.timing(dots, { toValue: 1, duration: 1200, easing: Easing.linear, useNativeDriver }),
+      );
+      loops = [heartbeat, loader];
+      loops.forEach((l) => l.start());
+    };
+
+    AccessibilityInfo.isReduceMotionEnabled()
+      .catch(() => false)
+      .then((reduce) => {
+        if (cancelled) return;
+        if (reduce) {
+          book.setValue(1); join.setValue(1); words.setValue(1);
+          return;
+        }
+        Animated.sequence([
+          Animated.timing(book, { toValue: 1, duration: 450, easing: Easing.out(Easing.cubic), useNativeDriver }),
+          Animated.spring(join, { toValue: 1, tension: 70, friction: 9, useNativeDriver }),
+          Animated.timing(words, { toValue: 1, duration: 400, easing: Easing.out(Easing.quad), useNativeDriver }),
+        ]).start(({ finished }) => { if (finished && !cancelled) startLoops(); });
+      });
+
+    return () => { cancelled = true; loops.forEach((l) => l.stop()); };
   }, []);
+
+  const bookStyle = {
+    opacity: book,
+    transform: [
+      { translateY: book.interpolate({ inputRange: [0, 1], outputRange: [10, 0] }) },
+      { scaleX: book.interpolate({ inputRange: [0, 1], outputRange: [0.15, 1] }) },
+    ],
+  };
+  const person = (from) => ({
+    opacity: join.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0, 1, 1] }),
+    transform: [
+      { translateX: join.interpolate({ inputRange: [0, 1], outputRange: [from, 0] }) },
+      { translateY: join.interpolate({ inputRange: [0, 1], outputRange: [14, 0] }) },
+    ],
+  });
+  const heartStyle = {
+    transform: [{ scale: beat.interpolate({ inputRange: [0, 1], outputRange: [1, 1.07] }) }],
+  };
+  const wordStyle = {
+    opacity: words,
+    transform: [{ translateY: words.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }],
+  };
+  const dot = (i) => ({
+    opacity: dots.interpolate({
+      inputRange: [0, (i + 0.5) / 4, (i + 1.5) / 4, 1],
+      outputRange: [0.35, 1, 0.35, 0.35],
+      extrapolate: 'clamp',
+    }),
+  });
 
   return (
     <View style={styles.container}>
-      <Animated.View style={[styles.content, { opacity, transform: [{ scale }] }]}>
-        <View style={styles.iconWrap}>
-          <Ionicons name="school" size={44} color={colors.white} />
-        </View>
-        <Text style={styles.school}>STRAKE JESUIT</Text>
-        <View style={styles.rule} />
-        <Text style={styles.title}>Tutor{'\n'}Marketplace</Text>
-        <Text style={styles.sub}>Crusaders helping Crusaders</Text>
+      <OrganicBackdrop />
 
-        {/* A real spinner — the old static dot read as a loading indicator but
-            never moved, so a slow session restore looked frozen. */}
-        <ActivityIndicator
-          color={colors.whiteAlpha[65]}
-          style={styles.spinner}
-          accessibilityLabel="Loading"
-        />
-      </Animated.View>
+      <View
+        style={styles.content}
+        accessible
+        accessibilityRole="progressbar"
+        accessibilityLabel={`${school.name} Tutors is loading`}
+      >
+        <Animated.View style={[styles.mark, heartStyle]}>
+          <Animated.View style={[styles.layer, bookStyle]}>
+            <Logo size={MARK} onDark layer="book" />
+          </Animated.View>
+          <Animated.View style={[styles.layer, person(-28)]}>
+            <Logo size={MARK} onDark layer="left" />
+          </Animated.View>
+          <Animated.View style={[styles.layer, person(28)]}>
+            <Logo size={MARK} onDark layer="right" />
+          </Animated.View>
+        </Animated.View>
+
+        <Animated.View style={[styles.words, wordStyle]}>
+          <Text style={styles.school}>{school.name.toUpperCase()}</Text>
+          <Text style={styles.title}>Tutors</Text>
+          <View style={styles.rule} />
+          <Text style={styles.sub}>{school.memberPlural} helping {school.memberPlural}</Text>
+        </Animated.View>
+
+        <View style={styles.dots}>
+          {[0, 1, 2].map((i) => (
+            <Animated.View key={i} style={[styles.dot, dot(i)]} />
+          ))}
+        </View>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    overflow: 'hidden',
     flex: 1,
     backgroundColor: colors.brand,
     alignItems: 'center',
@@ -50,39 +138,19 @@ const styles = StyleSheet.create({
   },
   content: { alignItems: 'center' },
 
-  iconWrap: {
-    width: 88,
-    height: 88,
-    borderRadius: radii.pill,
-    borderWidth: 1,
-    borderColor: colors.whiteAlpha[30],
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: space.xxl,
-  },
-  school: {
-    color: colors.white,
-    fontSize: 13,
-    fontWeight: '800',
-    letterSpacing: 3,
-  },
+  mark:  { width: MARK, height: MARK, marginBottom: space.xl },
+  layer: { position: 'absolute', top: 0, left: 0 },
+
+  words:  { alignItems: 'center' },
+  school: { ...label.caps, color: colors.whiteAlpha[80], fontSize: 12, letterSpacing: 3 },
+  title:  { ...heading.xl, color: colors.white, fontSize: 44, lineHeight: 52, marginTop: space.xs },
   rule: {
     width: rule.width, height: rule.height, borderRadius: rule.radius,
     backgroundColor: colors.gold,
-    marginTop: space.lg, marginBottom: space.lg,
+    marginTop: space.md, marginBottom: space.md,
   },
-  title: {
-    ...heading.xl,
-    color: colors.white,
-    fontSize: 42,
-    textAlign: 'center',
-    lineHeight: 48,
-    marginBottom: space.md,
-  },
-  sub: {
-    color: colors.whiteAlpha[80],
-    fontSize: 15,
-    marginBottom: space.xxxl,
-  },
-  spinner: { transform: [{ scale: 0.9 }] },
+  sub: { ...type.body, color: colors.whiteAlpha[80] },
+
+  dots: { flexDirection: 'row', gap: space.sm, marginTop: space.xxxl },
+  dot:  { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.gold },
 });

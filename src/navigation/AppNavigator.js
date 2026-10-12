@@ -13,8 +13,10 @@ import SessionsScreen     from '../screens/app/SessionsScreen';
 import ProfileScreen      from '../screens/app/ProfileScreen';
 import { useResponsive, SIDEBAR_WIDTH } from '../hooks/useResponsive';
 import colors             from '../theme/colors';
+import { school }        from '../theme/school';
 import { radii, space, border, press } from '../theme/layout';
 import { sidebarShadow }  from '../theme/shadows';
+import Logo               from '../components/ui/Logo';
 
 const Tab   = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -63,11 +65,9 @@ function DesktopSidebar({ state, navigation }) {
     <View style={styles.sidebar}>
       {/* Brand */}
       <View style={styles.brand}>
-        <View style={styles.brandIconWrap}>
-          <NavIcon name="school" size={22} color={colors.white} />
-        </View>
+        <Logo size={40} onDark />
         <View>
-          <Text style={styles.brandLine1}>STRAKE JESUIT</Text>
+          <Text style={styles.brandLine1}>{school.name.toUpperCase()}</Text>
           <Text style={styles.brandLine2}>Tutors</Text>
         </View>
       </View>
@@ -75,32 +75,34 @@ function DesktopSidebar({ state, navigation }) {
       <View style={styles.sidebarDivider} />
 
       {/* Nav items */}
-      {state.routes.map((route, index) => {
-        const isFocused = state.index === index;
-        const meta = TAB_META.find((t) => t.name === route.name);
-        if (!meta) return null;
-        return (
-          <TouchableOpacity
-            key={route.key}
-            style={[styles.navItem, isFocused && styles.navItemActive]}
-            onPress={() => navigation.navigate(route.name)}
-            activeOpacity={press.opacity}
-            accessibilityRole="tab"
-            accessibilityLabel={meta.label}
-            accessibilityState={{ selected: isFocused }}
-          >
-            <NavIcon
-              name={isFocused ? meta.iconOn : meta.iconOff}
-              size={20}
-              color={isFocused ? colors.white : colors.whiteAlpha[65]}
-            />
-            <Text style={[styles.navLabel, isFocused && styles.navLabelActive]}>
-              {meta.label}
-            </Text>
-            {isFocused ? <View style={styles.navDot} /> : null}
-          </TouchableOpacity>
-        );
-      })}
+      <View accessibilityRole="tablist">
+        {state.routes.map((route, index) => {
+          const isFocused = state.index === index;
+          const meta = TAB_META.find((t) => t.name === route.name);
+          if (!meta) return null;
+          return (
+            <TouchableOpacity
+              key={route.key}
+              style={[styles.navItem, isFocused && styles.navItemActive]}
+              onPress={() => navigation.navigate(route.name)}
+              activeOpacity={press.opacity}
+              accessibilityRole="tab"
+              accessibilityLabel={meta.label}
+              accessibilityState={{ selected: isFocused }}
+            >
+              <NavIcon
+                name={isFocused ? meta.iconOn : meta.iconOff}
+                size={20}
+                color={isFocused ? colors.white : colors.whiteAlpha[65]}
+              />
+              <Text style={[styles.navLabel, isFocused && styles.navLabelActive]}>
+                {meta.label}
+              </Text>
+              {isFocused ? <View style={styles.navDot} /> : null}
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </View>
   );
 }
@@ -112,7 +114,10 @@ function MobileTabBar({ state, navigation }) {
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, space.sm) }]}>
+    <View
+      style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, space.sm) }]}
+      accessibilityRole="tablist"
+    >
       {state.routes.map((route, index) => {
         const isFocused = state.index === index;
         const meta = TAB_META.find((t) => t.name === route.name);
@@ -123,7 +128,7 @@ function MobileTabBar({ state, navigation }) {
           if (!isFocused && !event.defaultPrevented) navigation.navigate(route.name);
         };
 
-        const tint = isFocused ? colors.brand : colors.gray500;
+        const tint = isFocused ? colors.brandText : colors.gray500;
         return (
           <TouchableOpacity
             key={route.key}
@@ -134,7 +139,6 @@ function MobileTabBar({ state, navigation }) {
             accessibilityLabel={meta.label}
             accessibilityState={{ selected: isFocused }}
           >
-            <View style={[styles.tabMarker, isFocused && styles.tabMarkerActive]} />
             <View style={[styles.tabIconWrap, isFocused && styles.tabIconWrapActive]}>
               <NavIcon
                 name={isFocused ? meta.iconOn : meta.iconOff}
@@ -208,11 +212,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingBottom: space.xxl,
   },
-  brandIconWrap: {
-    width: 40, height: 40, borderRadius: radii.pill,
-    borderWidth: 1, borderColor: colors.whiteAlpha[30],
-    alignItems: 'center', justifyContent: 'center',
-  },
   brandLine1: {
     color: colors.white,
     fontSize: 12, fontWeight: '800', letterSpacing: 0.6,
@@ -247,7 +246,7 @@ const styles = StyleSheet.create({
     marginLeft: 'auto',
   },
   navLabel: {
-    fontSize: 12, fontWeight: '600', letterSpacing: 1.6, textTransform: 'uppercase',
+    fontSize: 14, fontWeight: '600',
     color: colors.whiteAlpha[65],
   },
   navLabelActive: { color: colors.white, fontWeight: '700' },
@@ -255,7 +254,7 @@ const styles = StyleSheet.create({
   // ── Mobile tab bar ────────────────────────────────────────────────────────
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderTopWidth: border.hairline,
     borderTopColor: colors.gray200,
   },
@@ -266,19 +265,11 @@ const styles = StyleSheet.create({
     gap: 3,
     minHeight: 60,
   },
-  tabMarker: {
-    width: 28, height: 4, borderRadius: 2,
-    backgroundColor: 'transparent',
-    marginBottom: space.xs,
-  },
-  tabMarkerActive: { backgroundColor: colors.gold },
   tabIconWrap: {
     paddingHorizontal: space.lg, paddingVertical: 3,
     borderRadius: radii.pill,
   },
   tabIconWrapActive: { backgroundColor: colors.brandTint },
-  tabLabel: {
-    fontSize: 10, fontWeight: '600', letterSpacing: 1.4, textTransform: 'uppercase',
-  },
+  tabLabel: { fontSize: 11, fontWeight: '600' },
   tabLabelActive: { fontWeight: '700' },
 });

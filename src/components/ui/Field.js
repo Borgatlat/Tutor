@@ -1,5 +1,5 @@
 /**
- * Field — label + input + error, with the focus state the app was missing.
+ * Field: label + input + error, with the focus state the app was missing.
  *
  * Owning `focused` here is the whole point: AppTextInput's web path sets
  * `outline: none`, so without this there is no focus indication at all on web.
@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AppTextInput from '../AppTextInput';
 import colors from '../../theme/colors';
 import { radii, space, border } from '../../theme/layout';
-import { label as labelPreset } from '../../theme/fonts';
+import { label as labelPreset, type } from '../../theme/fonts';
 
 export default function Field({
   label,
@@ -47,7 +47,7 @@ export default function Field({
           <Ionicons
             name={icon}
             size={18}
-            color={focused ? colors.brand : colors.gray400}
+            color={focused ? colors.brandText : colors.gray400}
             style={styles.icon}
           />
         ) : null}
@@ -78,10 +78,9 @@ const styles = StyleSheet.create({
   wrap: { marginBottom: space.lg },
 
   label: {
-    ...labelPreset.caps,
-    fontSize: 11,
-    letterSpacing: 1.6,
-    color: colors.gray600,
+    ...labelPreset.ui,
+    fontSize: 13,
+    color: colors.gray700,
     marginBottom: space.sm,
   },
 
@@ -91,17 +90,17 @@ const styles = StyleSheet.create({
     borderWidth: border.control,
     borderColor: colors.line,
     borderRadius: radii.sm,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     paddingHorizontal: space.md,
   },
   boxMultiline: { alignItems: 'flex-start', paddingVertical: space.xs },
   // Green border plus a 1px outer ring on web, so focus reads as a 2px line
   // without the box changing size.
   boxFocused: {
-    borderColor: colors.brand,
-    ...Platform.select({ web: { boxShadow: `0 0 0 1px ${colors.brand}` }, default: {} }),
+    borderColor: colors.focus,
+    ...Platform.select({ web: { boxShadow: `0 0 0 1px ${colors.focus}` }, default: {} }),
   },
-  boxError: { borderColor: colors.error },
+  boxError: { borderColor: colors.errorText },
 
   icon: { marginRight: space.sm },
 
@@ -113,6 +112,6 @@ const styles = StyleSheet.create({
   },
   inputMultiline: { height: 92, textAlignVertical: 'top' },
 
-  error: { fontSize: 12, color: colors.error,   marginTop: space.xs },
+  error: { fontSize: 12, color: colors.errorText,   marginTop: space.xs },
   hint:  { fontSize: 12, color: colors.gray500, marginTop: space.xs },
 });

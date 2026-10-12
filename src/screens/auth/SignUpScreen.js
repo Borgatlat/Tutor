@@ -6,7 +6,8 @@ import { z } from 'zod';
 import { supabase } from '../../lib/supabase';
 import colors from '../../theme/colors';
 import { space, hit, press } from '../../theme/layout';
-import { heading } from '../../theme/fonts';
+import { heading, label, type } from '../../theme/fonts';
+import { school } from '../../theme/school';
 import { SCHOOL_EMAIL_DOMAIN } from '../../constants';
 import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../../constants/legal';
 import {
@@ -14,10 +15,10 @@ import {
 } from '../../components/ui';
 
 const FEATURES = [
-  { icon: 'people-outline',            text: 'Peer-to-peer tutoring from Crusaders' },
-  { icon: 'book-outline',              text: 'All subjects — core classes, AP, SAT & more' },
+  { icon: 'people-outline',            text: `Peer-to-peer tutoring from ${school.memberPlural}` },
+  { icon: 'book-outline',              text: 'All subjects: core classes, AP, SAT & more' },
   { icon: 'time-outline',              text: 'Schedule around your free periods' },
-  { icon: 'shield-checkmark-outline',  text: 'Strake Jesuit email required' },
+  { icon: 'shield-checkmark-outline',  text: `${school.name} email required` },
 ];
 
 const schema = z.object({
@@ -70,7 +71,7 @@ export default function SignUpScreen({ navigation }) {
   return (
     <AuthShell
       title={'Join the\nCommunity'}
-      subtitle="Connect with fellow Crusaders as a tutor, a student, or both."
+      subtitle={`Connect with fellow ${school.memberPlural} as a tutor, a student, or both.`}
       features={FEATURES}
       headerRight={
         <IconButton
@@ -82,7 +83,7 @@ export default function SignUpScreen({ navigation }) {
         />
       }
     >
-      <Text style={styles.cardTitle}>Create Account</Text>
+      <Text style={styles.cardTitle}>Create account</Text>
 
       <ErrorBanner message={submitError} />
 
@@ -91,7 +92,7 @@ export default function SignUpScreen({ navigation }) {
         name="full_name"
         render={({ field: { onChange, value, onBlur } }) => (
           <Field
-            label="Full Name"
+            label="Full name"
             icon="person-outline"
             error={errors.full_name?.message}
             placeholder="John Smith"
@@ -109,7 +110,7 @@ export default function SignUpScreen({ navigation }) {
         name="email"
         render={({ field: { onChange, value, onBlur } }) => (
           <Field
-            label="School Email"
+            label="School email"
             icon="mail-outline"
             error={errors.email?.message}
             placeholder={`name${SCHOOL_EMAIL_DOMAIN}`}
@@ -158,7 +159,7 @@ export default function SignUpScreen({ navigation }) {
       <RoleSelector value={role} onChange={setRole} style={styles.roles} />
 
       <Button
-        label="Create Account"
+        label="Create account"
         onPress={handleSubmit(onSubmit)}
         loading={loading}
         fullWidth
@@ -186,7 +187,7 @@ export default function SignUpScreen({ navigation }) {
       >
         <Text style={styles.loginLinkText}>
           Already have an account?{' '}
-          <Text style={styles.loginLinkStrong}>Sign In</Text>
+          <Text style={styles.loginLinkStrong}>Sign in</Text>
         </Text>
       </TouchableOpacity>
     </AuthShell>
@@ -201,19 +202,16 @@ const styles = StyleSheet.create({
     marginBottom: space.xxl,
   },
 
-  label: {
-    fontSize: 11, fontWeight: '600', letterSpacing: 1.6, textTransform: 'uppercase',
-    color: colors.gray600, marginBottom: space.sm,
-  },
+  label: { ...type.small, fontWeight: '600', color: colors.gray700, marginBottom: space.sm },
   roles: { marginBottom: space.xxl },
 
   legalNotice: {
     fontSize: 11, color: colors.gray500,
     textAlign: 'center', lineHeight: 17, marginTop: space.lg,
   },
-  legalLink: { color: colors.brand, fontWeight: '600', textDecorationLine: 'underline' },
+  legalLink: { color: colors.brandText, fontWeight: '600', textDecorationLine: 'underline' },
 
   loginLink:       { alignItems: 'center', marginTop: space.xl },
   loginLinkText:   { fontSize: 13, color: colors.gray500 },
-  loginLinkStrong: { color: colors.brand, fontWeight: '700' },
+  loginLinkStrong: { color: colors.brandText, fontWeight: '700' },
 });

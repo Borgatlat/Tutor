@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import colors from '../theme/colors';
 import { radii, space, border } from '../theme/layout';
 
-// Badges are colored by department, not by difficulty — 'Algebra 2' and
+// Badges are colored by department, not by difficulty: 'Algebra 2' and
 // 'AP Calculus BC' read as the same subject family at a glance. All five
 // families are green- or neutral-derived so nothing competes with the brand.
 const s = colors.subject;
@@ -36,7 +36,7 @@ const DEPARTMENTS = [
 
 // `subject` can be null when a session row is missing its join, so coerce
 // before matching rather than letting .includes() throw.
-const getSubjectColors = (subject) => {
+export const getSubjectColors = (subject) => {
   const name = typeof subject === 'string' ? subject : '';
   const dept = DEPARTMENTS.find((d) => d.match.some((m) => name.includes(m)));
   return dept ?? { bg: colors.gray100, text: colors.gray600 };
@@ -68,14 +68,14 @@ const styles = StyleSheet.create({
     borderRadius: radii.xs,
     gap: 6,
   },
-  text:      { fontSize: 11, fontWeight: '600', letterSpacing: 1.1, textTransform: 'uppercase' },
-  small:     { paddingHorizontal: space.sm, paddingVertical: space.xs },
-  smallText: { fontSize: 10, letterSpacing: 1 },
+  text:      { fontSize: 13, fontWeight: '600' },
+  small:     { paddingHorizontal: 10, paddingVertical: 3 },
+  smallText: { fontSize: 12 },
   gradePill: {
     borderWidth: border.hairline,
     borderRadius: radii.sm,
     paddingHorizontal: 6,
     paddingVertical: 1,
   },
-  gradeText: { fontSize: 11, fontWeight: '700' },
+  gradeText: { fontSize: 12, fontWeight: '700' },
 });

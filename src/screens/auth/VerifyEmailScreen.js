@@ -4,8 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import colors from '../../theme/colors';
 import { radii, space, border, rule } from '../../theme/layout';
-import { heading } from '../../theme/fonts';
-import { Button, Divider, ErrorBanner } from '../../components/ui';
+import { heading, label, type } from '../../theme/fonts';
+import { Button, Divider, ErrorBanner, Mascot, OrganicBackdrop } from '../../components/ui';
 
 const STEPS = [
   { icon: 'mail-outline',             text: 'Open the confirmation email we sent you' },
@@ -36,9 +36,8 @@ export default function VerifyEmailScreen({ route }) {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.hero}>
-        <View style={styles.iconCircle}>
-          <Ionicons name="mail-unread" size={32} color={colors.white} />
-        </View>
+        <OrganicBackdrop />
+        <Mascot size={104} onDark />
         <View style={styles.rule} />
         <Text style={styles.heroTitle}>Confirm Your Email</Text>
         <Text style={styles.heroSub}>
@@ -52,7 +51,7 @@ export default function VerifyEmailScreen({ route }) {
           {STEPS.map((s) => (
             <View key={s.text} style={styles.step}>
               <View style={styles.stepIconWrap}>
-                <Ionicons name={s.icon} size={20} color={colors.brand} />
+                <Ionicons name={s.icon} size={20} color={colors.brandText} />
               </View>
               <Text style={styles.stepText}>{s.text}</Text>
             </View>
@@ -63,7 +62,7 @@ export default function VerifyEmailScreen({ route }) {
 
         {resent ? (
           <View style={styles.resentBanner}>
-            <Ionicons name="checkmark-circle" size={16} color={colors.brand} />
+            <Ionicons name="checkmark-circle" size={16} color={colors.brandText} />
             <Text style={styles.resentText}>New link sent! Check your inbox.</Text>
           </View>
         ) : null}
@@ -72,7 +71,7 @@ export default function VerifyEmailScreen({ route }) {
 
         <Text style={styles.resendLabel}>Didn't get the email?</Text>
         <Button
-          label="Resend Confirmation Email"
+          label="Resend confirmation email"
           icon="refresh"
           onPress={handleResend}
           loading={resending}
@@ -92,16 +91,12 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.brand },
 
   hero: {
+    overflow: 'hidden',
     backgroundColor: colors.brand,
     alignItems: 'center',
     paddingTop: space.huge,
     paddingBottom: space.huge,
     paddingHorizontal: space.xxxl,
-  },
-  iconCircle: {
-    width: 72, height: 72, borderRadius: radii.pill,
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: border.control, borderColor: colors.whiteAlpha[30],
   },
   rule: {
     width: rule.width, height: rule.height, borderRadius: rule.radius,
@@ -121,7 +116,7 @@ const styles = StyleSheet.create({
 
   card: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderTopLeftRadius: radii.xxl,
     borderTopRightRadius: radii.xxl,
     padding: space.xxxl,
@@ -145,14 +140,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brandTint,
     borderRadius: radii.sm, padding: space.md, marginBottom: space.lg,
   },
-  resentText: { fontSize: 13, color: colors.brand, fontWeight: '600' },
+  resentText: { fontSize: 13, color: colors.brandText, fontWeight: '600' },
 
   resendLabel: {
     fontSize: 13, color: colors.gray500,
     textAlign: 'center', marginBottom: space.md,
   },
   spamNote: {
-    fontSize: 12, color: colors.gray400,
+    fontSize: 12, color: colors.gray500,
     textAlign: 'center', marginTop: space.lg,
   },
 });

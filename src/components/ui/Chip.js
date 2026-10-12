@@ -1,12 +1,12 @@
 /**
- * Chip — one tag primitive for every selectable token in the app:
+ * Chip: one tag primitive for every selectable token in the app:
  * availability blocks (B1–B8), subject picker entries, report reasons.
  *
  * States:
  *   idle       not selected, tappable
  *   available  highlighted as "free"/eligible but not chosen (accent outline)
  *   selected   chosen (solid accent)
- *   disabled   visibly inert — dimmed, no press feedback
+ *   disabled   visibly inert: dimmed, no press feedback
  */
 import React from 'react';
 import { Text, TouchableOpacity, StyleSheet, View } from 'react-native';
@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import colors from '../../theme/colors';
 import { radii, space, border, press, hit } from '../../theme/layout';
 import { label as labelPreset } from '../../theme/fonts';
+import { select } from '../../utils/haptics';
 
 export default function Chip({
   label,
@@ -30,7 +31,7 @@ export default function Chip({
   const textColor =
       selected   ? colors.white
     : disabled   ? colors.gray400
-    : available  ? colors.brand
+    : available  ? colors.brandText
     : colors.gray700;
 
   return (
@@ -43,7 +44,7 @@ export default function Chip({
         minWidth != null && { minWidth, justifyContent: 'center' },
         style,
       ]}
-      onPress={interactive ? onPress : undefined}
+      onPress={interactive ? (e) => { select(); onPress(e); } : undefined}
       disabled={!interactive}
       activeOpacity={interactive ? press.opacity : 1}
       hitSlop={hit.slop}
@@ -68,22 +69,29 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
     borderWidth: border.control,
     borderColor: colors.line,
-    backgroundColor: colors.white,
+    // A slightly thicker bottom edge on every chip, so the selected one can
+    // sit on a dark-green base (3D) without the row shifting.
+    borderBottomWidth: 3,
+    borderBottomColor: colors.stoneDeep,
+    backgroundColor: colors.surface,
     alignItems: 'center',
   },
   available: {
     borderColor: colors.brandTint,
+    borderBottomColor: colors.brandTintDeep,
     backgroundColor: colors.brandTint,
   },
   selected: {
     borderColor: colors.brand,
+    borderBottomColor: colors.brandDeep,
     backgroundColor: colors.brand,
   },
   disabled: {
     borderColor: colors.gray200,
+    borderBottomColor: colors.gray200,
     backgroundColor: colors.gray100,
   },
 
   inner: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
-  label: { ...labelPreset.caps, fontSize: 11, letterSpacing: 1.2 },
+  label: { ...labelPreset.ui, fontSize: 13 },
 });

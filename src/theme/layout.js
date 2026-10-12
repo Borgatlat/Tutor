@@ -1,6 +1,6 @@
 // ─── Layout scales ────────────────────────────────────────────────────────────
 // Use these instead of literal numbers. If a value you want isn't on a scale,
-// pick the nearest one — that's the point of having a scale.
+// pick the nearest one: that's the point of having a scale.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const space = {
@@ -24,6 +24,13 @@ export const radii = {
   xl:   24,   // modals, large panels
   xxl:  28,   // bottom sheets, curved header edges
   pill: 999,  // buttons, chips, avatars
+};
+
+// Asymmetric "leaf" corners: two opposite corners very round, two gentler.
+// Spread into a style: { ...leaf.lg }.
+export const leaf = {
+  md: { borderTopLeftRadius: 24, borderBottomRightRadius: 24, borderTopRightRadius: 10, borderBottomLeftRadius: 10 },
+  lg: { borderTopLeftRadius: 32, borderBottomRightRadius: 32, borderTopRightRadius: 12, borderBottomLeftRadius: 12 },
 };
 
 export const border = {

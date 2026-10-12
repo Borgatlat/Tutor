@@ -1,20 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  SafeAreaView, StatusBar, ScrollView, Linking,
+  SafeAreaView, StatusBar, ScrollView, Linking, Switch,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase, uploadAvatar } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
+import { cardShadow } from '../../theme/shadows';
 import { radii, space, border, press, hit, rule } from '../../theme/layout';
-import { heading, label } from '../../theme/fonts';
+import { heading, label, type } from '../../theme/fonts';
 import SubjectBadge from '../../components/SubjectBadge';
 import AvailabilityGrid from '../../components/AvailabilityGrid';
+import ServiceHoursCard from '../../components/ServiceHoursCard';
+import { select } from '../../utils/haptics';
 import {
   Avatar, Button, Divider, EmptyState, ErrorBanner,
   Field, RoleSelector, SubjectPicker,
+  OrganicBackdrop,
 } from '../../components/ui';
 import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../../constants/legal';
 
@@ -26,10 +30,14 @@ export default function ProfileScreen() {
   const [savingBio, setSavingBio] = useState(false);
   const [bio, setBio]             = useState(profile?.bio ?? '');
   const [phone, setPhone]         = useState(profile?.phone ?? '');
+  // Private by default: a phone number is only shown to others if the user
+  // switches this on (profiles.show_phone).
+  const [showPhone, setShowPhone] = useState(!!profile?.show_phone);
   const [avatarUri, setAvatarUri] = useState(null);
   const [saveError, setSaveError] = useState('');
 
   const [availability, setAvailability] = useState(profile?.availability ?? []);
+  const [availError, setAvailError]     = useState('');
 
   // Subjects editor
   const initSubjects = () =>
@@ -90,6 +98,8 @@ export default function ProfileScreen() {
       const { error: updateError } = await supabase.from('profiles').update({
         bio:   bio   || null,
         phone: phone || null,
+        // Only sent when changed, so saving a bio never depends on the column.
+        ...(showPhone !== !!profile?.show_phone && { show_phone: showPhone }),
         ...(avatarUrl && { avatar_url: avatarUrl }),
       }).eq('id', userId);
 
@@ -137,7 +147,9 @@ export default function ProfileScreen() {
     setSubjectError('');
     try {
       // Delete all existing subjects then re-insert
-      await supabase.from('tutor_subjects').delete().eq('tutor_id', userId);
+      const { error: deleteError } = await supabase
+        .from('tutor_subjects').delete().eq('tutor_id', userId);
+      if (deleteError) { setSubjectError(deleteError.message); return; }
       if (selectedSubjects.length > 0) {
         const { error } = await supabase.from('tutor_subjects').insert(
           selectedSubjects.map((subject) => ({
@@ -158,19 +170,26 @@ export default function ProfileScreen() {
   };
 
   // Block schedule: toggle a block on/off (no day dimension).
-  // All roles use tutor_availability — student_availability table doesn't exist.
+  // All roles use tutor_availability: student_availability table doesn't exist.
+  // Optimistic toggle; on failure the block flips back and the reason shows,
+  // so the grid never claims a block is saved when it isn't.
   const toggleAvailability = async (block) => {
-    const exists = availability.some((a) => a.period === block);
+    const previous = availability;
+    const exists = previous.some((a) => a.period === block);
+    setAvailError('');
     setAvailability(exists
-      ? availability.filter((a) => a.period !== block)
-      : [...availability, { period: block }]);
+      ? previous.filter((a) => a.period !== block)
+      : [...previous, { period: block }]);
 
-    if (exists) {
-      await supabase.from('tutor_availability')
-        .delete().eq('tutor_id', userId).eq('period', block);
-    } else {
-      await supabase.from('tutor_availability')
-        .insert({ tutor_id: userId, period: block });
+    const { error } = exists
+      ? await supabase.from('tutor_availability')
+          .delete().eq('tutor_id', userId).eq('period', block)
+      : await supabase.from('tutor_availability')
+          .insert({ tutor_id: userId, period: block });
+
+    if (error) {
+      setAvailability(previous);
+      setAvailError(`Could not update block ${block}: ${error.message}`);
     }
   };
 
@@ -185,7 +204,14 @@ export default function ProfileScreen() {
       accessibilityRole="button"
       accessibilityLabel={`${active ? 'Cancel editing' : 'Edit'} ${label}`}
     >
-      <Text style={styles.editLink}>{active ? 'Cancel' : 'Edit'}</Text>
+      <View style={styles.editLink}>
+        <Ionicons
+          name={active ? 'close' : 'create-outline'}
+          size={15}
+          color={colors.brandText}
+        />
+        <Text style={styles.editLinkText}>{active ? 'Cancel' : 'Edit'}</Text>
+      </View>
     </TouchableOpacity>
   );
 
@@ -196,6 +222,7 @@ export default function ProfileScreen() {
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {/* Hero */}
         <View style={styles.hero}>
+          <OrganicBackdrop />
           <TouchableOpacity
             style={styles.avatarWrap}
             onPress={editing ? pickImage : undefined}
@@ -235,7 +262,7 @@ export default function ProfileScreen() {
           {/* Profile info */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Profile Info</Text>
+              <Text style={styles.sectionTitle}>Profile info</Text>
               {editLink(editing, () => { setEditing(!editing); setSaveError(''); }, 'profile info')}
             </View>
 
@@ -258,9 +285,27 @@ export default function ProfileScreen() {
                   keyboardType="phone-pad"
                   value={phone}
                   onChangeText={setPhone}
+                  hint="Private. Only shown if you switch it on below."
                 />
+                <View style={styles.privacyRow}>
+                  <View style={styles.privacyText}>
+                    <Text style={styles.privacyTitle}>Show my phone number</Text>
+                    <Text style={styles.privacySub}>
+                      Lets students text you from your tutor profile. Off by default.
+                    </Text>
+                  </View>
+                  <Switch
+                    value={showPhone}
+                    onValueChange={(v) => { select(); setShowPhone(v); }}
+                    disabled={!phone}
+                    trackColor={{ false: colors.gray200, true: colors.brand }}
+                    thumbColor={colors.white}
+                    ios_backgroundColor={colors.gray200}
+                    accessibilityLabel="Show my phone number on my tutor profile"
+                  />
+                </View>
                 <Button
-                  label="Save Changes"
+                  label="Save changes"
                   onPress={handleSaveProfile}
                   loading={savingBio}
                   fullWidth
@@ -273,13 +318,30 @@ export default function ProfileScreen() {
 
                 <Text style={[styles.fieldLabel, styles.fieldLabelSpaced]}>Phone</Text>
                 <Text style={styles.fieldValue}>{profile?.phone || 'Not provided'}</Text>
+                {profile?.phone ? (
+                  <View style={styles.privacyNote}>
+                    <Ionicons
+                      name={profile?.show_phone ? 'eye-outline' : 'lock-closed-outline'}
+                      size={13}
+                      color={colors.gray500}
+                    />
+                    <Text style={styles.privacyNoteText}>
+                      {profile?.show_phone ? 'Shown on your tutor profile' : 'Private: only you can see this'}
+                    </Text>
+                  </View>
+                ) : null}
               </>
             )}
           </View>
 
+          {/* Service hours (tutors) */}
+          {isTutor ? (
+            <ServiceHoursCard tutorId={userId} tutorName={profile?.full_name} />
+          ) : null}
+
           {/* Role */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>My Role</Text>
+            <Text style={styles.sectionTitle}>My role</Text>
             <Text style={styles.hint}>
               You can be a student, a tutor, or both at the same time.
             </Text>
@@ -290,7 +352,7 @@ export default function ProfileScreen() {
 
             {roleChanged ? (
               <Button
-                label="Save Role"
+                label="Save role"
                 onPress={handleSaveRole}
                 loading={savingRole}
                 fullWidth
@@ -303,7 +365,7 @@ export default function ProfileScreen() {
           {canTeach ? (
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>My Subjects</Text>
+                <Text style={styles.sectionTitle}>My subjects</Text>
                 {editLink(
                   editingSubjects,
                   () => { setEditingSubjects(!editingSubjects); setSubjectError(''); },
@@ -327,7 +389,7 @@ export default function ProfileScreen() {
                   />
 
                   <Button
-                    label="Save Subjects"
+                    label="Save subjects"
                     onPress={handleSaveSubjects}
                     loading={savingSubjects}
                     fullWidth
@@ -346,7 +408,9 @@ export default function ProfileScreen() {
                 <EmptyState
                   icon="book-outline"
                   title="No subjects yet"
-                  body="Tap Edit to pick the classes you can help with — core classes, SAT and AP."
+                  body="Pick the classes you can help with so students can find you."
+                  actionLabel="Add your first subject"
+                  onAction={() => { setEditingSubjects(true); setSubjectError(''); }}
                   compact
                 />
               )}
@@ -356,13 +420,14 @@ export default function ProfileScreen() {
           {/* Availability */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>
-              {isTutor ? 'My Availability' : 'My Free Blocks'}
+              {isTutor ? 'My availability' : 'My free blocks'}
             </Text>
             <Text style={styles.hint}>
               {isTutor
                 ? 'Tap a block to toggle when students can book you'
-                : 'Tap a block to mark it free — tutors who share your blocks rank higher in search'}
+                : 'Tap a block to mark it free. Tutors who share your blocks rank higher in search.'}
             </Text>
+            <ErrorBanner message={availError} />
             <AvailabilityGrid
               availability={availability}
               onToggle={toggleAvailability}
@@ -407,7 +472,7 @@ export default function ProfileScreen() {
                     style={styles.grow}
                   />
                   <Button
-                    label="Sign Out"
+                    label="Sign out"
                     variant="dangerSolid"
                     size="sm"
                     onPress={signOut}
@@ -417,7 +482,7 @@ export default function ProfileScreen() {
               </View>
             ) : (
               <Button
-                label="Sign Out"
+                label="Sign out"
                 icon="log-out-outline"
                 variant="danger"
                 size="sm"
@@ -439,6 +504,7 @@ const styles = StyleSheet.create({
 
   // ── Hero ──────────────────────────────────────────────────────────────────
   hero: {
+    overflow: 'hidden',
     backgroundColor: colors.brand,
     alignItems: 'center',
     paddingTop: space.xl,
@@ -465,7 +531,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gold,
     marginTop: space.xs, marginBottom: space.md,
   },
-  heroName:  { ...heading.xl, color: colors.white, fontSize: 26, marginBottom: space.xs },
+  heroName:  { ...type.title, color: colors.white, marginBottom: space.xs },
   heroEmail: { color: colors.whiteAlpha[80], fontSize: 13, marginBottom: space.sm },
 
   roleBadge: {
@@ -474,15 +540,14 @@ const styles = StyleSheet.create({
     borderRadius: radii.xs,
     backgroundColor: colors.maroon,
   },
-  roleBadgeText: { ...label.caps, fontSize: 10, letterSpacing: 1.6, color: colors.white },
+  roleBadgeText: { ...label.ui, fontSize: 12, color: colors.white },
 
   // ── Sections ──────────────────────────────────────────────────────────────
   body: { padding: space.lg, gap: space.md },
   section: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.lineSoft,
+    ...cardShadow,
     padding: space.xl,
   },
   sectionHeader: {
@@ -491,28 +556,44 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: space.md,
   },
-  sectionTitle:  { ...heading.lg, fontSize: 18, color: colors.black, marginBottom: space.xs },
+  sectionTitle:  { ...type.heading, color: colors.black, marginBottom: space.xs },
   sectionAction: { marginTop: space.lg },
-  editLink:      { ...label.caps, fontSize: 11, letterSpacing: 1.6, color: colors.brand },
+  // Same look as SectionHeader's "See all": a quiet brand link with an icon,
+  // on a soft tint so it reads as tappable.
+  editLink: {
+    flexDirection: 'row', alignItems: 'center', gap: space.xs,
+    paddingHorizontal: space.md, paddingVertical: 6,
+    borderRadius: radii.pill,
+    backgroundColor: colors.brandTint,
+  },
+  editLinkText: { ...label.ui, fontSize: 13, color: colors.brandText },
 
   fieldLabel: {
-    ...label.caps, fontSize: 10, letterSpacing: 1.8,
-    color: colors.gray500, marginBottom: space.xs,
+    ...label.ui, fontSize: 13,
+    color: colors.gray500, marginBottom: 2,
   },
   fieldLabelSpaced: { marginTop: space.md },
-  fieldValue: { fontSize: 14, color: colors.gray700, lineHeight: 20 },
 
-  hint: {
-    fontSize: 12, color: colors.gray500,
-    marginBottom: space.md, lineHeight: 17,
+  privacyRow: {
+    flexDirection: 'row', alignItems: 'center', gap: space.md,
+    backgroundColor: colors.offWhite, borderRadius: radii.sm,
+    padding: space.md, marginBottom: space.lg,
   },
+  privacyText:  { flex: 1 },
+  privacyTitle: { ...type.small, fontWeight: '700', color: colors.black },
+  privacySub:   { ...type.small, color: colors.gray500 },
+  privacyNote:  { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
+  privacyNoteText: { ...type.small, color: colors.gray500 },
+  fieldValue: { ...type.body, color: colors.gray700 },
+
+  hint: { ...type.small, color: colors.gray500, marginBottom: space.md },
 
   badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
 
   // ── Account ───────────────────────────────────────────────────────────────
   legalRow:  { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   legalLink: {
-    fontSize: 13, color: colors.brand,
+    fontSize: 13, color: colors.brandText,
     fontWeight: '600', textDecorationLine: 'underline',
   },
   legalSep: { fontSize: 13, color: colors.gray300 },

@@ -1,5 +1,5 @@
 /**
- * SectionHeader — title on the left, optional action link on the right.
+ * SectionHeader: title on the left, optional action link on the right.
  *
  * Replaces the several hand-rolled "row with a title and a See all" headers
  * that each had their own font size and margin.
@@ -12,7 +12,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../../theme/colors';
 import { space, press, hit, rule } from '../../theme/layout';
-import { heading, label } from '../../theme/fonts';
+import { type, label } from '../../theme/fonts';
 
 export default function SectionHeader({ title, actionLabel, onAction, ruled = false, style }) {
   return (
@@ -32,7 +32,7 @@ export default function SectionHeader({ title, actionLabel, onAction, ruled = fa
           accessibilityLabel={actionLabel}
         >
           <Text style={styles.actionText}>{actionLabel}</Text>
-          <Ionicons name="chevron-forward" size={13} color={colors.brand} />
+          <Ionicons name="chevron-forward" size={13} color={colors.brandText} />
         </TouchableOpacity>
       ) : null}
     </View>
@@ -52,11 +52,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gold,
     marginBottom: space.sm,
   },
-  title: {
-    ...heading.lg,
-    fontSize: 18,
-    color: colors.black,
-  },
+  title: { ...type.heading, color: colors.black },
   action: { flexDirection: 'row', alignItems: 'center', gap: 2, paddingBottom: 2 },
-  actionText: { ...label.caps, fontSize: 11, letterSpacing: 1.6, color: colors.brand },
+  actionText: { ...label.ui, fontSize: 13, color: colors.brandText },
 });

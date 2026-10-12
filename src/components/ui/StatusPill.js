@@ -1,5 +1,5 @@
 /**
- * StatusPill — renders a session status from SESSION_STATUS as a solid tag
+ * StatusPill: renders a session status from SESSION_STATUS as a solid tag
  * (maroon / green / stone), like the school site's date labels.
  *
  * Reads the `tint` defined alongside each status rather than appending an
@@ -26,10 +26,10 @@ export default function StatusPill({ status, style }) {
 
 const styles = StyleSheet.create({
   pill: {
-    paddingHorizontal: space.sm,
-    paddingVertical: space.xs,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
     borderRadius: radii.xs,
     alignSelf: 'flex-start',
   },
-  text: { fontSize: 10, fontWeight: '600', letterSpacing: 1.2, textTransform: 'uppercase' },
+  text: { fontSize: 12, fontWeight: '600' },
 });

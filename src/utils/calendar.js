@@ -11,6 +11,7 @@
  * Users can edit the event after it's created if the times differ.
  */
 import { Platform } from 'react-native';
+import { school } from '../theme/school';
 
 // ─── Block start/end times (24-hour, based on Strake Jesuit block schedule) ──
 const BLOCK_TIMES = {
@@ -40,7 +41,7 @@ function nextWeekdayAtTime(hour, minute) {
   } else if (day === 6) {
     result.setDate(result.getDate() + 2); // → Monday
   } else if (result <= now) {
-    // Weekday but time has passed — move to next weekday
+    // Weekday but time has passed: move to next weekday
     const daysToAdd = day === 5 ? 3 : 1; // Friday → Monday, else +1
     result.setDate(result.getDate() + daysToAdd);
   }
@@ -86,7 +87,7 @@ async function addToNativeCalendar(session, otherName, times, startDate, endDate
     session.notes ?? null,
     `Subject: ${session.subject}`,
     `Block ${session.period}`,
-    'Strake Jesuit Tutor Marketplace',
+    `${school.name} Tutor Marketplace`,
   ].filter(Boolean).join('\n');
 
   try {
@@ -137,7 +138,7 @@ function addToWebCalendar(session, otherName, startDate, endDate) {
     session.notes ?? null,
     `Subject: ${session.subject}`,
     `Block ${session.period}`,
-    'Strake Jesuit Tutor Marketplace',
+    `${school.name} Tutor Marketplace`,
   ].filter(Boolean).join('\\n');
 
   const uid = `session-${session.id ?? Date.now()}@strakejesuit.tutors`;
@@ -203,7 +204,7 @@ export async function addSessionToCalendar(session, otherName) {
     return { success: false, error: `Unknown block: ${session.period}` };
   }
 
-  // Block schedule has no fixed day — schedule the event for the next weekday
+  // Block schedule has no fixed day: schedule the event for the next weekday
   // at the block's time so the calendar entry is still useful
   const startDate = nextWeekdayAtTime(times.startH, times.startM);
   const endDate   = nextWeekdayAtTime(times.endH,   times.endM);
@@ -213,6 +214,15 @@ export async function addSessionToCalendar(session, otherName) {
   }
 
   return addToNativeCalendar(session, otherName, times, startDate, endDate);
+}
+
+/**
+ * When the session's block next starts (next weekday at the block's start
+ * time), or null for an unknown block. Shared with reminders.js.
+ */
+export function nextSessionStart(period) {
+  const times = BLOCK_TIMES[period];
+  return times ? nextWeekdayAtTime(times.startH, times.startM) : null;
 }
 
 /**

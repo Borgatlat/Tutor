@@ -1,5 +1,5 @@
 /**
- * Sheet — the bottom-sheet modal.
+ * Sheet: the bottom-sheet modal.
  *
  * Wraps the dim overlay + rounded top corners + drag handle that were written
  * out separately in ReportModal and twice in SessionsScreen, each with its own
@@ -10,7 +10,7 @@ import { Modal, View, Text, StyleSheet } from 'react-native';
 import colors from '../../theme/colors';
 import { radii, space } from '../../theme/layout';
 import { sheetShadow } from '../../theme/shadows';
-import { heading } from '../../theme/fonts';
+import { heading, label, type } from '../../theme/fonts';
 
 export default function Sheet({
   visible,
@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderTopLeftRadius: radii.xxl,
     borderTopRightRadius: radii.xxl,
     paddingHorizontal: space.xxl,

@@ -1,23 +1,28 @@
 /**
- * Button — the only button in the app.
+ * Button: the only button in the app.
  *
  * Variants:
- *   primary   filled Strake green — the main action on a screen
- *   secondary stone outline on white, green label — a real but lesser action
- *   ghost     no border, accent text — tertiary / inline
- *   danger    error outline — destructive, offered alongside a safer option
- *   dangerSolid filled error — the confirming tap in a destructive dialog
- *   neutral   gray outline — "keep it" / dismiss
+ *   primary   filled Strake green: the main action on a screen
+ *   secondary stone outline on white, green label, a real but lesser action
+ *   ghost     no border, accent text: tertiary / inline
+ *   danger    error outline: destructive, offered alongside a safer option
+ *   dangerSolid filled error: the confirming tap in a destructive dialog
+ *   neutral   gray outline: "keep it" / dismiss
  *
  * `loading` swaps the label for a spinner and disables the press, so callers
  * never have to hand-roll the double-tap guard.
+ *
+ * Every variant except `ghost` is raised: it sits on a darker base edge in its
+ * own colour family with a soft green glow, and drops onto it while pressed.
  */
 import React from 'react';
-import { Text, TouchableOpacity, ActivityIndicator, StyleSheet, View } from 'react-native';
+import { Text, Pressable, ActivityIndicator, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../../theme/colors';
-import { radii, space, border, press, control } from '../../theme/layout';
+import { radii, space, border, control } from '../../theme/layout';
+import { raised } from '../../theme/shadows';
 import { label as labelPreset } from '../../theme/fonts';
+import { tap } from '../../utils/haptics';
 
 export default function Button({
   label,
@@ -37,24 +42,29 @@ export default function Button({
   const filled = variant === 'primary' || variant === 'dangerSolid';
   const contentColor =
       filled                 ? colors.white
-    : variant === 'danger'   ? colors.error
+    : variant === 'danger'   ? colors.errorText
     : variant === 'neutral'  ? colors.gray700
-    : colors.brand;
+    : colors.brandText;
   const spinnerColor = filled ? colors.white : contentColor;
+  const base =
+      variant === 'primary'                          ? 'green'
+    : variant === 'danger' || variant === 'dangerSolid' ? 'red'
+    : variant === 'ghost'                            ? null
+    : 'white';
 
   return (
-    <TouchableOpacity
-      style={[
+    <Pressable
+      style={({ pressed }) => [
         styles.base,
         small ? styles.sizeSm : styles.sizeMd,
         styles[variant],
+        base && !isOff && raised(base, pressed),
         fullWidth && styles.fullWidth,
         isOff && styles.off,
         style,
       ]}
-      onPress={onPress}
+      onPress={onPress ? (e) => { tap(); onPress(e); } : undefined}
       disabled={isOff}
-      activeOpacity={press.opacity}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ disabled: isOff, busy: loading }}
@@ -78,7 +88,7 @@ export default function Button({
           </Text>
         </View>
       )}
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 
@@ -100,7 +110,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brand,
   },
   secondary: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderWidth: border.control,
     borderColor: colors.line,
   },
@@ -108,22 +118,22 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   danger: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderWidth: border.control,
-    borderColor: colors.error,
+    borderColor: colors.errorText,
   },
   dangerSolid: {
     backgroundColor: colors.error,
   },
   neutral: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderWidth: border.control,
     borderColor: colors.line,
   },
 
   off: { opacity: 0.5 },
 
-  // Tracked capitals, like the school site's "APPLY TO SJ" buttons.
-  label:   { ...labelPreset.caps, fontSize: 12, letterSpacing: 2 },
-  labelSm: { fontSize: 11, letterSpacing: 1.6 },
+  // Sentence case: capitals are kept for small section eyebrows only.
+  label:   { ...labelPreset.ui, fontSize: 15 },
+  labelSm: { fontSize: 13 },
 });

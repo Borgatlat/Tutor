@@ -7,16 +7,21 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
-import { radii, space, border, press, hit, rule } from '../../theme/layout';
-import { modalShadow } from '../../theme/shadows';
-import { heading, label } from '../../theme/fonts';
+import { radii, space, border, press, hit, rule, leaf } from '../../theme/layout';
+import { modalShadow, cardShadow } from '../../theme/shadows';
+import { heading, label, type } from '../../theme/fonts';
 import SubjectBadge from '../../components/SubjectBadge';
+import TutorBadge from '../../components/TutorBadge';
+import { getTutorBadges } from '../../utils/badges';
+import { school } from '../../theme/school';
+import { SkeletonLines } from '../../components/SkeletonCard';
 import RatingStars from '../../components/RatingStars';
 import AvailabilityGrid from '../../components/AvailabilityGrid';
 import ReportModal from '../../components/ReportModal';
 import {
   Avatar, Button, EmptyState, IconButton, initialsOf,
   StatRow,
+  OrganicBackdrop,
 } from '../../components/ui';
 import { useResponsive } from '../../hooks/useResponsive';
 
@@ -33,6 +38,7 @@ export default function TutorProfileScreen({ route, navigation }) {
 
   const { isWide } = useResponsive();
   const isSelf = myProfile?.id === tutor.id;
+  const firstName = tutor.full_name?.split(' ')[0] ?? 'tutor';
 
   useEffect(() => { loadDetails(); }, []);
 
@@ -61,7 +67,7 @@ export default function TutorProfileScreen({ route, navigation }) {
     { icon: 'book-outline',             val: subjects.length,          lbl: 'Subjects' },
     {
       icon: 'star-outline',
-      val: tutor.avg_rating ? Number(tutor.avg_rating).toFixed(1) : '—',
+      val: tutor.avg_rating ? Number(tutor.avg_rating).toFixed(1) : 'New',
       lbl: 'Rating',
     },
   ];
@@ -87,14 +93,6 @@ export default function TutorProfileScreen({ route, navigation }) {
         {!isSelf ? (
           <View style={styles.navActions}>
             <IconButton
-              icon="mail-outline"
-              label={`Email ${tutor.full_name}`}
-              onPress={() => tutor.email && Linking.openURL(`mailto:${tutor.email}`)}
-              size={18}
-              color={colors.white}
-              style={styles.navBtn}
-            />
-            <IconButton
               icon="flag-outline"
               label="Report or block this user"
               onPress={() => setReportVisible(true)}
@@ -109,6 +107,7 @@ export default function TutorProfileScreen({ route, navigation }) {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Profile hero */}
         <View style={styles.hero}>
+          <OrganicBackdrop />
           <View style={styles.heroAvatarRing}>
             <Avatar
               uri={tutor.avatar_url}
@@ -119,9 +118,41 @@ export default function TutorProfileScreen({ route, navigation }) {
           </View>
           <View style={styles.heroRule} />
           <Text style={styles.heroName}>{tutor.full_name}</Text>
-          <Text style={styles.heroEmail}>{tutor.email}</Text>
-          {tutor.phone ? <Text style={styles.heroPhone}>{tutor.phone}</Text> : null}
-          <RatingStars rating={tutor.avg_rating} count={tutor.review_count} size={15} />
+          <RatingStars rating={tutor.avg_rating} count={tutor.review_count} size={15} onDark />
+          {getTutorBadges(tutor).length ? (
+            <View style={styles.heroBadges}>
+              {getTutorBadges(tutor).map((b) => <TutorBadge key={b.key} badge={b} onDark />)}
+            </View>
+          ) : null}
+
+          {/* Contact without exposing details: the email address is never
+              printed, and a phone number only appears as a button when the
+              tutor has chosen to share it (show_phone). */}
+          {!isSelf ? (
+            <View style={styles.heroActions}>
+              {tutor.email ? (
+                <Button
+                  label={`Message ${firstName}`}
+                  icon="mail-outline"
+                  size="sm"
+                  variant="secondary"
+                  onPress={() => Linking.openURL(
+                    `mailto:${tutor.email}?subject=${encodeURIComponent(`Peer tutoring (${school.name} Tutors)`)}`,
+                  )}
+                />
+              ) : null}
+              {tutor.show_phone && tutor.phone ? (
+                <Button
+                  label="Text"
+                  icon="chatbubble-outline"
+                  size="sm"
+                  variant="secondary"
+                  accessibilityLabel={`Text ${firstName}`}
+                  onPress={() => Linking.openURL(`sms:${tutor.phone}`)}
+                />
+              ) : null}
+            </View>
+          ) : null}
         </View>
 
         {/* "At a glance" stats, as on the school site */}
@@ -156,17 +187,19 @@ export default function TutorProfileScreen({ route, navigation }) {
                 <EmptyState
                   icon="book-outline"
                   title="No subjects listed yet"
+                  actionLabel={isSelf ? 'Add subjects' : undefined}
+                  onAction={isSelf ? () => navigation.navigate('Profile') : undefined}
                   compact
                 />
               )}
             </View>
 
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Free Blocks</Text>
+              <Text style={styles.sectionTitle}>Free blocks</Text>
               <Text style={styles.sectionHint}>
                 {isSelf
                   ? 'Your free blocks'
-                  : 'Tap a highlighted block to pick a time'}
+                  : 'Pick a block to book it'}
               </Text>
 
               {!loading ? (
@@ -180,7 +213,9 @@ export default function TutorProfileScreen({ route, navigation }) {
                       : 'No free blocks set yet'
                   }
                 />
-              ) : null}
+              ) : (
+                <SkeletonLines count={1} />
+              )}
             </View>
           </View>
 
@@ -188,7 +223,9 @@ export default function TutorProfileScreen({ route, navigation }) {
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Reviews</Text>
 
-              {reviews.length ? (
+              {loading ? (
+                <SkeletonLines count={3} />
+              ) : reviews.length ? (
                 reviews.map((r) => (
                   <View key={r.id} style={styles.reviewCard}>
                     <View style={styles.reviewTop}>
@@ -229,8 +266,8 @@ export default function TutorProfileScreen({ route, navigation }) {
           </View>
         </View>
 
-        {/* Room for the sticky book bar */}
-        <View style={styles.bottomSpacer} />
+        {/* Room for the book bar once it appears */}
+        <View style={selectedSlot ? styles.bottomSpacer : styles.bottomSpacerShort} />
       </ScrollView>
 
       <ReportModal
@@ -239,20 +276,15 @@ export default function TutorProfileScreen({ route, navigation }) {
         reportedUser={tutor}
       />
 
-      {/* Book CTA */}
-      {!isSelf ? (
+      {/* Book bar: only appears once a block is picked */}
+      {!isSelf && selectedSlot ? (
         <View style={styles.bookBar}>
           <View style={styles.bookText}>
-            <Text style={styles.bookTitle}>
-              {selectedSlot ? `Block ${selectedSlot.period}` : 'Select a block above'}
-            </Text>
-            <Text style={styles.bookSub}>
-              {selectedSlot ? 'Ready to book' : 'Tap a free block to select it'}
-            </Text>
+            <Text style={styles.bookTitle}>Block {selectedSlot.period}</Text>
+            <Text style={styles.bookSub}>Ready to book</Text>
           </View>
           <Button
-            label="Book Session"
-            disabled={!selectedSlot}
+            label="Book session"
             onPress={() => navigation.navigate('BookSession', { tutor, slot: selectedSlot })}
           />
         </View>
@@ -273,12 +305,13 @@ const styles = StyleSheet.create({
     paddingVertical: space.sm,
   },
   backBtn:    { flexDirection: 'row', alignItems: 'center', gap: space.xs },
-  backText:   { ...label.caps, color: colors.white, fontSize: 11, letterSpacing: 1.8 },
+  backText:   { ...label.ui, color: colors.white, fontSize: 15 },
   navActions: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   navBtn:     { borderWidth: 1, borderColor: colors.whiteAlpha[30] },
 
   // ── Hero ──────────────────────────────────────────────────────────────────
   hero: {
+    overflow: 'hidden',
     backgroundColor: colors.brand,
     alignItems: 'center',
     paddingBottom: space.xxxl,
@@ -297,19 +330,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gold,
     marginBottom: space.md,
   },
-  heroName:  { ...heading.xl, color: colors.white, fontSize: 26, marginBottom: space.xs },
-  heroEmail: { color: colors.whiteAlpha[80], fontSize: 13, marginBottom: 2 },
-  heroPhone: { color: colors.whiteAlpha[65], fontSize: 13, marginBottom: space.sm },
+  heroName:  { ...type.title, color: colors.white, marginBottom: space.xs },
+  heroActions: { flexDirection: 'row', gap: space.sm, marginTop: space.lg },
+  heroBadges: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: space.sm, marginTop: space.md },
 
   // ── Stats ─────────────────────────────────────────────────────────────────
   // Floating card that overlaps the curved hero edge.
   statsBar: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     marginHorizontal: space.lg,
     marginTop: -space.xl,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.lineSoft,
+    ...leaf.lg,
+    ...cardShadow,
     padding: space.xl,
   },
 
@@ -320,18 +352,14 @@ const styles = StyleSheet.create({
   colFlex:  { flex: 1 },
 
   section: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.lineSoft,
+    ...cardShadow,
     padding: space.xl,
   },
-  sectionTitle: {
-    ...label.caps, fontSize: 11, letterSpacing: 2,
-    color: colors.gray500, marginBottom: space.md,
-  },
-  sectionHint:  { fontSize: 12, color: colors.gray500, marginBottom: space.sm },
-  bio:          { fontSize: 14, color: colors.gray700, lineHeight: 22 },
+  sectionTitle: { ...type.heading, color: colors.black, marginBottom: space.sm },
+  sectionHint:  { ...type.small, color: colors.gray500, marginBottom: space.sm },
+  bio:          { ...type.body, color: colors.gray700 },
   badgeRow:     { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
 
   // ── Reviews ───────────────────────────────────────────────────────────────
@@ -350,15 +378,16 @@ const styles = StyleSheet.create({
   },
   reviewInitials: { color: colors.white, fontWeight: '700', fontSize: 12 },
   reviewMeta:     { flex: 1 },
-  reviewAuthor:   { fontSize: 13, fontWeight: '700', color: colors.black, marginBottom: 2 },
-  reviewComment:  { fontSize: 13, color: colors.gray700, lineHeight: 19 },
+  reviewAuthor:   { ...type.small, fontWeight: '700', color: colors.black, marginBottom: 2 },
+  reviewComment:  { ...type.small, color: colors.gray700 },
 
-  bottomSpacer: { height: 120 },
+  bottomSpacer:      { height: 120 },
+  bottomSpacerShort: { height: space.xxxl },
 
   // ── Sticky book bar ───────────────────────────────────────────────────────
   bookBar: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -371,6 +400,6 @@ const styles = StyleSheet.create({
     ...modalShadow,
   },
   bookText:  { flex: 1 },
-  bookTitle: { fontSize: 15, fontWeight: '800', color: colors.black },
-  bookSub:   { fontSize: 12, color: colors.gray500, marginTop: 2 },
+  bookTitle: { ...type.body, fontWeight: '700', color: colors.black },
+  bookSub:   { ...type.small, color: colors.gray500 },
 });

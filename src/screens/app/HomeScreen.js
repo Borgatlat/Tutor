@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  SafeAreaView, StatusBar,
+  SafeAreaView, StatusBar, RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase, searchTutors } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
-import { radii, space, border, press, rule } from '../../theme/layout';
-import { heading, label } from '../../theme/fonts';
+import { radii, space, border, press, rule, leaf } from '../../theme/layout';
+import { type, label } from '../../theme/fonts';
+import { raised, cardShadow } from '../../theme/shadows';
+import { school } from '../../theme/school';
 import TutorCard from '../../components/TutorCard';
 import SkeletonCard from '../../components/SkeletonCard';
-import { Avatar, EmptyState, SectionHeader, StatusPill } from '../../components/ui';
+import WelcomeTour from '../../components/WelcomeTour';
+import GettingStarted from '../../components/GettingStarted';
+import { Avatar, EmptyState, FadeIn, OrganicBackdrop, SectionHeader, StatRow, StatusPill } from '../../components/ui';
 import { useResponsive } from '../../hooks/useResponsive';
 
 export default function HomeScreen({ navigation }) {
@@ -21,13 +25,22 @@ export default function HomeScreen({ navigation }) {
   const [topTutors, setTopTutors]         = useState([]);
   const [upcomingSessions, setUpcoming]   = useState([]);
   const [loadingTutors, setLoadingTutors] = useState(true);
+  const [community, setCommunity]         = useState(null);
+  const [sessionsLoaded, setSessionsLoaded] = useState(false);
 
-  const firstName = profile?.full_name?.split(' ')[0] ?? 'Crusader';
+  const firstName = profile?.full_name?.split(' ')[0] ?? school.memberName;
   const hour      = new Date().getHours();
   const greeting  = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const isTutor   = profile?.role === 'tutor' || profile?.role === 'both';
 
-  useEffect(() => { loadTopTutors(); loadUpcomingSessions(); }, []);
+  useEffect(() => { loadTopTutors(); loadUpcomingSessions(); loadCommunity(); }, []);
+
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([loadTopTutors(), loadUpcomingSessions(), loadCommunity()]);
+    setRefreshing(false);
+  };
 
   const loadTopTutors = async () => {
     try {
@@ -40,6 +53,14 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
+  // School-wide totals. Hidden if the RPC isn't deployed or fails; it's a
+  // nice-to-have, never a blocker for the rest of Home.
+  const loadCommunity = async () => {
+    const { data, error } = await supabase.rpc('community_stats');
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!error && row && Number(row.sessions_completed) > 0) setCommunity(row);
+  };
+
   const loadUpcomingSessions = async () => {
     if (!profile?.id) return;
     const { data } = await supabase
@@ -49,6 +70,7 @@ export default function HomeScreen({ navigation }) {
       .in('status', ['pending', 'confirmed'])
       .limit(3);
     setUpcoming(data ?? []);
+    setSessionsLoaded(true);
   };
 
   const renderSessionRow = (s, i, arr) => {
@@ -87,7 +109,7 @@ export default function HomeScreen({ navigation }) {
       <View style={styles.promoRule} />
       <Text style={styles.promoTitle}>Core Classes, SAT & AP</Text>
       <Text style={styles.promoSub}>
-        Algebra to AP Calc — help from fellow Crusaders.
+        Algebra to AP Calc, with help from fellow {school.memberPlural}.
       </Text>
       <View style={styles.promoCta}>
         <Text style={styles.promoCtaText}>Browse tutors</Text>
@@ -95,23 +117,51 @@ export default function HomeScreen({ navigation }) {
     </TouchableOpacity>
   );
 
+  const impactSection = community ? (
+    <View style={styles.section}>
+      <StatRow
+        title={`${school.memberPlural} helping ${school.memberPlural}`}
+        stats={[
+          { value: String(Number(community.hours_tutored)), label: 'Hours tutored' },
+          { value: String(community.sessions_completed),    label: 'Sessions' },
+          { value: String(community.active_tutors),         label: 'Tutors' },
+        ]}
+      />
+    </View>
+  ) : null;
+
   const sessionsSection = upcomingSessions.length > 0 ? (
     <View style={styles.section}>
       <SectionHeader
         ruled
-        title="Upcoming Sessions"
+        title="Upcoming sessions"
         actionLabel="See all"
         onAction={() => navigation.navigate('Sessions')}
       />
       {upcomingSessions.map(renderSessionRow)}
     </View>
+  ) : sessionsLoaded ? (
+    <View style={styles.section}>
+      <EmptyState
+        icon="calendar-outline"
+        title="No upcoming sessions"
+        body={isTutor
+          ? 'Keep your free blocks up to date so students can book you.'
+          : 'Find a tutor who is free when you are and book a block.'}
+        actionLabel={isTutor ? 'Update free blocks' : 'Find a tutor'}
+        onAction={() => navigation.navigate(isTutor ? 'Profile' : 'Search')}
+        compact
+      />
+    </View>
   ) : null;
 
+  // Tutor cards are already cards, so this section sits straight on the page
+  // rather than inside another white panel.
   const tutorsSection = (
-    <View style={styles.section}>
+    <View>
       <SectionHeader
         ruled
-        title="Top Tutors"
+        title="Top tutors"
         actionLabel="Browse all"
         onAction={() => navigation.navigate('Search')}
       />
@@ -128,19 +178,19 @@ export default function HomeScreen({ navigation }) {
         <EmptyState
           icon="people-outline"
           title="No tutors yet"
-          body="Once Crusaders add the subjects they can teach, they'll show up here."
+          body={`Once ${school.memberPlural} add the subjects they can teach, they'll show up here.`}
           actionLabel="Browse search"
           onAction={() => navigation.navigate('Search')}
         />
       ) : (
         <View style={isWide ? styles.grid : undefined}>
-          {topTutors.map((t) => (
-            <View key={t.id} style={isWide ? styles.gridItem : undefined}>
+          {topTutors.map((t, i) => (
+            <FadeIn key={t.id} index={i} style={isWide ? styles.gridItem : undefined}>
               <TutorCard
                 tutor={t}
                 onPress={() => navigation.navigate('TutorProfile', { tutor: t })}
               />
-            </View>
+            </FadeIn>
           ))}
         </View>
       )}
@@ -150,10 +200,22 @@ export default function HomeScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={colors.brand} />
+      <WelcomeTour />
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.white}
+            colors={[colors.brand]}
+          />
+        }
+      >
         {/* Hero */}
         <View style={styles.hero}>
+          <OrganicBackdrop />
           <View style={styles.heroRow}>
             <View style={styles.heroGreetingWrap}>
               <Text style={styles.heroGreeting}>{greeting},</Text>
@@ -167,11 +229,12 @@ export default function HomeScreen({ navigation }) {
               accessibilityRole="button"
               accessibilityLabel="Open your profile"
             >
-              {profile?.avatar_url ? (
-                <Avatar uri={profile.avatar_url} name={profile.full_name} size={44} />
-              ) : (
-                <Ionicons name="person" size={22} color={colors.white} />
-              )}
+              <Avatar
+                uri={profile?.avatar_url}
+                name={profile?.full_name}
+                size={44}
+                color={colors.accentLight}
+              />
             </TouchableOpacity>
           </View>
 
@@ -183,8 +246,8 @@ export default function HomeScreen({ navigation }) {
               accessibilityRole="button"
               accessibilityLabel="Find a tutor"
             >
-              <Ionicons name="search" size={17} color={colors.brand} />
-              <Text style={styles.qBtnText}>Find a Tutor</Text>
+              <Ionicons name="search" size={17} color={colors.brandText} />
+              <Text style={styles.qBtnText}>Find a tutor</Text>
             </TouchableOpacity>
 
             {isTutor ? (
@@ -195,19 +258,21 @@ export default function HomeScreen({ navigation }) {
                 accessibilityRole="button"
                 accessibilityLabel="My sessions"
               >
-                <Ionicons name="calendar" size={17} color={colors.brand} />
-                <Text style={styles.qBtnText}>My Sessions</Text>
+                <Ionicons name="calendar" size={17} color={colors.brandText} />
+                <Text style={styles.qBtnText}>My sessions</Text>
               </TouchableOpacity>
             ) : null}
           </View>
         </View>
 
-        {/* One content tree — the wrapper switches between two columns and a
+        {/* One content tree: the wrapper switches between two columns and a
             single stack, so the blocks themselves are never duplicated. */}
         <View style={[styles.body, isWide && styles.bodyWide]}>
           <View style={[styles.col, isWide && styles.colNarrow]}>
+            <GettingStarted profile={profile} isTutor={isTutor} navigation={navigation} />
             {promoBanner}
-            {sessionsSection}
+            {impactSection ? <FadeIn>{impactSection}</FadeIn> : null}
+            {sessionsSection ? <FadeIn>{sessionsSection}</FadeIn> : null}
           </View>
           <View style={[styles.col, isWide && styles.colWide]}>
             {tutorsSection}
@@ -226,6 +291,7 @@ const styles = StyleSheet.create({
   // ── Hero ──────────────────────────────────────────────────────────────────
   // Curved bottom edge so the green band flows into the page.
   hero: {
+    overflow: 'hidden',
     backgroundColor: colors.brand,
     paddingHorizontal: space.xl,
     paddingTop: space.xl,
@@ -246,26 +312,21 @@ const styles = StyleSheet.create({
     color: colors.whiteAlpha[65],
     marginBottom: space.xs,
   },
-  heroName: {
-    ...heading.xl,
-    color: colors.white,
-    fontSize: 30,
-  },
+  heroName: { ...type.title, color: colors.white },
   heroBadge: {
-    width: 44, height: 44, borderRadius: radii.pill,
-    borderWidth: 1, borderColor: colors.whiteAlpha[30],
-    alignItems: 'center', justifyContent: 'center',
-    overflow: 'hidden',
+    borderRadius: radii.pill,
+    borderWidth: 2, borderColor: colors.whiteAlpha[30],
   },
 
   quickActions: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
   qBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     paddingHorizontal: space.lg, paddingVertical: space.md,
     borderRadius: radii.pill,
+    ...raised('white'),
   },
-  qBtnText: { ...label.caps, fontSize: 11, letterSpacing: 1.8, color: colors.brand },
+  qBtnText: { ...label.ui, fontSize: 14, color: colors.brandText },
 
   // ── Body ──────────────────────────────────────────────────────────────────
   body:     { padding: space.lg, gap: space.lg },
@@ -278,11 +339,10 @@ const styles = StyleSheet.create({
   gridItem: { flex: 1, minWidth: 260 },
 
   section: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     padding: space.xl,
     borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.lineSoft,
+    ...cardShadow,
   },
 
   // ── Session rows ──────────────────────────────────────────────────────────
@@ -296,14 +356,15 @@ const styles = StyleSheet.create({
   sessionRowLast: { borderBottomWidth: 0, paddingBottom: 0 },
   sessionAvatar:  { marginRight: space.md },
   sessionInfo:    { flex: 1, marginRight: space.sm },
-  sessionName:    { fontSize: 14, fontWeight: '700', color: colors.black },
-  sessionDetail:  { fontSize: 12, color: colors.gray500, marginTop: 1 },
+  sessionName:    { ...type.body, fontWeight: '700', color: colors.black },
+  sessionDetail:  { ...type.small, color: colors.gray500, marginTop: 2 },
 
   // ── Promo banner ──────────────────────────────────────────────────────────
-  // Green band with the gold rule — the site's "Take the Next Steps" panel.
+  // Light green panel with the gold rule, so it doesn't stack a second dark
+  // block under the green header.
   promo: {
-    backgroundColor: colors.brandDark,
-    borderRadius: radii.xl,
+    backgroundColor: colors.brandTint,
+    ...leaf.lg,
     padding: space.xxl,
   },
   promoRule: {
@@ -311,17 +372,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gold,
     marginBottom: space.lg,
   },
-  promoTitle: { ...heading.lg, color: colors.white, fontSize: 22, marginBottom: space.sm },
-  promoSub:   { color: colors.whiteAlpha[80], fontSize: 14, lineHeight: 22 },
+  promoTitle: { ...type.heading, color: colors.brandText, marginBottom: space.xs },
+  promoSub:   { ...type.small, color: colors.gray600 },
   promoCta: {
     alignSelf: 'flex-start',
-    marginTop: space.lg,
-    backgroundColor: colors.white,
+    backgroundColor: colors.brand,
     borderRadius: radii.pill,
+    ...raised('green'),
+    // After raised(), which resets marginTop for its press offset.
+    marginTop: space.lg,
     paddingHorizontal: space.xl,
     paddingVertical: space.md,
   },
-  promoCtaText: { ...label.caps, fontSize: 11, letterSpacing: 2, color: colors.brand },
+  promoCtaText: { ...label.ui, fontSize: 14, color: colors.white },
 
   bottomSpacer: { height: space.xxxl },
 });

@@ -1,13 +1,13 @@
 import { Platform, Text, TextInput, StyleSheet } from 'react-native';
 
 // ─── Typeface: Montserrat ─────────────────────────────────────────────────────
-// Matches the school website. One family for everything — headings are
+// Matches the school website. One family for everything: headings are
 // ExtraBold, labels are small tracked capitals, body is Regular/Medium.
 //
-// Web loads Montserrat from Google Fonts (web/index.html) as one family with
+// Web loads Montserrat from Google Fonts (injected in App.js) as one family with
 // real weights. Native loads each weight as its own family via
 // @expo-google-fonts/montserrat (App.js), so a fontWeight has to be turned into
-// a family name there — `applyFontFamily()` below does that globally.
+// a family name there: `applyFontFamily()` below does that globally.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const WEB_FAMILY = 'Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
@@ -28,7 +28,7 @@ const NATIVE_FAMILY = {
 
 const sans = Platform.select({ web: WEB_FAMILY, default: NATIVE_FAMILY['400'] });
 
-// `serif` is kept as an alias so older imports keep working — there is no
+// `serif` is kept as an alias so older imports keep working; there is no
 // serif in the app any more.
 export const fonts = { sans, serif: sans };
 
@@ -40,10 +40,29 @@ export const heading = {
   sm:  { fontFamily: sans, fontWeight: '700', letterSpacing: 0    },
 };
 
-// Label / caption preset — small tracked capitals, like the site's
-// "FOUNDING YEAR" / "ALUMNI NEWS" labels.
+// Label presets.
+//   caps: small tracked capitals, like the site's "AT A GLANCE" labels. Used
+//          ONLY for small section eyebrows, so it stays a quiet accent.
+//   ui: sentence-case label for anything you tap or read as a tag:
+//          buttons, chips, tabs, status and subject tags, links.
 export const label = {
-  caps: { fontFamily: sans, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1.8 },
+  caps: { fontFamily: sans, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1.6 },
+  ui:   { fontFamily: sans, fontWeight: '600', letterSpacing: 0.1 },
+};
+
+// ─── Type scale ───────────────────────────────────────────────────────────────
+// Four sizes plus the eyebrow. Pick from here instead of a literal fontSize.
+//   title    screen titles and hero names
+//   heading  section and card headings
+//   body     paragraphs, names in lists, inputs
+//   small    secondary lines, hints, tags
+//   eyebrow  tiny caps label above a section
+export const type = {
+  title:   { ...heading.xl, fontSize: 26, lineHeight: 32 },
+  heading: { ...heading.lg, fontSize: 18, lineHeight: 24 },
+  body:    { fontFamily: sans, fontSize: 15, lineHeight: 22 },
+  small:   { fontFamily: sans, fontSize: 13, lineHeight: 18 },
+  eyebrow: { ...label.caps, fontSize: 10, lineHeight: 14 },
 };
 
 // ─── Global font application ──────────────────────────────────────────────────

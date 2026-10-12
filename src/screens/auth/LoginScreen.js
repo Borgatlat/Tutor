@@ -6,7 +6,8 @@ import { z } from 'zod';
 import { supabase } from '../../lib/supabase';
 import colors from '../../theme/colors';
 import { space, hit, press } from '../../theme/layout';
-import { heading } from '../../theme/fonts';
+import { heading, label, type } from '../../theme/fonts';
+import { school } from '../../theme/school';
 import { SCHOOL_EMAIL_DOMAIN } from '../../constants';
 import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../../constants/legal';
 import {
@@ -16,7 +17,7 @@ import {
 const FEATURES = [
   { icon: 'search-outline',   text: 'Find tutors by subject & free period' },
   { icon: 'calendar-outline', text: 'Book sessions that fit your schedule' },
-  { icon: 'ribbon-outline',   text: 'Core classes, SAT & AP prep from fellow Crusaders' },
+  { icon: 'ribbon-outline',   text: `Core classes, SAT & AP prep from fellow ${school.memberPlural}` },
   { icon: 'star-outline',     text: 'Ratings & reviews for every tutor' },
 ];
 
@@ -35,8 +36,9 @@ export default function LoginScreen({ navigation }) {
   const [loading, setLoading]         = useState(false);
   const [showPw, setShowPw]           = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [resetNote, setResetNote]     = useState('');
 
-  const { control, handleSubmit, formState: { errors } } = useForm({
+  const { control, handleSubmit, getValues, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
   });
 
@@ -61,13 +63,27 @@ export default function LoginScreen({ navigation }) {
     }
   };
 
+  // Sends a reset link to the school email typed above.
+  const handleForgot = async () => {
+    const email = (getValues('email') ?? '').toLowerCase().trim();
+    setSubmitError('');
+    setResetNote('');
+    if (!email.endsWith(SCHOOL_EMAIL_DOMAIN)) {
+      setSubmitError(`Type your ${SCHOOL_EMAIL_DOMAIN} email above, then tap "Forgot password?" again.`);
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) setSubmitError(error.message);
+    else setResetNote(`We sent a reset link to ${email}.`);
+  };
+
   return (
     <AuthShell
-      title={'Welcome back,\nCrusader'}
-      subtitle="Peer tutoring for Strake Jesuit students, by Strake Jesuit students"
+      title={`Welcome back,\n${school.memberName}`}
+      subtitle={`Peer tutoring for ${school.name} students, by ${school.name} students`}
       features={FEATURES}
     >
-      <Text style={styles.cardTitle}>Sign In</Text>
+      <Text style={styles.cardTitle}>Sign in</Text>
 
       <ErrorBanner message={submitError} />
 
@@ -76,7 +92,7 @@ export default function LoginScreen({ navigation }) {
         name="email"
         render={({ field: { onChange, value, onBlur } }) => (
           <Field
-            label="School Email"
+            label="School email"
             icon="mail-outline"
             error={errors.email?.message}
             placeholder={`name${SCHOOL_EMAIL_DOMAIN}`}
@@ -120,8 +136,23 @@ export default function LoginScreen({ navigation }) {
         )}
       />
 
+      <TouchableOpacity
+        style={styles.forgot}
+        onPress={handleForgot}
+        hitSlop={hit.slop}
+        activeOpacity={press.opacity}
+        accessibilityRole="button"
+        accessibilityLabel="Forgot password? Send a reset link to my school email"
+      >
+        <Text style={styles.forgotText}>Forgot password?</Text>
+      </TouchableOpacity>
+
+      {resetNote ? (
+        <Text style={styles.resetNote} accessibilityLiveRegion="polite">{resetNote}</Text>
+      ) : null}
+
       <Button
-        label="Sign In"
+        label="Sign in"
         onPress={handleSubmit(onSubmit)}
         loading={loading}
         fullWidth
@@ -131,7 +162,7 @@ export default function LoginScreen({ navigation }) {
       <Divider label="New here?" />
 
       <Button
-        label="Create an Account"
+        label="Create an account"
         variant="secondary"
         onPress={() => navigation.navigate('SignUp')}
         fullWidth
@@ -169,6 +200,9 @@ const styles = StyleSheet.create({
     color: colors.black,
     marginBottom: space.xxl,
   },
+  forgot:     { alignSelf: 'flex-end', marginTop: -space.sm, marginBottom: space.md },
+  forgotText: { ...type.small, fontWeight: '600', color: colors.brandText },
+  resetNote:  { ...type.small, color: colors.brandText, marginBottom: space.md },
   submit: { marginTop: space.sm },
 
   legalRow: {
@@ -176,13 +210,13 @@ const styles = StyleSheet.create({
     alignItems: 'center', gap: space.sm, marginTop: space.xl,
   },
   legalLink: {
-    fontSize: 11, color: colors.brand,
+    fontSize: 11, color: colors.brandText,
     fontWeight: '600', textDecorationLine: 'underline',
   },
   legalSep: { fontSize: 11, color: colors.gray300 },
 
   footer: {
     textAlign: 'center', fontSize: 11,
-    color: colors.gray400, marginTop: space.sm,
+    color: colors.gray500, marginTop: space.sm,
   },
 });

@@ -1,7 +1,7 @@
 /**
- * AuthShell — the layout wrapper for every pre-app screen.
+ * AuthShell: the layout wrapper for every pre-app screen.
  *
- * Desktop (≥768): two columns — brand panel left, form card right.
+ * Desktop (≥768): two columns: brand panel left, form card right.
  * Mobile: green brand band on top, form on white below.
  *
  * On web the KeyboardAvoidingView is deliberately skipped: it collapses the
@@ -17,8 +17,11 @@ import { Ionicons } from '@expo/vector-icons';
 import colors from '../../theme/colors';
 import { radii, space } from '../../theme/layout';
 import { panelShadow } from '../../theme/shadows';
-import { heading, label } from '../../theme/fonts';
+import { heading, label, type } from '../../theme/fonts';
+import { school } from '../../theme/school';
 import { rule } from '../../theme/layout';
+import OrganicBackdrop from './OrganicBackdrop';
+import Logo from './Logo';
 import { useResponsive } from '../../hooks/useResponsive';
 
 export default function AuthShell({
@@ -33,12 +36,10 @@ export default function AuthShell({
   const brand = (compact) => (
     <>
       <View style={styles.lockup}>
-        <View style={[styles.badge, compact && styles.badgeCompact]}>
-          <Ionicons name="school" size={compact ? 20 : 24} color={colors.white} />
-        </View>
+        <Logo size={compact ? 40 : 48} onDark />
         <View>
-          <Text style={styles.school}>STRAKE JESUIT</Text>
-          <Text style={styles.schoolSub}>Peer Tutoring</Text>
+          <Text style={styles.school}>{school.name.toUpperCase()}</Text>
+          <Text style={styles.schoolSub}>Tutors</Text>
         </View>
       </View>
       <View style={[styles.rule, compact && styles.ruleCompact]} />
@@ -54,6 +55,7 @@ export default function AuthShell({
     return (
       <View style={styles.wideRoot}>
         <View style={styles.wideLeft}>
+          <OrganicBackdrop />
           {brand(false)}
 
           {features?.length ? (
@@ -90,6 +92,7 @@ export default function AuthShell({
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.hero}>
+        <OrganicBackdrop />
         {headerRight ? <View style={styles.heroTop}>{headerRight}</View> : null}
         {brand(true)}
       </View>
@@ -125,12 +128,6 @@ const styles = StyleSheet.create({
 
   // ── Brand ─────────────────────────────────────────────────────────────────
   lockup: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  badge: {
-    width: 48, height: 48, borderRadius: radii.pill,
-    borderWidth: 1, borderColor: colors.whiteAlpha[30],
-    alignItems: 'center', justifyContent: 'center',
-  },
-  badgeCompact: { width: 40, height: 40 },
 
   school: {
     color: colors.white,
@@ -160,6 +157,7 @@ const styles = StyleSheet.create({
 
   // ── Mobile ────────────────────────────────────────────────────────────────
   hero: {
+    overflow: 'hidden',
     backgroundColor: colors.brand,
     paddingHorizontal: space.xxl,
     paddingTop: space.lg,
@@ -172,12 +170,14 @@ const styles = StyleSheet.create({
 
   sheet: {
     flexGrow: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderTopLeftRadius: radii.xxl,
     borderTopRightRadius: radii.xxl,
     padding: space.xxl,
     paddingBottom: space.huge,
   },
+
+  // The owl perches in the top-right of the green header, clear of the text.
 
   // ── Desktop ───────────────────────────────────────────────────────────────
   wideRoot: {
@@ -186,6 +186,7 @@ const styles = StyleSheet.create({
     ...Platform.select({ web: { minHeight: '100vh' }, default: {} }),
   },
   wideLeft: {
+    overflow: 'hidden',
     flex: 1,
     backgroundColor: colors.brand,
     paddingHorizontal: 56,
@@ -202,7 +203,7 @@ const styles = StyleSheet.create({
   panel: {
     width: '100%',
     maxWidth: 480,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderRadius: radii.xl,
     padding: space.xxxl,
     ...panelShadow,
