@@ -10,6 +10,6 @@ export const school = {
   memberPlural:'Crusaders',
   // Link people are sent when someone taps "Invite a friend": the production
   // website. On the website the app uses its own address instead.
-  appUrl: 'https://tutor-borgatlats-projects.vercel.app',
+  appUrl: 'https://tutor-delta-one.vercel.app',
   mascotName:  'Ollie',           // the owl
 };

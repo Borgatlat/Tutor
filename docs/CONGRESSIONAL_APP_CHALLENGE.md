@@ -67,7 +67,7 @@ Check before you upload:
 
 ## 6. Links to include
 
-- **Live app (web):** https://tutor-borgatlats-projects.vercel.app. Open it in a private
+- **Live app (web):** https://tutor-delta-one.vercel.app. Open it in a private
   window first to make sure it loads without a Vercel login (judges won't have one).
 - **Code:** the GitHub repository. Make sure judges can open it: either make it public, or follow your district's instructions for sharing code.
 - **iPhone (optional):** an Expo Go link (`npx expo start --tunnel`) or a TestFlight invite. TestFlight needs an Apple Developer account.
