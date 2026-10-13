@@ -127,6 +127,9 @@ run them in order (each one is safe to run again):
    `DemoTutor2026!`. Sign in as `james.smith.demo@mail.strakejesuit.org`
    (student), `alex.kim.demo@…` (tutor) or `mr.thompson.demo@…` (moderator).
 
+Shortcut: `supabase/all_migrations.sql` has 001–003 in one file to paste and
+run (rebuild it with `npm run db:bundle` after changing a migration).
+
 Or with the Supabase CLI: `npx supabase link --project-ref <your ref>`, then
 `npx supabase db push`.
 
