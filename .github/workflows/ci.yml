@@ -54,3 +54,6 @@ jobs:
 
       - name: Migrations (twice), demo seed (twice) and database tests
         run: bash scripts/test-db.sh
+
+      - name: supabase/all_migrations.sql is up to date
+        run: bash scripts/bundle-migrations.sh && git diff --exit-code supabase/all_migrations.sql
