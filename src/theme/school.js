@@ -8,8 +8,8 @@ export const school = {
   name:        'Strake Jesuit',   // full name, as shown in the header lockup
   memberName:  'Crusader',        // what a student is called ("Welcome back, Crusader")
   memberPlural:'Crusaders',
-  // Link people are sent when someone taps "Invite a friend". On the website
-  // the app uses its own address instead; update this to the production URL.
-  appUrl: 'https://tutor-git-claude-cool-rubin-dcjy6e-borgatlats-projects.vercel.app',
+  // Link people are sent when someone taps "Invite a friend": the production
+  // website. On the website the app uses its own address instead.
+  appUrl: 'https://tutor-delta-one.vercel.app',
   mascotName:  'Ollie',           // the owl
 };
