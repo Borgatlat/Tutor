@@ -78,6 +78,8 @@ async function ctxFor(browser, mode, failWrites = false, tour = false) {
     else if (u.includes('/rpc/delete_my_account')) out = null;
     else if (u.includes('/storage/v1/object/list/avatars')) out = [{ name: 'avatar.jpg' }];
     else if (u.includes('/storage/v1/object/avatars') && m === 'DELETE') return route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
+    else if (u.includes('/rpc/search_tutors') && mode === 'empty') out = [];
+    else if (u.includes('/rest/v1/sessions') && m === 'GET' && mode === 'empty') out = [];
     else if (u.includes('/rpc/search_tutors')) out = (body?.query_name && !'alex kim luke patel'.includes(body.query_name.toLowerCase())) ? [] : tutors;
     else if ((u.includes('/rest/v1/profiles') && m === 'GET') || u.includes('/rpc/get_my_profile')) {
       if (u.includes('/rest/v1/profiles') && /select=\*|phone[,&]|phone$/.test(decodeURIComponent(u).replace('show_phone', ''))) {
@@ -451,6 +453,37 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     ok('Delete account: removes the profile photo', rm && JSON.stringify(rm.body).includes(`${UID}/avatar.jpg`), JSON.stringify(rm?.body));
     ok('Delete account: calls delete_my_account', !!lastWrite((w) => w.u.includes('/rpc/delete_my_account')));
     ok('Delete account: back to the login screen', await seen(page, 'Sign In') && !(await page.evaluate(() => localStorage.getItem('sb-lmavnypvqdomdefpjbok-auth-token'))));
+    await ctx.close(); }
+
+  // ── Nobody here yet: empty screens invite people in ────────────────────
+  { const { ctx, page } = await ctxFor(browser, 'empty');
+    await ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: 'http://localhost:8099' });
+    await page.evaluate(() => { try { delete navigator.share; } catch {} });
+    const clip = () => page.evaluate(() => navigator.clipboard.readText()).catch(() => '');
+    await shot(page, 'empty-home.png');
+    ok('Empty: Home asks to invite a tutor', await seen(page, 'No tutors yet') && await seen(page, 'Tutoring here is just getting started', false));
+    ok('Empty: Home sessions offer sharing', (await page.getByRole('button', { name: 'Share the app with students' }).filter({ visible: true }).count()) === 1);
+    await page.getByRole('button', { name: 'Invite someone to tutor' }).filter({ visible: true }).first().click(); await wait(page, 800);
+    { const c = await clip();
+      ok('Empty: Home invite copies a recruit message with the link', c.includes('Are you good at a class?') && c.includes('http://localhost:8099'), c); }
+    ok('Empty: invite confirms the link was copied', await seen(page, 'Invite link copied', false));
+    await tab(page, 'Search'); await wait(page, 1200);
+    ok('Empty: Search encourages starting tutoring', await seen(page, 'Be the one who gets tutoring started', false));
+    await L(page, 'Show filters').click(); await wait(page);
+    await V(page, 'SAT Prep').click().catch(() => {}); await wait(page, 300);
+    await V(page, 'SAT Math').click(); await wait(page, 1200);
+    await L(page, 'Hide filters').click(); await wait(page);
+    await shot(page, 'empty-search.png');
+    ok('Empty: filtered search suggests clearing filters', await seen(page, 'No tutors found') && (await page.getByRole('button', { name: 'Clear filters' }).filter({ visible: true }).count()) > 0);
+    await page.getByRole('button', { name: 'Invite someone to tutor SAT Math' }).filter({ visible: true }).first().click(); await wait(page, 800);
+    { const c = await clip();
+      ok('Empty: subject invite names the subject', c.includes('Are you good at SAT Math?'), c); }
+    await tab(page, 'Sessions'); await wait(page, 1200);
+    ok('Empty: Sessions invites a study friend', await seen(page, 'No upcoming sessions') && (await page.getByRole('button', { name: 'Invite a friend to study with' }).filter({ visible: true }).count()) === 1);
+    await page.getByRole('button', { name: 'Invite a friend to study with' }).filter({ visible: true }).first().click(); await wait(page, 800);
+    { const c = await clip();
+      ok('Empty: study invite is the normal invite message', c.includes('Strake Jesuit Tutors') && !c.includes('Are you good at'), c); }
+    await shot(page, 'empty-sessions.png');
     await ctx.close(); }
 
   // ── Errors are shown, not swallowed ─────────────────────────────────────

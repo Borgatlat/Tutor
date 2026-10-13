@@ -16,6 +16,7 @@ import { radii, space, border, press, hit, rule } from '../../theme/layout';
 import { sheetShadow, cardShadow } from '../../theme/shadows';
 import { heading, label, type } from '../../theme/fonts';
 import SessionCard from '../../components/SessionCard';
+import InviteButton from '../../components/InviteButton';
 import {
   Button, EmptyState, ErrorBanner, FadeIn, Field, Sheet,
   OrganicBackdrop,
@@ -250,12 +251,20 @@ export default function SessionsScreen({ navigation }) {
               title={`No ${tab.toLowerCase()} sessions`}
               body={
                 tab === 'Upcoming'
-                  ? 'Book a session with a tutor and it will show up here.'
+                  ? 'Book a session with a tutor and it will show up here. Studying is easier with a friend, so bring one along.'
                   : 'Finished and cancelled sessions will appear here.'
               }
               actionLabel="Find a tutor"
               onAction={() => navigation.navigate('Search')}
-            />
+            >
+              {tab === 'Upcoming' ? (
+                <InviteButton
+                  isTutor={profile?.role === 'tutor' || profile?.role === 'both'}
+                  variant="ghost"
+                  label="Invite a friend to study with"
+                />
+              ) : null}
+            </EmptyState>
           }
           renderItem={({ item, index }) => (
             <View style={columns > 1 ? styles.gridItem : undefined}>

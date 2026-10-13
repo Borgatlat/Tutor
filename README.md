@@ -85,7 +85,7 @@ More detail: [ARCHITECTURE.md](ARCHITECTURE.md) · database:
 
 - **Unit tests** (Jest + Testing Library): service hours, schedule maths,
   reminders and core components: `npm test`.
-- **Screen tests** with Playwright against the web build: 111 checks that
+- **Screen tests** with Playwright against the web build: 120 checks that
   press every screen's buttons and check what the app sends
   (`npm run test:e2e`, in [e2e/](e2e/)).
 - **Database tests**: every migration is applied twice to a real Postgres,
