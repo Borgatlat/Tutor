@@ -163,7 +163,7 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     ok('Sign up: sends lowercased email + name + role', su && su.body.email === 'tstudent@mail.strakejesuit.org' && su.body.data?.role === 'tutor' && su.body.data?.full_name === 'Test Student', JSON.stringify(su?.body?.data));
     ok('Sign up → Verify email screen', await seen(page, 'Confirm Your Email'));
     await page.getByRole('button', { name: 'Resend Confirmation Email' }).filter({ visible: true }).first().click(); await wait(page, 1200);
-    ok('Verify: resend works', await seen(page, 'Resend requested') && !!lastWrite((w) => w.u.includes('/auth/v1/resend')));
+    ok('Verify: resend works', await seen(page, 'Resend requested', false) && !!lastWrite((w) => w.u.includes('/auth/v1/resend')));
     await shot(page, 'verify.png');
     await ctx.close(); }
 

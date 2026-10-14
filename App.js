@@ -1,8 +1,10 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, useState } from 'react';
-import { Platform } from 'react-native';
+import { Linking, Platform } from 'react-native';
 import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
 import { registerForPush, onNotificationTap } from './src/utils/push';
+import { supabase } from './src/lib/supabase';
+import { authTokensFromUrl } from './src/lib/authRedirect';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { registerRootComponent } from 'expo';
@@ -179,6 +181,21 @@ function App() {
   useEffect(() => onNotificationTap((name, params) => {
     if (navigationRef.isReady()) navigationRef.navigate(name, params);
   }), []);
+
+  // Phones: a confirm or reset email link opens the app
+  // (strakejesuittutors://auth/callback#access_token=…); sign in from it.
+  // The website does this itself (detectSessionInUrl in lib/supabase.js).
+  useEffect(() => {
+    if (Platform.OS === 'web') return undefined;
+    const signInFromLink = (url) => {
+      const tokens = authTokensFromUrl(url);
+      if (tokens?.access_token) supabase.auth.setSession(tokens);
+      else if (tokens?.error && __DEV__) console.warn('[auth link]', tokens.error);
+    };
+    Linking.getInitialURL().then(signInFromLink).catch(() => {});
+    const sub = Linking.addEventListener('url', ({ url }) => signInFromLink(url));
+    return () => sub.remove();
+  }, []);
 
   // On web fontsLoaded is true from the first render (isLoaded() finds the
   // @font-face we injected above).  The check still guards native cold-start.

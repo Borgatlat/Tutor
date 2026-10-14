@@ -50,9 +50,7 @@ export default function SignUpScreen({ navigation }) {
     setSubmitError('');
     try {
       const cleanEmail = email.toLowerCase().trim();
-      // emailRedirectTo is the "come back here after you click Confirm" URL.
-      // Without it, Supabase uses the dashboard Site URL only — fine if that
-      // matches production, broken if Site URL is still localhost or empty.
+      // The confirm link brings them back to this site or the app.
       const { data, error } = await supabase.auth.signUp({
         email: cleanEmail,
         password,
@@ -62,20 +60,13 @@ export default function SignUpScreen({ navigation }) {
         },
       });
       if (error) {
-        // Prefer a human explanation for the known mailer 500; else raw API text.
         setSubmitError(friendlyAuthEmailError(error.message) ?? error.message);
         return;
       }
-      // Supabase sometimes returns success with an empty identities array when
-      // the email is already registered (anti-enumeration). Still send them to
-      // VerifyEmail so Resend can try; do not pretend a brand-new inbox was filled.
-      if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-        setSubmitError(
-          'If this email already has an account, check your inbox for an older link '
-          + 'or sign in. You can also open the next screen and tap Resend.',
-        );
-      }
-      navigation.navigate('VerifyEmail', { email: cleanEmail });
+      // An already-registered email "succeeds" with no identities and no new
+      // email; the next screen says so instead of promising a fresh link.
+      const maybeExisting = Array.isArray(data?.user?.identities) && data.user.identities.length === 0;
+      navigation.navigate('VerifyEmail', { email: cleanEmail, maybeExisting });
     } catch (e) {
       if (__DEV__) console.error('[SignUp]', e);
       setSubmitError(

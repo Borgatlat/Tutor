@@ -15,7 +15,7 @@ const STEPS = [
 ];
 
 export default function VerifyEmailScreen({ route }) {
-  const { email } = route.params ?? {};
+  const { email, maybeExisting } = route.params ?? {};
   const [resending, setResending]     = useState(false);
   const [resent, setResent]           = useState(false);
   const [resendError, setResendError] = useState('');
@@ -24,14 +24,12 @@ export default function VerifyEmailScreen({ route }) {
     setResending(true);
     setResendError('');
     setResent(false);
-    // Guard: route.params can be missing if someone deep-links to this screen.
     if (!email) {
       setResendError('Missing email address. Go back and sign up again.');
       setResending(false);
       return;
     }
     try {
-      // Same redirect as signup so the new link lands in the same app/site.
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email,
@@ -41,9 +39,6 @@ export default function VerifyEmailScreen({ route }) {
         setResendError(friendlyAuthEmailError(error.message) ?? error.message);
         return;
       }
-      // Important: Auth often returns success with an empty body even when no
-      // mail was actually delivered (or the address was never registered).
-      // We still show a soft success, but the copy below does not promise inbox delivery.
       setResent(true);
     } catch (e) {
       setResendError(e?.message ?? 'Could not resend. Try again.');
@@ -79,11 +74,18 @@ export default function VerifyEmailScreen({ route }) {
 
         <Divider />
 
+        {maybeExisting ? (
+          <Text style={styles.existingNote}>
+            Already have an account with this email? Sign in instead, or tap Resend below
+            for a new confirmation link.
+          </Text>
+        ) : null}
+
         {resent ? (
           <View style={styles.resentBanner}>
             <Ionicons name="checkmark-circle" size={16} color={colors.brandText} />
             <Text style={styles.resentText}>
-              Resend requested. Check inbox and spam — school filters can delay mail.
+              Resend requested. Check your inbox and spam, since school filters can delay mail.
             </Text>
           </View>
         ) : null}
@@ -102,7 +104,7 @@ export default function VerifyEmailScreen({ route }) {
 
         <Text style={styles.spamNote}>
           <Ionicons name="information-circle-outline" size={13} color={colors.gray400} />
-          {' '}Check spam / junk. If signup showed a send error, ask an admin to fix Auth SMTP.
+          {' '}Check your spam or junk folder too
         </Text>
       </View>
     </SafeAreaView>
@@ -163,6 +165,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.sm, padding: space.md, marginBottom: space.lg,
   },
   resentText: { fontSize: 13, color: colors.brandText, fontWeight: '600' },
+  existingNote: { ...type.small, color: colors.gray600, marginBottom: space.md, textAlign: 'center' },
 
   resendLabel: {
     fontSize: 13, color: colors.gray500,

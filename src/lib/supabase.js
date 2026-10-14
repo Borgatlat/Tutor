@@ -16,12 +16,8 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     storage: AsyncStorage,
     autoRefreshToken: true,
     persistSession: true,
-    // On web, the confirm-email link lands with tokens in the URL (#access_token=…).
-    // detectSessionInUrl:true tells supabase-js to read that URL and create a session.
-    // On native we keep it false: deep links are handled differently, and a stray
-    // query string should not be treated as an auth callback.
-    // If you set this to false on web, users can confirm in the browser but stay
-    // "signed out" until they manually log in.
+    // Web: sign in straight from the confirm-email link. Native apps get the
+    // link through App.js (authTokensFromUrl) instead.
     detectSessionInUrl: Platform.OS === 'web',
   },
 });
