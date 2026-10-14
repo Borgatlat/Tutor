@@ -163,7 +163,7 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     ok('Sign up: sends lowercased email + name + role', su && su.body.email === 'tstudent@mail.strakejesuit.org' && su.body.data?.role === 'tutor' && su.body.data?.full_name === 'Test Student', JSON.stringify(su?.body?.data));
     ok('Sign up → Verify email screen', await seen(page, 'Confirm Your Email'));
     await page.getByRole('button', { name: 'Resend Confirmation Email' }).filter({ visible: true }).first().click(); await wait(page, 1200);
-    ok('Verify: resend works', await seen(page, 'New link sent! Check your inbox.') && !!lastWrite((w) => w.u.includes('/auth/v1/resend')));
+    ok('Verify: resend works', await seen(page, 'Resend requested') && !!lastWrite((w) => w.u.includes('/auth/v1/resend')));
     await shot(page, 'verify.png');
     await ctx.close(); }
 
@@ -204,7 +204,7 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     ok('Forgot password: asks for the school email first', await seen(page, 'then tap', false));
     await type(page, 'School email', 'jsmith@mail.strakejesuit.org'); writes = [];
     await L(page, 'Forgot password? Send a reset link to my school email').click(); await wait(page, 1200);
-    ok('Forgot password: sends reset email', !!lastWrite((w) => w.u.includes('/auth/v1/recover')) && await seen(page, 'We sent a reset link', false));
+    ok('Forgot password: sends reset email', !!lastWrite((w) => w.u.includes('/auth/v1/recover')) && await seen(page, 'reset link was requested', false));
     await ctx.close(); }
 
   // ── Get started: invite a friend ──────────────────────────────────────

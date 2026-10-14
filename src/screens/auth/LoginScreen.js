@@ -4,6 +4,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { supabase } from '../../lib/supabase';
+import { authEmailRedirectTo, friendlyAuthEmailError } from '../../lib/authRedirect';
 import colors from '../../theme/colors';
 import { space, hit, press } from '../../theme/layout';
 import { heading, label, type } from '../../theme/fonts';
@@ -72,9 +73,12 @@ export default function LoginScreen({ navigation }) {
       setSubmitError(`Type your ${SCHOOL_EMAIL_DOMAIN} email above, then tap "Forgot password?" again.`);
       return;
     }
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
-    if (error) setSubmitError(error.message);
-    else setResetNote(`We sent a reset link to ${email}.`);
+    // redirectTo (not emailRedirectTo) is the password-recovery option name.
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: authEmailRedirectTo(),
+    });
+    if (error) setSubmitError(friendlyAuthEmailError(error.message) ?? error.message);
+    else setResetNote(`If that account exists, a reset link was requested for ${email}. Check spam too.`);
   };
 
   return (
