@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
+import { authEmailRedirectTo, friendlyAuthEmailError } from '../../lib/authRedirect';
 import colors from '../../theme/colors';
 import { radii, space, border, rule } from '../../theme/layout';
 import { heading, label, type } from '../../theme/fonts';
@@ -22,9 +23,27 @@ export default function VerifyEmailScreen({ route }) {
   const handleResend = async () => {
     setResending(true);
     setResendError('');
+    setResent(false);
+    // Guard: route.params can be missing if someone deep-links to this screen.
+    if (!email) {
+      setResendError('Missing email address. Go back and sign up again.');
+      setResending(false);
+      return;
+    }
     try {
-      const { error } = await supabase.auth.resend({ type: 'signup', email });
-      if (error) { setResendError(error.message); return; }
+      // Same redirect as signup so the new link lands in the same app/site.
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+        options: { emailRedirectTo: authEmailRedirectTo() },
+      });
+      if (error) {
+        setResendError(friendlyAuthEmailError(error.message) ?? error.message);
+        return;
+      }
+      // Important: Auth often returns success with an empty body even when no
+      // mail was actually delivered (or the address was never registered).
+      // We still show a soft success, but the copy below does not promise inbox delivery.
       setResent(true);
     } catch (e) {
       setResendError(e?.message ?? 'Could not resend. Try again.');
@@ -63,7 +82,9 @@ export default function VerifyEmailScreen({ route }) {
         {resent ? (
           <View style={styles.resentBanner}>
             <Ionicons name="checkmark-circle" size={16} color={colors.brandText} />
-            <Text style={styles.resentText}>New link sent! Check your inbox.</Text>
+            <Text style={styles.resentText}>
+              Resend requested. Check inbox and spam — school filters can delay mail.
+            </Text>
           </View>
         ) : null}
 
@@ -76,11 +97,12 @@ export default function VerifyEmailScreen({ route }) {
           onPress={handleResend}
           loading={resending}
           fullWidth
+          disabled={!email}
         />
 
         <Text style={styles.spamNote}>
           <Ionicons name="information-circle-outline" size={13} color={colors.gray400} />
-          {' '}Check your spam / junk folder too
+          {' '}Check spam / junk. If signup showed a send error, ask an admin to fix Auth SMTP.
         </Text>
       </View>
     </SafeAreaView>
