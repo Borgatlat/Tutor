@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
+import { authEmailRedirectTo, friendlyAuthEmailError } from '../../lib/authRedirect';
 import colors from '../../theme/colors';
 import { radii, space, border, rule } from '../../theme/layout';
 import { heading, label, type } from '../../theme/fonts';
@@ -14,7 +15,7 @@ const STEPS = [
 ];
 
 export default function VerifyEmailScreen({ route }) {
-  const { email } = route.params ?? {};
+  const { email, maybeExisting } = route.params ?? {};
   const [resending, setResending]     = useState(false);
   const [resent, setResent]           = useState(false);
   const [resendError, setResendError] = useState('');
@@ -22,9 +23,22 @@ export default function VerifyEmailScreen({ route }) {
   const handleResend = async () => {
     setResending(true);
     setResendError('');
+    setResent(false);
+    if (!email) {
+      setResendError('Missing email address. Go back and sign up again.');
+      setResending(false);
+      return;
+    }
     try {
-      const { error } = await supabase.auth.resend({ type: 'signup', email });
-      if (error) { setResendError(error.message); return; }
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+        options: { emailRedirectTo: authEmailRedirectTo() },
+      });
+      if (error) {
+        setResendError(friendlyAuthEmailError(error.message) ?? error.message);
+        return;
+      }
       setResent(true);
     } catch (e) {
       setResendError(e?.message ?? 'Could not resend. Try again.');
@@ -60,10 +74,19 @@ export default function VerifyEmailScreen({ route }) {
 
         <Divider />
 
+        {maybeExisting ? (
+          <Text style={styles.existingNote}>
+            Already have an account with this email? Sign in instead, or tap Resend below
+            for a new confirmation link.
+          </Text>
+        ) : null}
+
         {resent ? (
           <View style={styles.resentBanner}>
             <Ionicons name="checkmark-circle" size={16} color={colors.brandText} />
-            <Text style={styles.resentText}>New link sent! Check your inbox.</Text>
+            <Text style={styles.resentText}>
+              Resend requested. Check your inbox and spam, since school filters can delay mail.
+            </Text>
           </View>
         ) : null}
 
@@ -76,11 +99,12 @@ export default function VerifyEmailScreen({ route }) {
           onPress={handleResend}
           loading={resending}
           fullWidth
+          disabled={!email}
         />
 
         <Text style={styles.spamNote}>
           <Ionicons name="information-circle-outline" size={13} color={colors.gray400} />
-          {' '}Check your spam / junk folder too
+          {' '}Check your spam or junk folder too
         </Text>
       </View>
     </SafeAreaView>
@@ -141,6 +165,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.sm, padding: space.md, marginBottom: space.lg,
   },
   resentText: { fontSize: 13, color: colors.brandText, fontWeight: '600' },
+  existingNote: { ...type.small, color: colors.gray600, marginBottom: space.md, textAlign: 'center' },
 
   resendLabel: {
     fontSize: 13, color: colors.gray500,

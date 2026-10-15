@@ -38,9 +38,9 @@ describe('service hours', () => {
 
     expect(rows[1]).toBe('Tutor,James Smith');
     expect(rows[3]).toBe('Date,Day,Block,Subject,Student,Minutes,Verified');
-    expect(rows[4]).toBe('2026-10-01,Tue,3,SAT Math,Luke Patel,50,');
-    expect(rows[5]).toBe('2026-10-03,,5,"Spanish, 2","Ana ""AJ"" Ruiz",50,');
-    expect(rows[6]).toBe('2026-10-05,Mon,2,Calculus,Luke Patel,50,Yes');
+    expect(rows[4]).toBe('2026-10-01,Tue,B3,SAT Math,Luke Patel,50,');
+    expect(rows[5]).toBe('2026-10-03,,B5,"Spanish, 2","Ana ""AJ"" Ruiz",50,');
+    expect(rows[6]).toBe('2026-10-05,Mon,B2,Calculus,Luke Patel,50,Yes');
     expect(csv).toContain('Verified hours,0.8');
     expect(csv).toContain('Total sessions,3');
     expect(csv).toContain('Total hours,2.5');

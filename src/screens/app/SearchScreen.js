@@ -14,11 +14,13 @@ import { school } from '../../theme/school';
 import AppTextInput from '../../components/AppTextInput';
 import TutorCard from '../../components/TutorCard';
 import SkeletonCard from '../../components/SkeletonCard';
+import InviteButton from '../../components/InviteButton';
 import {
   Chip, EmptyState, FadeIn, IconButton, SubjectPicker,
   OrganicBackdrop,
 } from '../../components/ui';
 import { BLOCKS } from '../../constants';
+import { blockLabel, blockName } from '../../utils/schedule';
 import { useResponsive } from '../../hooks/useResponsive';
 
 export default function SearchScreen({ navigation }) {
@@ -89,11 +91,11 @@ export default function SearchScreen({ navigation }) {
         {BLOCKS.map((b) => (
           <Chip
             key={b}
-            label={`B${b}`}
+            label={blockLabel(b)}
             minWidth={52}
             selected={block === b}
             onPress={() => setBlock(block === b ? null : b)}
-            accessibilityLabel={`Filter to block ${b}`}
+            accessibilityLabel={`Filter to ${blockName(b)}`}
           />
         ))}
       </View>
@@ -143,15 +145,22 @@ export default function SearchScreen({ navigation }) {
         !loading ? (
           <EmptyState
             icon="search-outline"
-            title="No tutors found"
+            title={hasFilters || query ? 'No tutors found' : 'No tutors yet'}
             body={
               hasFilters || query
-                ? 'Try adjusting your search or clearing some filters.'
-                : `No ${school.memberPlural} have listed subjects yet. Check back soon.`
+                ? `Try adjusting your search or clearing some filters. Or invite someone who knows ${subject ?? 'it'} to tutor.`
+                : `Be the one who gets tutoring started: invite a friend who's strong in a class. Tutors earn service hours for every session.`
             }
             actionLabel={hasFilters ? 'Clear filters' : undefined}
             onAction={hasFilters ? clearFilters : undefined}
-          />
+          >
+            <InviteButton
+              kind="recruit"
+              subject={subject ?? undefined}
+              label={subject ? `Invite someone to tutor ${subject}` : undefined}
+              variant={hasFilters ? 'secondary' : 'primary'}
+            />
+          </EmptyState>
         ) : null
       }
       renderItem={({ item, index }) => (

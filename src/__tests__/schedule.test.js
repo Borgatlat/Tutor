@@ -29,7 +29,7 @@ describe('block schedule', () => {
   });
 
   test('unknown blocks give null / empty label', () => {
-    expect(nextSessionStart(9)).toBeNull();
+    expect(nextSessionStart(10)).toBeNull();
     expect(getSessionTimeLabel('Mon', 0)).toBe('');
   });
 
@@ -90,5 +90,38 @@ describe('reminders use the real date', () => {
   test('10 minutes before the dated block', () => {
     const r = reminderTime({ session_date: '2099-03-02', period: 4 }, new Date(2099, 2, 1));
     expect([r.getDate(), r.getHours(), r.getMinutes()]).toEqual([2, 10, 50]);
+  });
+});
+
+describe('Community Time (CT)', () => {
+  const S = require('../utils/schedule');
+  const { buildHoursCsv, summarizeHours } = require('../utils/hours');
+  const { BLOCKS } = require('../constants');
+
+  test('is a free block between B1 and B2, labelled CT', () => {
+    expect(BLOCKS).toContain(S.CT_PERIOD);
+    expect(BLOCKS.map(S.blockLabel)).toEqual(['B1', 'CT', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8']);
+    expect(S.blockName(S.CT_PERIOD)).toBe('Community Time');
+    expect(S.blockName(3)).toBe('Block 3');
+  });
+
+  test('runs 9:10 to 9:50 on weekdays', () => {
+    expect(getSessionTimeLabel(null, S.CT_PERIOD)).toBe('Community Time · 9:10 AM – 9:50 AM');
+    const d = S.blockStart('2026-10-15', S.CT_PERIOD);
+    expect([d.getHours(), d.getMinutes()]).toEqual([9, 10]);
+    at('2026-10-09T16:00:00'); // Friday afternoon
+    const next = nextSessionStart(S.CT_PERIOD);
+    expect([next.getDay(), next.getHours(), next.getMinutes()]).toEqual([1, 9, 10]);
+  });
+
+  test('shows as CT in session labels and counts 40 minutes of service', () => {
+    expect(S.sessionWhen({ session_date: '2026-10-15', period: 9 }, new Date(2026, 9, 9))).toBe('Thu, Oct 15 · Community Time');
+    expect(S.blockMinutes(S.CT_PERIOD)).toBe(40);
+    const sessions = [
+      { status: 'completed', tutor_id: 't', student_id: 's', period: 9, session_date: '2026-10-14' },
+      { status: 'completed', tutor_id: 't', student_id: 's', period: 3, session_date: '2026-10-15' },
+    ];
+    expect(summarizeHours(sessions, 't').minutes).toBe(90);
+    expect(buildHoursCsv(sessions, 't')).toContain('2026-10-14,Wed,CT,');
   });
 });

@@ -20,8 +20,8 @@ import colors from '../../theme/colors';
 import { radii, space, press, hit } from '../../theme/layout';
 import { type, label } from '../../theme/fonts';
 import { cardShadow } from '../../theme/shadows';
-import { sessionWhen } from '../../utils/schedule';
-import { BLOCK_MINUTES, minutesToHours } from '../../utils/hours';
+import { blockMinutes, sessionWhen } from '../../utils/schedule';
+import { minutesToHours } from '../../utils/hours';
 import { success, warn } from '../../utils/haptics';
 import { Button, EmptyState, ErrorBanner, FadeIn } from '../../components/ui';
 
@@ -80,7 +80,7 @@ export default function ModerationScreen({ navigation }) {
           <Text style={styles.meta}>
             Tutored {item.student?.full_name ?? 'a student'} · {item.subject}
           </Text>
-          <Text style={styles.meta}>{sessionWhen(item)} · {minutesToHours(BLOCK_MINUTES)} h</Text>
+          <Text style={styles.meta}>{sessionWhen(item)} · {minutesToHours(blockMinutes(item.period))} h</Text>
         </View>
       </View>
       <Button

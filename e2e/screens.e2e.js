@@ -78,6 +78,8 @@ async function ctxFor(browser, mode, failWrites = false, tour = false) {
     else if (u.includes('/rpc/delete_my_account')) out = null;
     else if (u.includes('/storage/v1/object/list/avatars')) out = [{ name: 'avatar.jpg' }];
     else if (u.includes('/storage/v1/object/avatars') && m === 'DELETE') return route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
+    else if (u.includes('/rpc/search_tutors') && mode === 'empty') out = [];
+    else if (u.includes('/rest/v1/sessions') && m === 'GET' && mode === 'empty') out = [];
     else if (u.includes('/rpc/search_tutors')) out = (body?.query_name && !'alex kim luke patel'.includes(body.query_name.toLowerCase())) ? [] : tutors;
     else if ((u.includes('/rest/v1/profiles') && m === 'GET') || u.includes('/rpc/get_my_profile')) {
       if (u.includes('/rest/v1/profiles') && /select=\*|phone[,&]|phone$/.test(decodeURIComponent(u).replace('show_phone', ''))) {
@@ -161,7 +163,7 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     ok('Sign up: sends lowercased email + name + role', su && su.body.email === 'tstudent@mail.strakejesuit.org' && su.body.data?.role === 'tutor' && su.body.data?.full_name === 'Test Student', JSON.stringify(su?.body?.data));
     ok('Sign up → Verify email screen', await seen(page, 'Confirm Your Email'));
     await page.getByRole('button', { name: 'Resend Confirmation Email' }).filter({ visible: true }).first().click(); await wait(page, 1200);
-    ok('Verify: resend works', await seen(page, 'New link sent! Check your inbox.') && !!lastWrite((w) => w.u.includes('/auth/v1/resend')));
+    ok('Verify: resend works', await seen(page, 'Resend requested', false) && !!lastWrite((w) => w.u.includes('/auth/v1/resend')));
     await shot(page, 'verify.png');
     await ctx.close(); }
 
@@ -180,13 +182,16 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     await type(page, 'Grade for Calculus', 'A');
     await page.getByRole('button', { name: 'Next' }).filter({ visible: true }).first().click(); await wait(page, 400);
     ok('Setup: step 3 is free blocks', await seen(page, "When you're free") && await seen(page, 'Step 3 of 3'));
+    ok('Setup: Community Time is a CT chip like B1–B8', await page.getByLabel('Community Time, not free').filter({ visible: true }).count() > 0 && await seen(page, 'CT'));
     await L(page, 'Block 4, not free').click(); await wait(page, 300);
+    await L(page, 'Community Time, not free').click(); await wait(page, 300);
     writes = [];
     await page.getByRole('button', { name: 'Finish setup' }).filter({ visible: true }).first().click(); await wait(page, 2500);
     const prof = lastWrite((w) => w.u.includes('/rest/v1/profiles') && w.m === 'PATCH' && w.body?.bio);
     const subj = lastWrite((w) => w.u.includes('/rest/v1/tutor_subjects') && w.m === 'POST');
     const av = lastWrite((w) => w.u.includes('/rest/v1/tutor_availability') && w.m === 'POST');
     ok('Setup: saves bio (and no phone)', prof && prof.body.bio === 'I like math' && !('phone' in prof.body), JSON.stringify(prof?.body));
+    ok('Setup: saves CT with the free blocks', av && JSON.stringify(av.body).includes('"period":9') && JSON.stringify(av.body).includes('"period":4'), JSON.stringify(av?.body));
     ok('Setup: saves subject + grade', subj && JSON.stringify(subj.body).includes('"grade":"A"'), JSON.stringify(subj?.body));
     ok('Setup: saves free block', av && JSON.stringify(av.body).includes('"period":4'), JSON.stringify(av?.body));
     ok('Setup → app after "Finish setup"', await seen(page, 'Upcoming Sessions') || await seen(page, 'Top Tutors'));
@@ -202,7 +207,7 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     ok('Forgot password: asks for the school email first', await seen(page, 'then tap', false));
     await type(page, 'School email', 'jsmith@mail.strakejesuit.org'); writes = [];
     await L(page, 'Forgot password? Send a reset link to my school email').click(); await wait(page, 1200);
-    ok('Forgot password: sends reset email', !!lastWrite((w) => w.u.includes('/auth/v1/recover')) && await seen(page, 'We sent a reset link', false));
+    ok('Forgot password: sends reset email', !!lastWrite((w) => w.u.includes('/auth/v1/recover')) && await seen(page, 'reset link was requested', false));
     await ctx.close(); }
 
   // ── Get started: invite a friend ──────────────────────────────────────
@@ -280,9 +285,13 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     await L(page, 'Clear search').click(); await wait(page, 1200);
     ok('Search: clear search restores list', await seen(page, 'Alex Kim'));
     await L(page, 'Show filters').click(); await wait(page);
-    await L(page, 'Filter to block 3').click(); await wait(page, 1000);
+    await L(page, 'Filter to Block 3').click(); await wait(page, 1000);
     const rpc = lastWrite((w) => w.u.includes('search_tutors'));
     ok('Search: block filter sent', rpc && rpc.body.filter_period === 3, JSON.stringify(rpc?.body));
+    await L(page, 'Filter to Community Time').click(); await wait(page, 1000);
+    const rpcCt = lastWrite((w) => w.u.includes('search_tutors'));
+    ok('Search: CT filter sent as block 9', rpcCt && rpcCt.body.filter_period === 9, JSON.stringify(rpcCt?.body));
+    await L(page, 'Filter to Block 3').click(); await wait(page, 1000);
     await V(page, 'SAT Prep').click().catch(()=>{}); await wait(page, 300);
     await V(page, 'SAT Math').click(); await wait(page, 1000);
     const rpc2 = lastWrite((w) => w.u.includes('search_tutors'));
@@ -451,6 +460,37 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     ok('Delete account: removes the profile photo', rm && JSON.stringify(rm.body).includes(`${UID}/avatar.jpg`), JSON.stringify(rm?.body));
     ok('Delete account: calls delete_my_account', !!lastWrite((w) => w.u.includes('/rpc/delete_my_account')));
     ok('Delete account: back to the login screen', await seen(page, 'Sign In') && !(await page.evaluate(() => localStorage.getItem('sb-lmavnypvqdomdefpjbok-auth-token'))));
+    await ctx.close(); }
+
+  // ── Nobody here yet: empty screens invite people in ────────────────────
+  { const { ctx, page } = await ctxFor(browser, 'empty');
+    await ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: 'http://localhost:8099' });
+    await page.evaluate(() => { try { delete navigator.share; } catch {} });
+    const clip = () => page.evaluate(() => navigator.clipboard.readText()).catch(() => '');
+    await shot(page, 'empty-home.png');
+    ok('Empty: Home asks to invite a tutor', await seen(page, 'No tutors yet') && await seen(page, 'Tutoring here is just getting started', false));
+    ok('Empty: Home sessions offer sharing', (await page.getByRole('button', { name: 'Share the app with students' }).filter({ visible: true }).count()) === 1);
+    await page.getByRole('button', { name: 'Invite someone to tutor' }).filter({ visible: true }).first().click(); await wait(page, 800);
+    { const c = await clip();
+      ok('Empty: Home invite copies a recruit message with the link', c.includes('Are you good at a class?') && c.includes('http://localhost:8099'), c); }
+    ok('Empty: invite confirms the link was copied', await seen(page, 'Invite link copied', false));
+    await tab(page, 'Search'); await wait(page, 1200);
+    ok('Empty: Search encourages starting tutoring', await seen(page, 'Be the one who gets tutoring started', false));
+    await L(page, 'Show filters').click(); await wait(page);
+    await V(page, 'SAT Prep').click().catch(() => {}); await wait(page, 300);
+    await V(page, 'SAT Math').click(); await wait(page, 1200);
+    await L(page, 'Hide filters').click(); await wait(page);
+    await shot(page, 'empty-search.png');
+    ok('Empty: filtered search suggests clearing filters', await seen(page, 'No tutors found') && (await page.getByRole('button', { name: 'Clear filters' }).filter({ visible: true }).count()) > 0);
+    await page.getByRole('button', { name: 'Invite someone to tutor SAT Math' }).filter({ visible: true }).first().click(); await wait(page, 800);
+    { const c = await clip();
+      ok('Empty: subject invite names the subject', c.includes('Are you good at SAT Math?'), c); }
+    await tab(page, 'Sessions'); await wait(page, 1200);
+    ok('Empty: Sessions invites a study friend', await seen(page, 'No upcoming sessions') && (await page.getByRole('button', { name: 'Invite a friend to study with' }).filter({ visible: true }).count()) === 1);
+    await page.getByRole('button', { name: 'Invite a friend to study with' }).filter({ visible: true }).first().click(); await wait(page, 800);
+    { const c = await clip();
+      ok('Empty: study invite is the normal invite message', c.includes('Strake Jesuit Tutors') && !c.includes('Are you good at'), c); }
+    await shot(page, 'empty-sessions.png');
     await ctx.close(); }
 
   // ── Errors are shown, not swallowed ─────────────────────────────────────

@@ -13,7 +13,7 @@
 import { Platform } from 'react-native';
 import { school } from '../theme/school';
 
-import { BLOCK_TIMES, blockStart } from './schedule';
+import { BLOCK_TIMES, blockStart, blockName } from './schedule';
 
 /**
  * Returns a Date for the next weekday (Mon–Fri) at hour:minute.
@@ -76,7 +76,7 @@ async function addToNativeCalendar(session, otherName, times, startDate, endDate
   const notes = [
     session.notes ?? null,
     `Subject: ${session.subject}`,
-    `Block ${session.period}`,
+    blockName(session.period),
     `${school.name} Tutor Marketplace`,
   ].filter(Boolean).join('\n');
 
@@ -127,7 +127,7 @@ function addToWebCalendar(session, otherName, startDate, endDate) {
   const description = [
     session.notes ?? null,
     `Subject: ${session.subject}`,
-    `Block ${session.period}`,
+    blockName(session.period),
     `${school.name} Tutor Marketplace`,
   ].filter(Boolean).join('\\n');
 
@@ -237,5 +237,5 @@ export function getSessionTimeLabel(day, period) {
     return `${h12}:${String(m).padStart(2, '0')} ${suffix}`;
   };
 
-  return `Block ${period} · ${fmt(times.startH, times.startM)} – ${fmt(times.endH, times.endM)}`;
+  return `${blockName(period)} · ${fmt(times.startH, times.startM)} – ${fmt(times.endH, times.endM)}`;
 }

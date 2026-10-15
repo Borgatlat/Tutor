@@ -1,6 +1,8 @@
 import colors from '../theme/colors';
 
-export const BLOCKS = [1, 2, 3, 4, 5, 6, 7, 8];
+// In schedule order: Community Time (CT) falls between B1 and B2. It's saved
+// as 9 in the database (see utils/schedule) but always shown as "CT".
+export const BLOCKS = [1, 9, 2, 3, 4, 5, 6, 7, 8];
 
 // Core classes lead the list: most students take these, so they should be the
 // first thing in the picker. AP entries keep their 'AP ' prefix, which is what

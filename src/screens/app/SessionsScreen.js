@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import { syncSessionReminders } from '../../utils/reminders';
 import { warn } from '../../utils/haptics';
-import { BLOCK_MINUTES, minutesToHours } from '../../utils/hours';
+import { minutesToHours } from '../../utils/hours';
 import Celebration from '../../components/Celebration';
 import { SkeletonSession } from '../../components/SkeletonCard';
 import useAuthStore from '../../store/useAuthStore';
@@ -16,11 +16,13 @@ import { radii, space, border, press, hit, rule } from '../../theme/layout';
 import { sheetShadow, cardShadow } from '../../theme/shadows';
 import { heading, label, type } from '../../theme/fonts';
 import SessionCard from '../../components/SessionCard';
+import InviteButton from '../../components/InviteButton';
 import {
   Button, EmptyState, ErrorBanner, FadeIn, Field, Sheet,
   OrganicBackdrop,
 } from '../../components/ui';
 import { addSessionToCalendar, getSessionTimeLabel } from '../../utils/calendar';
+import { blockMinutes } from '../../utils/schedule';
 import { useResponsive } from '../../hooks/useResponsive';
 
 const TABS = ['Upcoming', 'Past'];
@@ -151,11 +153,11 @@ export default function SessionsScreen({ navigation }) {
   // A tutor marks a confirmed session as done after it happens. This is what
   // moves it to Past, lets the student leave a review, and bumps the tutor's
   // completed-session count (supabase_schema.sql trigger).
-  const handleComplete = async (sessionId) => {
+  const handleComplete = async (sessionId, period) => {
     setBusyId(sessionId);
     const done = await updateStatus(sessionId, 'completed', "Couldn't mark the session as done.");
     setBusyId(null);
-    if (done) setParty({ title: 'Session done!', subtitle: `+${minutesToHours(BLOCK_MINUTES)} service hours` });
+    if (done) setParty({ title: 'Session done!', subtitle: `+${minutesToHours(blockMinutes(period))} service hours` });
     loadSessions();
   };
 
@@ -250,12 +252,20 @@ export default function SessionsScreen({ navigation }) {
               title={`No ${tab.toLowerCase()} sessions`}
               body={
                 tab === 'Upcoming'
-                  ? 'Book a session with a tutor and it will show up here.'
+                  ? 'Book a session with a tutor and it will show up here. Studying is easier with a friend, so bring one along.'
                   : 'Finished and cancelled sessions will appear here.'
               }
               actionLabel="Find a tutor"
               onAction={() => navigation.navigate('Search')}
-            />
+            >
+              {tab === 'Upcoming' ? (
+                <InviteButton
+                  isTutor={profile?.role === 'tutor' || profile?.role === 'both'}
+                  variant="ghost"
+                  label="Invite a friend to study with"
+                />
+              ) : null}
+            </EmptyState>
           }
           renderItem={({ item, index }) => (
             <View style={columns > 1 ? styles.gridItem : undefined}>
