@@ -98,9 +98,9 @@ describe('Community Time (CT)', () => {
   const { buildHoursCsv, summarizeHours } = require('../utils/hours');
   const { BLOCKS } = require('../constants');
 
-  test('is a free block next to B1–B8, labelled CT', () => {
+  test('is a free block between B1 and B2, labelled CT', () => {
     expect(BLOCKS).toContain(S.CT_PERIOD);
-    expect(BLOCKS.map(S.blockLabel)).toEqual(['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'CT']);
+    expect(BLOCKS.map(S.blockLabel)).toEqual(['B1', 'CT', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8']);
     expect(S.blockName(S.CT_PERIOD)).toBe('Community Time');
     expect(S.blockName(3)).toBe('Block 3');
   });
