@@ -20,6 +20,7 @@ import {
   OrganicBackdrop,
 } from '../../components/ui';
 import { BLOCKS } from '../../constants';
+import { blockLabel, blockName } from '../../utils/schedule';
 import { useResponsive } from '../../hooks/useResponsive';
 
 export default function SearchScreen({ navigation }) {
@@ -90,11 +91,11 @@ export default function SearchScreen({ navigation }) {
         {BLOCKS.map((b) => (
           <Chip
             key={b}
-            label={`B${b}`}
+            label={blockLabel(b)}
             minWidth={52}
             selected={block === b}
             onPress={() => setBlock(block === b ? null : b)}
-            accessibilityLabel={`Filter to block ${b}`}
+            accessibilityLabel={`Filter to ${blockName(b)}`}
           />
         ))}
       </View>

@@ -17,7 +17,28 @@ export const BLOCK_TIMES = {
   6: { startH: 13, startM: 0,  endH: 13, endM: 50 },
   7: { startH: 14, startM: 0,  endH: 14, endM: 50 },
   8: { startH: 15, startM: 0,  endH: 15, endM: 50 },
+  9: { startH: 9,  startM: 10, endH: 9,  endM: 50 },   // Community Time (CT)
 };
+
+// Community Time is stored as block 9 so it fits the same integer column as
+// B1–B8; everywhere people see it, it's called CT / Community Time.
+export const CT_PERIOD = 9;
+
+/** Chip label: "B3", or "CT" for Community Time. */
+export function blockLabel(period) {
+  return period === CT_PERIOD ? 'CT' : `B${period}`;
+}
+
+/** Spelled out: "Block 3", or "Community Time". */
+export function blockName(period) {
+  return period === CT_PERIOD ? 'Community Time' : `Block ${period}`;
+}
+
+/** How long a block runs, in minutes (50 for B1–B8, 40 for CT). */
+export function blockMinutes(period) {
+  const t = BLOCK_TIMES[period];
+  return t ? (t.endH * 60 + t.endM) - (t.startH * 60 + t.startM) : 50;
+}
 
 export const BOOKING_WINDOW_DAYS = 28;   // matches check_new_session() in SQL
 
@@ -81,7 +102,7 @@ export function chipLabel(iso, now = new Date()) {
 /** "Thu, Oct 15 · Block 3" (or just "Block 3" for older undated sessions). */
 export function sessionWhen(session, now = new Date()) {
   const date = session?.session_date ? formatSessionDate(session.session_date, now) : '';
-  return [date, `Block ${session?.period}`].filter(Boolean).join(' · ');
+  return [date, blockName(session?.period)].filter(Boolean).join(' · ');
 }
 
 /** A tutor can mark a session done on or after its date. */

@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import { syncSessionReminders } from '../../utils/reminders';
 import { warn } from '../../utils/haptics';
-import { BLOCK_MINUTES, minutesToHours } from '../../utils/hours';
+import { minutesToHours } from '../../utils/hours';
 import Celebration from '../../components/Celebration';
 import { SkeletonSession } from '../../components/SkeletonCard';
 import useAuthStore from '../../store/useAuthStore';
@@ -22,6 +22,7 @@ import {
   OrganicBackdrop,
 } from '../../components/ui';
 import { addSessionToCalendar, getSessionTimeLabel } from '../../utils/calendar';
+import { blockMinutes } from '../../utils/schedule';
 import { useResponsive } from '../../hooks/useResponsive';
 
 const TABS = ['Upcoming', 'Past'];
@@ -152,11 +153,11 @@ export default function SessionsScreen({ navigation }) {
   // A tutor marks a confirmed session as done after it happens. This is what
   // moves it to Past, lets the student leave a review, and bumps the tutor's
   // completed-session count (supabase_schema.sql trigger).
-  const handleComplete = async (sessionId) => {
+  const handleComplete = async (sessionId, period) => {
     setBusyId(sessionId);
     const done = await updateStatus(sessionId, 'completed', "Couldn't mark the session as done.");
     setBusyId(null);
-    if (done) setParty({ title: 'Session done!', subtitle: `+${minutesToHours(BLOCK_MINUTES)} service hours` });
+    if (done) setParty({ title: 'Session done!', subtitle: `+${minutesToHours(blockMinutes(period))} service hours` });
     loadSessions();
   };
 

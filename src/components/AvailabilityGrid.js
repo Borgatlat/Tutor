@@ -1,5 +1,5 @@
 /**
- * AvailabilityGrid: the B1–B8 block picker.
+ * AvailabilityGrid: the B1–B8 + CT block picker.
  *
  * Block schedule: no day dimension. Renders one Chip per block so the same
  * block looks identical here, in profile setup, and in the booking flow.
@@ -20,6 +20,7 @@ import Chip from './ui/Chip';
 import EmptyState from './ui/EmptyState';
 import { space } from '../theme/layout';
 import { BLOCKS } from '../constants';
+import { blockLabel, blockName } from '../utils/schedule';
 
 export default function AvailabilityGrid({
   availability = [],
@@ -57,13 +58,13 @@ export default function AvailabilityGrid({
         return (
           <Chip
             key={b}
-            label={`B${b}`}
+            label={blockLabel(b)}
             minWidth={52}
             onPress={onPress}
             selected={hi || (editable && free)}
             available={!editable && free}
             disabled={!onPress}
-            accessibilityLabel={`Block ${b}${free ? ', free' : ', not free'}`}
+            accessibilityLabel={`${blockName(b)}${free ? ', free' : ', not free'}`}
           />
         );
       })}

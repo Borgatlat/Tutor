@@ -6,7 +6,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import Celebration from '../../components/Celebration';
-import { bookableDays, chipLabel, formatSessionDate } from '../../utils/schedule';
+import { blockName, bookableDays, chipLabel, formatSessionDate } from '../../utils/schedule';
 import { getSessionTimeLabel } from '../../utils/calendar';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
@@ -96,7 +96,7 @@ export default function BookSessionScreen({ route, navigation }) {
             {[
               { icon: 'person-outline',   text: tutor.full_name },
               { icon: 'book-outline',     text: subject },
-              { icon: 'calendar-outline', text: `${formatSessionDate(date)} · Block ${slot.period}` },
+              { icon: 'calendar-outline', text: `${formatSessionDate(date)} · ${blockName(slot.period)}` },
               { icon: 'time-outline',     text: getSessionTimeLabel(null, slot.period).split(' · ')[1] },
             ].map((row) => (
               <View key={row.icon} style={styles.confirmRow}>
@@ -167,7 +167,7 @@ export default function BookSessionScreen({ route, navigation }) {
             <Ionicons name="calendar" size={20} color={colors.brandText} />
             <View>
               <Text style={styles.slotText}>
-                {date ? `${formatSessionDate(date)} · ` : ''}Block {slot.period}
+                {date ? `${formatSessionDate(date)} · ` : ''}{blockName(slot.period)}
               </Text>
               <Text style={styles.slotSub}>{getSessionTimeLabel(null, slot.period).split(' · ')[1]}</Text>
             </View>

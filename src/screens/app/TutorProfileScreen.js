@@ -24,6 +24,7 @@ import {
   OrganicBackdrop,
 } from '../../components/ui';
 import { useResponsive } from '../../hooks/useResponsive';
+import { blockName } from '../../utils/schedule';
 
 export default function TutorProfileScreen({ route, navigation }) {
   const { tutor: initialTutor } = route.params;
@@ -282,7 +283,7 @@ export default function TutorProfileScreen({ route, navigation }) {
       {!isSelf && selectedSlot ? (
         <View style={styles.bookBar}>
           <View style={styles.bookText}>
-            <Text style={styles.bookTitle}>Block {selectedSlot.period}</Text>
+            <Text style={styles.bookTitle}>{blockName(selectedSlot.period)}</Text>
             <Text style={styles.bookSub}>Ready to book</Text>
           </View>
           <Button

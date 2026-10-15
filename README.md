@@ -62,7 +62,7 @@ schedule, "when are we both free?" takes a dozen texts.
 ```
 
 - **Matching on a block schedule.** Tutors and students each mark the blocks
-  (B1–B8) they're free. `search_tutors` gives every tutor one score: how well
+  (B1–B8, plus Community Time, CT) they're free. `search_tutors` gives every tutor one score: how well
   the name matches, plus their rating and experience, plus a boost for every
   free block they share with the student. Blocked users are left out both
   ways. The top result is a good tutor you can actually meet.
@@ -85,11 +85,11 @@ More detail: [ARCHITECTURE.md](ARCHITECTURE.md) · database:
 
 - **Unit tests** (Jest + Testing Library): service hours, schedule maths,
   reminders and core components: `npm test`.
-- **Screen tests** with Playwright against the web build: 120 checks that
+- **Screen tests** with Playwright against the web build: 123 checks that
   press every screen's buttons and check what the app sends
   (`npm run test:e2e`, in [e2e/](e2e/)).
 - **Database tests**: every migration is applied twice to a real Postgres,
-  the demo data is loaded twice, then 47 checks sign in as a tutor, a
+  the demo data is loaded twice, then 50 checks sign in as a tutor, a
   student, a moderator, an outsider and a visitor and try everything they
   should and shouldn't be able to do (`npm run test:db`, in
   [supabase/tests/](supabase/tests/)).
@@ -123,11 +123,13 @@ run them in order (each one is safe to run again):
    moderator tools
 3. `003_privacy_reviews_accounts.sql`: private phone numbers, reviews only
    from real sessions, account deletion
-4. `supabase/seed_demo.sql` *(optional)*: demo accounts, all with password
+4. `004_community_time.sql`: Community Time (CT, 9:10–9:50 on weekdays)
+   as a free block
+5. `supabase/seed_demo.sql` *(optional)*: demo accounts, all with password
    `DemoTutor2026!`. Sign in as `james.smith.demo@mail.strakejesuit.org`
    (student), `alex.kim.demo@…` (tutor) or `mr.thompson.demo@…` (moderator).
 
-Shortcut: `supabase/all_migrations.sql` has 001–003 in one file to paste and
+Shortcut: `supabase/all_migrations.sql` has 001–004 in one file to paste and
 run (rebuild it with `npm run db:bundle` after changing a migration).
 
 Or with the Supabase CLI: `npx supabase link --project-ref <your ref>`, then
