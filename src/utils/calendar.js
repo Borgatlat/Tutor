@@ -7,36 +7,15 @@
  *  - Web            →  generates and downloads a .ics file, which opens in
  *                      Google Calendar, Apple Calendar, Outlook, etc.
  *
- * Period times are based on a standard Strake Jesuit school day.
- * Users can edit the event after it's created if the times differ.
+ * Times come from the bell schedule and rotation (utils/schedule.js), so the
+ * event lands when the block actually meets on that date.
  */
 import { Platform } from 'react-native';
 import { school } from '../theme/school';
 
-import { BLOCK_TIMES, blockStart, blockName } from './schedule';
-
-/**
- * Returns a Date for the next weekday (Mon–Fri) at hour:minute.
- * If today is a weekday and the time hasn't passed yet, returns today.
- */
-function nextWeekdayAtTime(hour, minute) {
-  const now    = new Date();
-  const result = new Date(now);
-  result.setHours(hour, minute, 0, 0);
-
-  // If today is Sat(6) or Sun(0), or the time has already passed, advance
-  const day = now.getDay();
-  if (day === 0) {
-    result.setDate(result.getDate() + 1); // → Monday
-  } else if (day === 6) {
-    result.setDate(result.getDate() + 2); // → Monday
-  } else if (result <= now) {
-    // Weekday but time has passed: move to next weekday
-    const daysToAdd = day === 5 ? 3 : 1; // Friday → Monday, else +1
-    result.setDate(result.getDate() + daysToAdd);
-  }
-  return result;
-}
+import {
+  blockName, blockTimes, bookableDays, nextBlockStart, timeRange,
+} from './schedule';
 
 // ─── Native helpers (iOS / Android) ──────────────────────────────────────────
 
@@ -53,7 +32,7 @@ async function getBestCalendarId(Calendar) {
   return (owned ?? writable ?? cals[0])?.id ?? null;
 }
 
-async function addToNativeCalendar(session, otherName, times, startDate, endDate) {
+async function addToNativeCalendar(session, otherName, startDate, endDate) {
   // Lazy-load expo-calendar so web bundles never pull it in
   const Calendar = await import('expo-calendar');
 
@@ -189,53 +168,34 @@ function addToWebCalendar(session, otherName, startDate, endDate) {
  * @returns {{ success: boolean, error?: string }}
  */
 export async function addSessionToCalendar(session, otherName) {
-  const times = BLOCK_TIMES[session.period];
+  // Booked sessions have a real date. Older undated ones use the next time
+  // the block meets so the entry is still useful.
+  const iso = session.session_date ?? bookableDays({ period: session.period, count: 1 })[0];
+  const times = iso ? blockTimes(iso, session.period) : null;
   if (!times) {
-    return { success: false, error: `Unknown block: ${session.period}` };
-  }
-
-  // Booked sessions have a real date. Older undated ones fall back to the
-  // next weekday at the block's time so the entry is still useful.
-  let startDate;
-  let endDate;
-  if (session.session_date) {
-    startDate = blockStart(session.session_date, session.period);
-    endDate   = new Date(startDate);
-    endDate.setHours(times.endH, times.endM, 0, 0);
-  } else {
-    startDate = nextWeekdayAtTime(times.startH, times.startM);
-    endDate   = nextWeekdayAtTime(times.endH,   times.endM);
+    return { success: false, error: `${blockName(session.period)} doesn't meet that day.` };
   }
 
   if (Platform.OS === 'web') {
-    return addToWebCalendar(session, otherName, startDate, endDate);
+    return addToWebCalendar(session, otherName, times.start, times.end);
   }
 
-  return addToNativeCalendar(session, otherName, times, startDate, endDate);
+  return addToNativeCalendar(session, otherName, times.start, times.end);
 }
 
 /**
- * When the session's block next starts (next weekday at the block's start
- * time), or null for an unknown block. Shared with reminders.js.
+ * When the session's block next meets, or null if it doesn't in the next four
+ * weeks. Shared with reminders.js.
  */
 export function nextSessionStart(period) {
-  const times = BLOCK_TIMES[period];
-  return times ? nextWeekdayAtTime(times.startH, times.startM) : null;
+  return nextBlockStart(period);
 }
 
 /**
- * Returns a human-readable summary of when the next occurrence will be.
- * e.g. "Next Monday, Oct 14 · 9:00 – 9:50 AM"
+ * "Block 6 · 1:55 PM – 3:05 PM" for a session date, or '' when the block
+ * doesn't meet that day.
  */
-export function getSessionTimeLabel(day, period) {
-  const times = BLOCK_TIMES[period];
-  if (!times) return '';
-
-  const fmt = (h, m) => {
-    const suffix = h >= 12 ? 'PM' : 'AM';
-    const h12    = h > 12 ? h - 12 : h === 0 ? 12 : h;
-    return `${h12}:${String(m).padStart(2, '0')} ${suffix}`;
-  };
-
-  return `${blockName(period)} · ${fmt(times.startH, times.startM)} – ${fmt(times.endH, times.endM)}`;
+export function getSessionTimeLabel(iso, period) {
+  const range = timeRange(iso, period);
+  return range ? `${blockName(period)} · ${range}` : '';
 }

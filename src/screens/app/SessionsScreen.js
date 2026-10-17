@@ -75,7 +75,7 @@ export default function SessionsScreen({ navigation }) {
     const { success, error } = await addSessionToCalendar(session, otherName);
     if (success) {
       setCalendarAdded((prev) => new Set([...prev, session.id]));
-      const timeLabel = getSessionTimeLabel(session.day, session.period);
+      const timeLabel = getSessionTimeLabel(session.session_date, session.period);
       const msg = Platform.OS === 'web'
         ? `Calendar file downloaded · ${timeLabel}`
         : `Added to calendar · ${timeLabel}`;
@@ -157,7 +157,10 @@ export default function SessionsScreen({ navigation }) {
     setBusyId(sessionId);
     const done = await updateStatus(sessionId, 'completed', "Couldn't mark the session as done.");
     setBusyId(null);
-    if (done) setParty({ title: 'Session done!', subtitle: `+${minutesToHours(blockMinutes(period))} service hours` });
+    if (done) {
+      const hours = minutesToHours(blockMinutes(period));
+      setParty({ title: 'Session done!', subtitle: `+${hours} service hour${hours === 1 ? '' : 's'}` });
+    }
     loadSessions();
   };
 

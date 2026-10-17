@@ -21,9 +21,9 @@ describe('service hours', () => {
     expect(summarizeHours(undefined, ME)).toMatchObject({ sessions: 0, minutes: 0, hours: 0, students: 0, verifiedHours: 0 });
   });
 
-  test('summary uses 50-minute blocks and counts distinct students', () => {
-    expect(BLOCK_MINUTES).toBe(50);
-    expect(summarizeHours(sessions, ME)).toMatchObject({ sessions: 3, minutes: 150, hours: 2.5, students: 2, verifiedSessions: 1, verifiedHours: 0.8 });
+  test('summary counts each block as an hour and counts distinct students', () => {
+    expect(BLOCK_MINUTES).toBe(60);
+    expect(summarizeHours(sessions, ME)).toMatchObject({ sessions: 3, minutes: 180, hours: 3, students: 2, verifiedSessions: 1, verifiedHours: 1 });
   });
 
   test('minutesToHours rounds to one decimal', () => {
@@ -38,12 +38,12 @@ describe('service hours', () => {
 
     expect(rows[1]).toBe('Tutor,James Smith');
     expect(rows[3]).toBe('Date,Day,Block,Subject,Student,Minutes,Verified');
-    expect(rows[4]).toBe('2026-10-01,Tue,B3,SAT Math,Luke Patel,50,');
-    expect(rows[5]).toBe('2026-10-03,,B5,"Spanish, 2","Ana ""AJ"" Ruiz",50,');
-    expect(rows[6]).toBe('2026-10-05,Mon,B2,Calculus,Luke Patel,50,Yes');
-    expect(csv).toContain('Verified hours,0.8');
+    expect(rows[4]).toBe('2026-10-01,Tue,B3,SAT Math,Luke Patel,60,');
+    expect(rows[5]).toBe('2026-10-03,,B5,"Spanish, 2","Ana ""AJ"" Ruiz",60,');
+    expect(rows[6]).toBe('2026-10-05,Mon,B2,Calculus,Luke Patel,60,Yes');
+    expect(csv).toContain('Verified hours,1');
     expect(csv).toContain('Total sessions,3');
-    expect(csv).toContain('Total hours,2.5');
+    expect(csv).toContain('Total hours,3');
     expect(csv).not.toContain('Chemistry');
     expect(csv).not.toContain('Biology');
   });

@@ -1,5 +1,5 @@
 /**
- * AvailabilityGrid: the B1–B8 + CT block picker.
+ * AvailabilityGrid: the free-time picker (B1–B8, CT, A and B Lunch).
  *
  * Block schedule: no day dimension. Renders one Chip per block so the same
  * block looks identical here, in profile setup, and in the booking flow.

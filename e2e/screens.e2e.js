@@ -46,12 +46,10 @@ const SESS = {
 };
 
 const results = []; let writes = []; let denied = [];
-// Same rule as utils/schedule.bookableDays for block 3 (starts 10:00).
-const iso = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-const BOOKABLE = (() => { const out = []; const now = new Date(); const d = new Date(now); d.setHours(0,0,0,0);
-  for (let i = 0; i <= 28 && out.length < 10; i++) { const st = new Date(d); st.setHours(10,0,0,0);
-    if (d.getDay() >= 1 && d.getDay() <= 5 && !(i === 0 && st <= now)) out.push(iso(d)); d.setDate(d.getDate()+1); }
-  return out; })();
+// The days the app should offer for block 3, from the app's own rotation
+// rules (sucrase, already installed with Expo, loads the ES module here).
+require('sucrase/register');
+const BOOKABLE = require('../src/utils/schedule').bookableDays({ period: 3, count: 10 });
 const ok = (name, cond, detail='') => { results.push({ name, pass: !!cond, detail }); console.log(`${cond ? 'PASS' : 'FAIL'}  ${name}${detail ? '  — ' + detail : ''}`); };
 const lastWrite = (pred) => [...writes].reverse().find(pred);
 
@@ -182,6 +180,7 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     await type(page, 'Grade for Calculus', 'A');
     await page.getByRole('button', { name: 'Next' }).filter({ visible: true }).first().click(); await wait(page, 400);
     ok('Setup: step 3 is free blocks', await seen(page, "When you're free") && await seen(page, 'Step 3 of 3'));
+    await shot(page, 'free-times.png');
     ok('Setup: Community Time is a CT chip like B1–B8', await page.getByLabel('Community Time, not free').filter({ visible: true }).count() > 0 && await seen(page, 'CT'));
     await L(page, 'Block 4, not free').click(); await wait(page, 300);
     await L(page, 'Community Time, not free').click(); await wait(page, 300);
@@ -335,9 +334,11 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     await L(page, 'Block 3, free').click().catch(()=>{}); await wait(page, 300);
     await page.getByRole('button', { name: 'Book Session' }).filter({ visible: true }).first().click(); await wait(page, 1000);
     ok('Tutor profile → Book screen', await seen(page, 'Book a Session') && await seen(page, 'Block 3', false));
-    ok('Book: day picker offers school days', (await page.getByRole('button', { name: /(Today|Tomorrow|Mon|Tue|Wed|Thu|Fri)/ }).filter({ visible: true }).count()) >= 5);
+    ok('Book: day picker offers the days block 3 meets', (await page.getByRole('button', { name: /(Today|Tomorrow|Mon|Tue|Wed|Thu|Fri)/ }).filter({ visible: true }).count()) === BOOKABLE.length && BOOKABLE.length >= 5, String(BOOKABLE));
+    ok('Book: shows the rotation day and real block time', await seen(page, /Day [1-8] · \d{1,2}:\d\d [AP]M – /, false));
     { const busyChip = page.locator('[aria-label$=", already booked"]').filter({ visible: true });
       ok('Book: days the tutor is already booked are greyed out', (await busyChip.count()) === 1 && (await busyChip.first().getAttribute('aria-disabled')) === 'true'); }
+    await shot(page, 'book.png');
     await V(page, 'Chemistry').click(); await wait(page, 200);
     await type(page, 'Notes (optional)', 'Stoichiometry help'); writes = [];
     await page.getByRole('button', { name: 'Send Request' }).filter({ visible: true }).first().click(); await wait(page, 1500);
@@ -373,7 +374,7 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     await page.getByRole('button', { name: 'Mark as Done' }).filter({ visible: true }).first().click().catch(()=>{}); await wait(page, 1200);
     const md = lastWrite((w) => w.u.includes('/rest/v1/sessions') && w.m === 'PATCH');
     ok('Sessions: Mark as Done sets completed on tutor\'s session', md && md.body.status === 'completed' && md.u.includes('id=eq.s4'), md?.u);
-    ok('Celebration: done shows service hours', await seen(page, 'Session done!') && await seen(page, '+0.8 service hours'));
+    ok('Celebration: done shows service hours', await seen(page, 'Session done!') && await seen(page, '+1 service hour'));
     ok('Sessions: student does not see Mark as Done on own booking', await page.getByRole('button', { name: 'Mark as Done' }).filter({ visible: true }).count() === 1);
     await V(page, 'Past').click(); await wait(page, 1200);
     await page.getByRole('button', { name: 'Leave a Review' }).filter({ visible: true }).first().click(); await wait(page, 800);
@@ -400,11 +401,11 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     // Profile
     await tab(page, 'Profile'); await wait(page, 1000);
     ok('Moderation: hidden for regular users', !(await seen(page, 'Moderator tools')));
-    ok('Profile: service hours card (1 taught session = 0.8 h)', await seen(page, 'Service hours') && await seen(page, '0.8'));
+    ok('Profile: service hours card (1 taught session = 1 h)', await seen(page, 'Service hours') && await seen(page, '1'));
     { const [d] = await Promise.all([page.waitForEvent('download', { timeout: 4000 }).catch(() => null),
         page.getByRole('button', { name: 'Download hours log' }).filter({ visible: true }).first().click()]);
       let csv = ''; if (d) { const fp = await d.path(); csv = require('fs').readFileSync(fp, 'utf8'); }
-      ok('Profile: hours log downloads as CSV', d && d.suggestedFilename() === 'service-hours-james-smith.csv' && csv.includes('Total hours,0.8') && csv.includes('Luke Patel'), d?.suggestedFilename()); }
+      ok('Profile: hours log downloads as CSV', d && d.suggestedFilename() === 'service-hours-james-smith.csv' && csv.includes('Total hours,1\r') && csv.includes('Luke Patel'), d?.suggestedFilename()); }
     await L(page, 'Edit profile info').click(); await wait(page, 300);
     await type(page, 'Bio', 'New bio');
     await type(page, 'Phone', '7135550100');

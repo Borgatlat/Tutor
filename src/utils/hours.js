@@ -2,8 +2,8 @@
  * hours.js: service-hours log for tutors.
  *
  * Many schools ask tutors to log volunteer / NHS hours. Every completed session
- * a tutor taught counts as one block. Blocks are 50 minutes and Community Time
- * is 40 (see BLOCK_TIMES in schedule.js), so hours are always derived, never
+ * a tutor taught counts: a block is an hour, Community Time 50 minutes and a
+ * lunch 25 (blockMinutes in schedule.js), so hours are always derived, never
  * typed in, and can't drift from the session history.
  *
  * Pure functions only: no Supabase or React here, so they are unit-tested.
@@ -11,7 +11,7 @@
 import { school } from '../theme/school';
 import { blockLabel, blockMinutes } from './schedule';
 
-export const BLOCK_MINUTES = 50;
+export const BLOCK_MINUTES = 60;   // a block; see blockMinutes for CT and lunch
 
 const minutesOf = (list) => list.reduce((sum, s) => sum + blockMinutes(s.period), 0);
 

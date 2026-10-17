@@ -6,8 +6,9 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import Celebration from '../../components/Celebration';
-import { blockName, bookableDays, chipLabel, formatSessionDate } from '../../utils/schedule';
-import { getSessionTimeLabel } from '../../utils/calendar';
+import {
+  blockName, bookableDays, chipLabel, formatSessionDate, schoolDay, timeRange,
+} from '../../utils/schedule';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { cardShadow } from '../../theme/shadows';
@@ -17,6 +18,12 @@ import {
   Avatar, Button, Chip, EmptyState, ErrorBanner, Field, Mascot,
   OrganicBackdrop,
 } from '../../components/ui';
+
+/** "Day 7 · 10:00 AM – 11:09 AM": where the block falls in the rotation that day. */
+function dayLine(iso, period) {
+  const info = schoolDay(iso);
+  return [info?.day ? `Day ${info.day}` : '', timeRange(iso, period)].filter(Boolean).join(' · ');
+}
 
 export default function BookSessionScreen({ route, navigation }) {
   const { tutor, slot } = route.params;
@@ -97,7 +104,7 @@ export default function BookSessionScreen({ route, navigation }) {
               { icon: 'person-outline',   text: tutor.full_name },
               { icon: 'book-outline',     text: subject },
               { icon: 'calendar-outline', text: `${formatSessionDate(date)} · ${blockName(slot.period)}` },
-              { icon: 'time-outline',     text: getSessionTimeLabel(null, slot.period).split(' · ')[1] },
+              { icon: 'time-outline',     text: timeRange(date, slot.period) },
             ].map((row) => (
               <View key={row.icon} style={styles.confirmRow}>
                 <Ionicons name={row.icon} size={15} color={colors.gray500} />
@@ -169,7 +176,7 @@ export default function BookSessionScreen({ route, navigation }) {
               <Text style={styles.slotText}>
                 {date ? `${formatSessionDate(date)} · ` : ''}{blockName(slot.period)}
               </Text>
-              <Text style={styles.slotSub}>{getSessionTimeLabel(null, slot.period).split(' · ')[1]}</Text>
+              <Text style={styles.slotSub}>{date ? dayLine(date, slot.period) : 'No school days left for this block in the next 4 weeks'}</Text>
             </View>
           </View>
 

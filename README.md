@@ -62,7 +62,7 @@ schedule, "when are we both free?" takes a dozen texts.
 ```
 
 - **Matching on a block schedule.** Tutors and students each mark the blocks
-  (B1–B8, plus Community Time, CT) they're free. `search_tutors` gives every tutor one score: how well
+  (B1–B8, Community Time and A or B Lunch) they're free. Strake's 8-day rotation and bell schedule (Regular, Late Start, Morning Assembly, Early Dismissal) live in `src/constants/schoolCalendar.js`, so each booking lands on a day that block actually meets, at its real time. `search_tutors` gives every tutor one score: how well
   the name matches, plus their rating and experience, plus a boost for every
   free block they share with the student. Blocked users are left out both
   ways. The top result is a good tutor you can actually meet.
@@ -85,11 +85,11 @@ More detail: [ARCHITECTURE.md](ARCHITECTURE.md) · database:
 
 - **Unit tests** (Jest + Testing Library): service hours, schedule maths,
   reminders and core components: `npm test`.
-- **Screen tests** with Playwright against the web build: 123 checks that
+- **Screen tests** with Playwright against the web build: 124 checks that
   press every screen's buttons and check what the app sends
   (`npm run test:e2e`, in [e2e/](e2e/)).
 - **Database tests**: every migration is applied twice to a real Postgres,
-  the demo data is loaded twice, then 50 checks sign in as a tutor, a
+  the demo data is loaded twice, then 51 checks sign in as a tutor, a
   student, a moderator, an outsider and a visitor and try everything they
   should and shouldn't be able to do (`npm run test:db`, in
   [supabase/tests/](supabase/tests/)).
@@ -123,8 +123,7 @@ run them in order (each one is safe to run again):
    moderator tools
 3. `003_privacy_reviews_accounts.sql`: private phone numbers, reviews only
    from real sessions, account deletion
-4. `004_community_time.sql`: Community Time (CT, 9:10–9:50 on weekdays)
-   as a free block
+4. `004_community_time.sql`: Community Time and A/B Lunch as free times
 5. `supabase/seed_demo.sql` *(optional)*: demo accounts, all with password
    `DemoTutor2026!`. Sign in as `james.smith.demo@mail.strakejesuit.org`
    (student), `alex.kim.demo@…` (tutor) or `mr.thompson.demo@…` (moderator).
