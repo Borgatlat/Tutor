@@ -6,6 +6,16 @@ import { unregisterPush } from '../utils/push';
 // Local storage can't be trusted because of hydration race conditions.
 // The source of truth is profiles.setup_complete in the database.
 
+/**
+ * Source of truth: the profile's setup_complete flag. Email accounts made
+ * before that column existed count as set up once they have a name; Google
+ * accounts always arrive with a name, so they don't get that shortcut.
+ */
+function isSetUp(profile, session) {
+  if (profile?.setup_complete) return true;
+  return !!profile?.full_name && !!session?.user?.user_metadata?.role;
+}
+
 const useAuthStore = create((set, get) => ({
   session:       null,
   profile:       null,
@@ -59,9 +69,7 @@ const useAuthStore = create((set, get) => ({
         }
       }
 
-      // Source of truth: Supabase profile.setup_complete flag.
-      // Fall back to full_name presence for accounts created before the column existed.
-      const alreadySetup = !!profile?.setup_complete || !!profile?.full_name;
+      const alreadySetup = isSetUp(profile, get().session);
 
       set({ profile, loading: false, setupComplete: alreadySetup });
     } catch {
@@ -74,12 +82,14 @@ const useAuthStore = create((set, get) => ({
           email:     user?.email ?? '',
           full_name: meta.full_name ?? '',
           role:      meta.role ?? 'student',
+          // Google accounts come with a profile photo
+          ...(meta.avatar_url ? { avatar_url: meta.avatar_url } : {}),
         }, { onConflict: 'id' });
         const profile = await fetchMyProfile(userId);
         set({
           profile,
           loading: false,
-          setupComplete: !!profile?.setup_complete || !!profile?.full_name,
+          setupComplete: isSetUp(profile, get().session),
         });
       } catch {
         set({ loading: false, setupComplete: false });

@@ -4,6 +4,9 @@
  *   Tutors / both:  1 About you → 2 What you teach → 3 When you're free
  *   Students:       1 About you → 2 When you're free
  *
+ * People who signed up with Google never saw the role picker, so they start
+ * with a "How will you use it?" step.
+ *
  * Ollie explains each step, a progress bar shows how far along you are, and
  * everything is saved in one go at the end. "Skip for now" is always there.
  * Phone numbers are not asked for here: they're private and optional, and can
@@ -20,10 +23,14 @@ import { radii, space, border, press, hit } from '../../theme/layout';
 import AvailabilityGrid from '../../components/AvailabilityGrid';
 import { type } from '../../theme/fonts';
 import {
-  AuthShell, Button, ErrorBanner, FadeIn, Field, Mascot, SubjectPicker,
+  AuthShell, Button, ErrorBanner, FadeIn, Field, Mascot, RoleSelector, SubjectPicker,
 } from '../../components/ui';
 
 const STEP_COPY = {
+  role: {
+    title: 'How will you use it?',
+    ollie: 'Welcome! Are you here to find a tutor, to tutor others, or both? You can change this later.',
+  },
   about: {
     title: 'About you',
     ollie: "Hi! I'm Ollie. Add a photo and a line about yourself so people know who they're meeting.",
@@ -41,11 +48,12 @@ const STEP_COPY = {
 export default function ProfileSetupScreen() {
   const { session, profile, refreshProfile, completeSetup } = useAuthStore();
   const userId = session?.user?.id;
-  // Role comes from the profile (created from sign-up metadata) or metadata fallback
-  const role = profile?.role ?? session?.user?.user_metadata?.role ?? 'student';
+  // Email sign-ups chose a role on the sign-up form; Google sign-ups pick it here.
+  const askRole = !session?.user?.user_metadata?.role;
+  const [role, setRole] = useState(profile?.role ?? session?.user?.user_metadata?.role ?? 'student');
   const isTutor = role === 'tutor' || role === 'both';
 
-  const steps = isTutor ? ['about', 'teach', 'free'] : ['about', 'free'];
+  const steps = [...(askRole ? ['role'] : []), 'about', ...(isTutor ? ['teach'] : []), 'free'];
   const [stepIndex, setStepIndex] = useState(0);
   const step   = steps[stepIndex];
   const isLast = stepIndex === steps.length - 1;
@@ -126,6 +134,7 @@ export default function ProfileSetupScreen() {
         .from('profiles')
         .update({
           setup_complete: true,
+          ...(askRole   ? { role }      : {}),
           ...(bio       ? { bio }       : {}),
           ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
         })
@@ -205,6 +214,10 @@ export default function ProfileSetupScreen() {
       <ErrorBanner message={saveError} />
 
       <FadeIn key={step}>
+        {step === 'role' ? (
+          <RoleSelector value={role} onChange={setRole} />
+        ) : null}
+
         {step === 'about' ? (
           <>
             <View style={styles.avatarSection}>

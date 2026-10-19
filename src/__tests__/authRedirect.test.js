@@ -28,3 +28,19 @@ describe('friendlyAuthEmailError', () => {
     expect(friendlyAuthEmailError('Invalid login credentials')).toBeNull();
   });
 });
+
+describe('Google sign-in messages', () => {
+  jest.mock('../lib/supabase', () => ({ supabase: {}, SUPABASE_URL: '', SUPABASE_ANON_KEY: '' }));
+  jest.mock('expo-web-browser', () => ({}));
+  const { friendlyGoogleError } = require('../lib/googleSignIn');
+
+  test('a refused personal Gmail asks for the school account', () => {
+    expect(friendlyGoogleError('Database error saving new user')).toMatch(/@mail\.strakejesuit\.org Google account/);
+  });
+
+  test('closing Google stays quiet; Google turned off is explained', () => {
+    expect(friendlyGoogleError('access_denied')).toBeNull();
+    expect(friendlyGoogleError('Unsupported provider: provider is not enabled')).toMatch(/isn't turned on yet/);
+    expect(friendlyGoogleError(null)).toBeNull();
+  });
+});

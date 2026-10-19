@@ -10,6 +10,7 @@ import { space, hit, press } from '../../theme/layout';
 import { heading, label, type } from '../../theme/fonts';
 import { school } from '../../theme/school';
 import { SCHOOL_EMAIL_DOMAIN } from '../../constants';
+import GoogleSignInButton from '../../components/GoogleSignInButton';
 import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../../constants/legal';
 import {
   AuthShell, Button, ErrorBanner, Field, IconButton, RoleSelector,
@@ -97,6 +98,8 @@ export default function SignUpScreen({ navigation }) {
       <Text style={styles.cardTitle}>Create account</Text>
 
       <ErrorBanner message={submitError} />
+
+      <GoogleSignInButton onError={setSubmitError} />
 
       <Controller
         control={control}

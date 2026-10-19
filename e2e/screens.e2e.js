@@ -68,6 +68,8 @@ async function ctxFor(browser, mode, failWrites = false, tour = false) {
     let out = [];
     if (u.includes('/auth/v1/signup')) out = { id:'new', email: body?.email, user_metadata: body?.data };
     else if (u.includes('/auth/v1/resend')) out = {};
+    else if (u.includes('/auth/v1/settings')) out = { external: { email: true, google: true } };
+    else if (u.includes('/auth/v1/authorize')) return route.fulfill({ status: 200, contentType: 'text/html', body: '<p>Google</p>' });
     else if (u.includes('/auth/v1/logout')) return route.fulfill({ status: 204, body: '' });
     else if (u.includes('/auth/v1/user')) out = mode === 'setup' ? {...user, user_metadata:{role:'both'}} : user;
     else if (u.includes('/rpc/tutor_booked_slots')) out = [{ session_date: BOOKABLE[1], period: 3 }];
@@ -131,6 +133,18 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
   const browser = await chromium.launch();
 
   // ── Signed out: Login / Sign up / Verify ────────────────────────────────
+  { const { ctx, page } = await ctxFor(browser, 'signedOut');
+    ok('Google: button on sign in when Google is turned on', await page.getByLabel('Continue with your school Google account').filter({ visible: true }).count() > 0);
+    await shot(page, 'login-google.png');
+    await page.getByLabel('Continue with your school Google account').filter({ visible: true }).first().click();
+    await page.waitForURL(/auth\/v1\/authorize/, { timeout: 5000 }).catch(() => {});
+    { const u = new URL(page.url());
+      ok('Google: goes to Google limited to school accounts', u.searchParams.get('provider') === 'google' && u.searchParams.get('hd') === 'mail.strakejesuit.org' && u.searchParams.get('redirect_to') === 'http://localhost:8099/', page.url()); }
+    await page.goto('http://localhost:8099/#error=server_error&error_code=unexpected_failure&error_description=Database+error+saving+new+user'); await wait(page, 2500);
+    ok('Google: a personal Gmail is turned away with a clear message', await seen(page, 'Use your @mail.strakejesuit.org Google account', false));
+    ok('Google: the error is cleared from the address bar', !page.url().includes('error'), page.url());
+    await ctx.close(); }
+
   { const { ctx, page } = await ctxFor(browser, 'signedOut');
     await V(page, 'Sign In').click().catch(()=>{});
     await page.getByRole('button', { name: 'Sign In' }).filter({ visible: true }).first().click(); await wait(page);

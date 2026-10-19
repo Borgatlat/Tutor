@@ -40,12 +40,18 @@ create function pg_temp.sign_in(uid text) returns void language sql as
 \set C '''dddddddd-0000-0000-0000-000000000004'''
 \set D '''eeeeeeee-0000-0000-0000-000000000005'''
 
-insert into auth.users(id, email) values (:A,'a@x'), (:B,'b@x'), (:M,'m@x'), (:C,'c@x'), (:D,'d@x');
+insert into auth.users(id, email) values (:A,'a@mail.strakejesuit.org'), (:B,'b@mail.strakejesuit.org'), (:M,'m@mail.strakejesuit.org'), (:C,'c@mail.strakejesuit.org'), (:D,'d@mail.strakejesuit.org');
+select pg_temp.fails('insert into auth.users(id, email) values (gen_random_uuid(), ''someone@gmail.com'')',
+                     'signing up with a personal Gmail', '%school email%');
+select pg_temp.fails('insert into auth.users(id, email) values (gen_random_uuid(), ''x@mail.strakejesuit.org.evil.com'')',
+                     'a look-alike school address', '%school email%');
+select pg_temp.fails(format('update auth.users set email = %L where id = %L', 'a@gmail.com', :A),
+                     'changing to a non-school email', '%school email%');
 insert into public.profiles(id, email, full_name, role, phone) values
-  (:A, 'a@x', 'Alex Kim',     'tutor',   '7135550100'),
-  (:B, 'b@x', 'Ben Lee',      'student', '7135550111'),
-  (:M, 'm@x', 'Ms Moderator', 'student', null),
-  (:C, 'c@x', 'Cal Out',      'student', null);
+  (:A, 'a@mail.strakejesuit.org', 'Alex Kim',     'tutor',   '7135550100'),
+  (:B, 'b@mail.strakejesuit.org', 'Ben Lee',      'student', '7135550111'),
+  (:M, 'm@mail.strakejesuit.org', 'Ms Moderator', 'student', null),
+  (:C, 'c@mail.strakejesuit.org', 'Cal Out',      'student', null);
 update public.profiles set is_moderator = true where id = :M;
 
 -- A school day a few days ahead, and a Saturday.
@@ -70,7 +76,7 @@ reset role;
 \echo '--- new user D finishing sign-up (the app''s upsert)'
 select pg_temp.sign_in(:D);
 set role authenticated;
-insert into public.profiles(id, email, full_name, role) values (:D, 'd@x', 'Dana Ng', 'student')
+insert into public.profiles(id, email, full_name, role) values (:D, 'd@mail.strakejesuit.org', 'Dana Ng', 'student')
   on conflict (id) do update set email = excluded.email, full_name = excluded.full_name, role = excluded.role;
 update public.profiles set bio = 'New here', phone = '7135550199' where id = :D;
 select pg_temp.ok((select phone from public.get_my_profile()) = '7135550199', 'D reads own phone through get_my_profile');

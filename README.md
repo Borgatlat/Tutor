@@ -85,11 +85,11 @@ More detail: [ARCHITECTURE.md](ARCHITECTURE.md) · database:
 
 - **Unit tests** (Jest + Testing Library): service hours, schedule maths,
   reminders and core components: `npm test`.
-- **Screen tests** with Playwright against the web build: 124 checks that
+- **Screen tests** with Playwright against the web build: 128 checks that
   press every screen's buttons and check what the app sends
   (`npm run test:e2e`, in [e2e/](e2e/)).
 - **Database tests**: every migration is applied twice to a real Postgres,
-  the demo data is loaded twice, then 51 checks sign in as a tutor, a
+  the demo data is loaded twice, then 54 checks sign in as a tutor, a
   student, a moderator, an outsider and a visitor and try everything they
   should and shouldn't be able to do (`npm run test:db`, in
   [supabase/tests/](supabase/tests/)).
@@ -124,15 +124,27 @@ run them in order (each one is safe to run again):
 3. `003_privacy_reviews_accounts.sql`: private phone numbers, reviews only
    from real sessions, account deletion
 4. `004_community_time.sql`: Community Time and A/B Lunch as free times
-5. `supabase/seed_demo.sql` *(optional)*: demo accounts, all with password
+5. `005_school_email_only.sql`: the database itself refuses any account
+   that isn't an @mail.strakejesuit.org address (email or Google sign-in)
+6. `supabase/seed_demo.sql` *(optional)*: demo accounts, all with password
    `DemoTutor2026!`. Sign in as `james.smith.demo@mail.strakejesuit.org`
    (student), `alex.kim.demo@…` (tutor) or `mr.thompson.demo@…` (moderator).
 
-Shortcut: `supabase/all_migrations.sql` has 001–004 in one file to paste and
+Shortcut: `supabase/all_migrations.sql` has 001–005 in one file to paste and
 run (rebuild it with `npm run db:bundle` after changing a migration).
 
 Or with the Supabase CLI: `npx supabase link --project-ref <your ref>`, then
 `npx supabase db push`.
+
+**Continue with Google** (optional): the button appears on its own once
+Google is turned on in Supabase.
+1. Google Cloud Console → APIs & Services → Credentials → Create OAuth client
+   ID (Web application). Authorized redirect URI:
+   `https://<project-ref>.supabase.co/auth/v1/callback`.
+2. Supabase → Authentication → Sign In / Providers → Google: turn it on and
+   paste the client ID and secret.
+3. Supabase → Authentication → URL Configuration → Redirect URLs: the site
+   (`https://tutor-delta-one.vercel.app/`) and `strakejesuittutors://auth/callback`.
 
 Make a real teacher a moderator:
 
