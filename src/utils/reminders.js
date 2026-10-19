@@ -8,7 +8,7 @@
  */
 import { Platform } from 'react-native';
 import { nextSessionStart } from './calendar';
-import { blockStart } from './schedule';
+import { blockName, blockStart } from './schedule';
 
 export const REMINDER_MINUTES_BEFORE = 10;
 const KIND = 'session-reminder';
@@ -61,7 +61,7 @@ export async function syncSessionReminders(sessions = [], currentUserId) {
     await Notifications.scheduleNotificationAsync({
       content: {
         title: `Tutoring in ${REMINDER_MINUTES_BEFORE} minutes`,
-        body: `${s.subject} with ${other?.full_name ?? 'your partner'} · Block ${s.period}`,
+        body: `${s.subject} with ${other?.full_name ?? 'your partner'} · ${blockName(s.period)}`,
         data: { kind: KIND, sessionId: s.id },
       },
       trigger: { date: at },

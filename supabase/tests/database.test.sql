@@ -132,6 +132,28 @@ insert into public.messages(session_id, sender_id, body) select id, :B, 'Hi! Can
 reset role;
 
 
+\echo '--- Community Time (9) and lunches (10, 11)'
+select pg_temp.sign_in(:A);
+set role authenticated;
+insert into public.tutor_availability(tutor_id, period) values (:A, 9), (:A, 11);
+select pg_temp.fails(format('insert into public.tutor_availability(tutor_id, period) values (%L, 12)', :A),
+                     'a block after B Lunch', '%period_check%');
+reset role;
+select pg_temp.sign_in(:B);
+set role authenticated;
+begin;
+insert into public.sessions(tutor_id, student_id, subject, period, session_date)
+  select :A, :B, 'SAT Math', 9, day from d;
+select pg_temp.ok((select public.session_when(s) like '% · Community Time' from public.sessions s where period = 9),
+                  'B books A during CT, and it reads as Community Time');
+insert into public.sessions(tutor_id, student_id, subject, period, session_date)
+  select :A, :B, 'SAT Math', 11, day from d;
+select pg_temp.ok((select public.session_when(s) like '% · B Lunch' from public.sessions s where period = 11),
+                  'B books A at B Lunch');
+rollback;
+reset role;
+
+
 \echo '--- outsider C'
 select pg_temp.sign_in(:C);
 set role authenticated;

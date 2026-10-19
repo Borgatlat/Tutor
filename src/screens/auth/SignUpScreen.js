@@ -4,6 +4,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { supabase } from '../../lib/supabase';
+import { authEmailRedirectTo, friendlyAuthEmailError } from '../../lib/authRedirect';
 import colors from '../../theme/colors';
 import { space, hit, press } from '../../theme/layout';
 import { heading, label, type } from '../../theme/fonts';
@@ -49,13 +50,23 @@ export default function SignUpScreen({ navigation }) {
     setSubmitError('');
     try {
       const cleanEmail = email.toLowerCase().trim();
-      const { error } = await supabase.auth.signUp({
+      // The confirm link brings them back to this site or the app.
+      const { data, error } = await supabase.auth.signUp({
         email: cleanEmail,
         password,
-        options: { data: { full_name, role } },
+        options: {
+          data: { full_name, role },
+          emailRedirectTo: authEmailRedirectTo(),
+        },
       });
-      if (error) { setSubmitError(error.message); return; }
-      navigation.navigate('VerifyEmail', { email: cleanEmail });
+      if (error) {
+        setSubmitError(friendlyAuthEmailError(error.message) ?? error.message);
+        return;
+      }
+      // An already-registered email "succeeds" with no identities and no new
+      // email; the next screen says so instead of promising a fresh link.
+      const maybeExisting = Array.isArray(data?.user?.identities) && data.user.identities.length === 0;
+      navigation.navigate('VerifyEmail', { email: cleanEmail, maybeExisting });
     } catch (e) {
       if (__DEV__) console.error('[SignUp]', e);
       setSubmitError(

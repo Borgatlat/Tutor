@@ -20,8 +20,18 @@ export function inviteMessage(isTutor) {
     : `I'm using ${school.name} Tutors to get help from other ${school.memberPlural}. Join me: ${inviteLink()}`;
 }
 
-export async function shareInvite(isTutor) {
-  const message = inviteMessage(isTutor);
+// For an empty search: ask someone who's good at a class to start tutoring.
+export function recruitMessage(subject) {
+  const what = subject ? `good at ${subject}` : 'good at a class';
+  return `Are you ${what}? Tutor other ${school.memberPlural} on ${school.name} Tutors during your free blocks and earn service hours: ${inviteLink()}`;
+}
+
+/**
+ * kind: 'friend' (default) invites someone to use the app,
+ *       'recruit' asks someone to sign up as a tutor (optionally for `subject`).
+ */
+export async function shareInvite(isTutor, { kind = 'friend', subject } = {}) {
+  const message = kind === 'recruit' ? recruitMessage(subject) : inviteMessage(isTutor);
   try {
     if (Platform.OS !== 'web') {
       const r = await Share.share({ message });

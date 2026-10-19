@@ -1,6 +1,9 @@
 import colors from '../theme/colors';
 
-export const BLOCKS = [1, 2, 3, 4, 5, 6, 7, 8];
+// The free times people can pick: B1–B8 with Community Time (CT) between B1
+// and B2, then A and B Lunch. CT and the lunches are saved as 9, 10 and 11 in
+// the database (see utils/schedule) but always shown by name.
+export const BLOCKS = [1, 9, 2, 3, 4, 5, 6, 7, 8, 10, 11];
 
 // Core classes lead the list: most students take these, so they should be the
 // first thing in the picker. AP entries keep their 'AP ' prefix, which is what

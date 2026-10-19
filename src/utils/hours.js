@@ -2,15 +2,18 @@
  * hours.js: service-hours log for tutors.
  *
  * Many schools ask tutors to log volunteer / NHS hours. Every completed session
- * a tutor taught counts as one block. Blocks are 50 minutes (see BLOCK_TIMES in
- * calendar.js), so hours are always derived, never typed in, and can't drift
- * from the session history.
+ * a tutor taught counts: a block is an hour, Community Time 50 minutes and a
+ * lunch 25 (blockMinutes in schedule.js), so hours are always derived, never
+ * typed in, and can't drift from the session history.
  *
  * Pure functions only: no Supabase or React here, so they are unit-tested.
  */
 import { school } from '../theme/school';
+import { blockLabel, blockMinutes } from './schedule';
 
-export const BLOCK_MINUTES = 50;
+export const BLOCK_MINUTES = 60;   // a block; see blockMinutes for CT and lunch
+
+const minutesOf = (list) => list.reduce((sum, s) => sum + blockMinutes(s.period), 0);
 
 /** Completed sessions this user taught (not ones they attended as a student). */
 export function taughtSessions(sessions = [], tutorId) {
@@ -28,12 +31,12 @@ export function minutesToHours(minutes) {
  */
 export function summarizeHours(sessions, tutorId) {
   const taught   = taughtSessions(sessions, tutorId);
-  const minutes  = taught.length * BLOCK_MINUTES;
+  const minutes  = minutesOf(taught);
   const students = new Set(taught.map((s) => s.student_id)).size;
-  const verified = taught.filter((s) => s.verified_at).length;
+  const verified = taught.filter((s) => s.verified_at);
   return {
     sessions: taught.length, minutes, hours: minutesToHours(minutes), students,
-    verifiedSessions: verified, verifiedHours: minutesToHours(verified * BLOCK_MINUTES),
+    verifiedSessions: verified.length, verifiedHours: minutesToHours(minutesOf(verified)),
   };
 }
 
@@ -71,16 +74,16 @@ export function buildHoursCsv(sessions, tutorId, tutorName = '') {
     ...taught.map((s) => [
       sessionDay(s),
       s.session_date ? weekday(s.session_date) : (s.day ?? ''),
-      s.period ?? '',
+      s.period ? blockLabel(s.period) : '',
       s.subject ?? '',
       s.student?.full_name ?? '',
-      BLOCK_MINUTES,
+      blockMinutes(s.period),
       s.verified_at ? 'Yes' : '',
     ]),
     [],
     ['Total sessions', taught.length],
-    ['Total hours', minutesToHours(taught.length * BLOCK_MINUTES)],
-    ['Verified hours', minutesToHours(taught.filter((s) => s.verified_at).length * BLOCK_MINUTES)],
+    ['Total hours', minutesToHours(minutesOf(taught))],
+    ['Verified hours', minutesToHours(minutesOf(taught.filter((s) => s.verified_at)))],
     [],
     ['Moderator signature', ''],
   ];

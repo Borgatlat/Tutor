@@ -15,6 +15,7 @@ import TutorCard from '../../components/TutorCard';
 import SkeletonCard from '../../components/SkeletonCard';
 import WelcomeTour from '../../components/WelcomeTour';
 import GettingStarted from '../../components/GettingStarted';
+import InviteButton from '../../components/InviteButton';
 import { sessionWhen } from '../../utils/schedule';
 import { Avatar, EmptyState, FadeIn, OrganicBackdrop, SectionHeader, StatRow, StatusPill } from '../../components/ui';
 import { useResponsive } from '../../hooks/useResponsive';
@@ -153,7 +154,13 @@ export default function HomeScreen({ navigation }) {
         actionLabel={isTutor ? 'Update free blocks' : 'Find a tutor'}
         onAction={() => navigation.navigate(isTutor ? 'Profile' : 'Search')}
         compact
-      />
+      >
+        <InviteButton
+          isTutor={isTutor}
+          variant="ghost"
+          label={isTutor ? 'Share the app with students' : 'Invite a friend to study with'}
+        />
+      </EmptyState>
     </View>
   ) : null;
 
@@ -180,10 +187,10 @@ export default function HomeScreen({ navigation }) {
         <EmptyState
           icon="people-outline"
           title="No tutors yet"
-          body={`Once ${school.memberPlural} add the subjects they can teach, they'll show up here.`}
-          actionLabel="Browse search"
-          onAction={() => navigation.navigate('Search')}
-        />
+          body={`Tutoring here is just getting started. Know a ${school.memberName} who's great at a class? Invite them to tutor: they earn service hours for every session.`}
+        >
+          <InviteButton kind="recruit" />
+        </EmptyState>
       ) : (
         <View style={isWide ? styles.grid : undefined}>
           {topTutors.map((t, i) => (

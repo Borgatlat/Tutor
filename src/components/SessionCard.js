@@ -101,7 +101,7 @@ export default function SessionCard({
             icon="checkmark-done"
             size="sm"
             loading={busy}
-            onPress={() => onComplete?.(session.id)}
+            onPress={() => onComplete?.(session.id, session.period)}
           />
         )}
 

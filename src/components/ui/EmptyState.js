@@ -2,7 +2,8 @@
  * EmptyState: icon + title + optional body and action.
  *
  * Use this anywhere a list can be empty, so "no data" always reads as a
- * deliberate state rather than a blank area that looks broken.
+ * deliberate state rather than a blank area that looks broken. Anything passed
+ * as children (for example an InviteButton) is shown under the action.
  */
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
@@ -20,6 +21,7 @@ export default function EmptyState({
   onAction,
   compact = false,
   style,
+  children,
 }) {
   return (
     <View style={[styles.wrap, compact && styles.compact, style]}>
@@ -43,6 +45,8 @@ export default function EmptyState({
           style={styles.action}
         />
       ) : null}
+
+      {children}
     </View>
   );
 }
