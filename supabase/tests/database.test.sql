@@ -186,6 +186,8 @@ set role authenticated;
 update public.sessions set status = 'confirmed' where id = (select id from ids where name = 'first');
 select pg_temp.fails('update public.sessions set status = ''completed'' where id in (select id from ids)', 'completing before the day', '%%');
 select pg_temp.fails('update public.sessions set period = 5 where id in (select id from ids)', 'moving a session', '%%');
+select pg_temp.fails(format('select public.start_checkin(%L)', (select id from ids where name = 'first')),
+                     'a check-in code before the day', '%day of the session%');
 select pg_temp.ok((select count(*) = 1 from public.messages), 'A reads the chat');
 update public.profiles set show_phone = true where id = :A;
 reset role;
@@ -223,6 +225,65 @@ select pg_temp.ok(public.shared_phone(:A) is null, 'blocking hides the number');
 reset role;
 
 
+\echo '--- check-in: the student confirms with the tutor''s code'
+select pg_temp.sign_in(:B);
+set role authenticated;
+insert into public.sessions(tutor_id, student_id, subject, period, session_date)
+  select :A, :B, 'SAT Math', 5, day from d;
+reset role;
+insert into ids select 'checkin', id from public.sessions where student_id = :B and period = 5;
+select pg_temp.sign_in('');
+update public.sessions set session_date = public.school_today() - 1 where id = (select id from ids where name = 'checkin');
+select pg_temp.sign_in(:A);
+set role authenticated;
+update public.sessions set status = 'confirmed' where id = (select id from ids where name = 'checkin');
+reset role;
+
+select pg_temp.sign_in(:B);
+set role authenticated;
+select pg_temp.fails(format('select public.start_checkin(%L)', (select id from ids where name = 'checkin')),
+                     'the student making the code', '%Only the tutor%');
+reset role;
+select pg_temp.sign_in(:A);
+set role authenticated;
+select public.start_checkin((select id from ids where name = 'checkin')) as code \gset
+reset role;
+select pg_temp.ok(:'code' ~ '^[0-9]{4}$', 'the tutor gets a 4-digit code');
+
+select pg_temp.sign_in(:C);
+set role authenticated;
+select pg_temp.fails(format('select public.confirm_checkin(%L, %L)', (select id from ids where name = 'checkin'), :'code'),
+                     'someone else checking in', '%Only the student%');
+reset role;
+
+select pg_temp.sign_in(:B);
+set role authenticated;
+select pg_temp.fails(format('update public.sessions set student_confirmed_at = now() where id = %L', (select id from ids where name = 'checkin')),
+                     'confirming without the code', '%checking in%');
+select pg_temp.ok(public.confirm_checkin((select id from ids where name = 'checkin'), case when :'code' = '0000' then '1111' else '0000' end) = 'wrong',
+                  'a wrong code is turned away');
+select pg_temp.ok((select count(*) = 4 from generate_series(1, 4)
+                    where public.confirm_checkin((select id from ids where name = 'checkin'), '9999x') = 'wrong'), 'more wrong tries');
+select pg_temp.fails(format('select public.confirm_checkin(%L, %L)', (select id from ids where name = 'checkin'), :'code'),
+                     'five wrong tries end the code', '%expired%');
+reset role;
+select pg_temp.sign_in(:A);
+set role authenticated;
+select public.start_checkin((select id from ids where name = 'checkin')) as code \gset
+reset role;
+select pg_temp.sign_in(:B);
+set role authenticated;
+select pg_temp.ok(public.confirm_checkin((select id from ids where name = 'checkin'), :'code') = 'ok', 'the right code checks the student in');
+select count(public.log_search('AP Physics C', null, 0)) from generate_series(1, 2) \g /dev/null
+select public.log_search('SAT Math', 3, 1) \g /dev/null
+select pg_temp.ok((select count(*) = 0 from public.search_events), 'searches aren''t readable by students');
+select pg_temp.fails('select public.insights()', 'insights for a non-moderator', '%moderators%');
+reset role;
+select pg_temp.ok((select status = 'completed' and student_confirmed_at is not null from public.sessions where id = (select id from ids where name = 'checkin')),
+                  'the session is done and confirmed by both');
+select pg_temp.ok((select session_count = 2 from public.profiles where id = :A), 'check-in counts the session for the tutor');
+
+
 \echo '--- moderator M'
 select pg_temp.sign_in(:M);
 set role authenticated;
@@ -232,6 +293,13 @@ update public.reports set reviewed = true, reviewed_by = :M, reviewed_at = now()
 select pg_temp.ok((select count(*) = 1 from public.reports where reviewed and reporter_id = :C), 'M reviews the report');
 select pg_temp.ok((select count(*) = 1 from public.messages where session_id = (select id from ids where name = 'first')), 'M can read a reported chat');
 select pg_temp.ok((select sessions_completed >= 1 and hours_tutored > 0 from public.community_stats()), 'community stats count it');
+select pg_temp.ok((select (i->'totals'->>'confirmed')::int = 1 and jsonb_array_length(i->'weekly') = 8
+                          and (i->'totals'->>'sessions')::int = (select count(*) from public.sessions
+                                where status = 'completed' and coalesce(session_date, created_at::date) >= public.school_today() - 30)
+                   from public.insights(30) i), 'insights: totals and 8 weeks');
+select pg_temp.ok((select i->'unmet'->0->>'subject' = 'AP Physics C' and (i->'unmet'->0->>'searches')::int = 2
+                          and jsonb_array_length(i->'unmet') = 1 and i->'subjects' @> '[{"subject": "SAT Math"}]'
+                   from public.insights(30) i), 'insights: subjects students can''t find a tutor for');
 reset role;
 
 select pg_temp.ok((select count(*) >= 3 from net.requests where url like '%exp.host%'), 'push notifications were sent');

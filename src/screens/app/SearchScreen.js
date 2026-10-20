@@ -4,7 +4,7 @@ import {
   SafeAreaView, StatusBar, FlatList, ScrollView, RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { searchTutors } from '../../lib/supabase';
+import { searchTutors, supabase } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { cardShadow } from '../../theme/shadows';
@@ -47,6 +47,12 @@ export default function SearchScreen({ navigation }) {
         matchSchedule: match && isStudent,
       });
       setResults(data);
+      // Record subject searches (no names) so moderators can see where
+      // students look for help and find nobody. Never blocks the screen.
+      if (s && !silent && !q) {
+        supabase.rpc('log_search', { subject: s, period: b ?? null, results: data?.length ?? 0 })
+          .then(() => {}, () => {});
+      }
     } catch (e) {
       if (__DEV__) console.warn('[SearchScreen]', e.message);
     } finally {

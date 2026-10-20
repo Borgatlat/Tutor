@@ -15,6 +15,8 @@ export default function SessionCard({
   currentUserId,
   onConfirm,
   onComplete,
+  onShowCode,
+  onCheckIn,
   onCancel,
   onReview,
   onMessage,
@@ -60,6 +62,13 @@ export default function SessionCard({
         <Text style={styles.notes} numberOfLines={2}>{session.notes}</Text>
       ) : null}
 
+      {session.status === 'completed' && session.student_confirmed_at ? (
+        <View style={styles.confirmed}>
+          <Ionicons name="shield-checkmark" size={14} color={colors.brandText} />
+          <Text style={styles.confirmedText}>Confirmed by both</Text>
+        </View>
+      ) : null}
+
       {/* Actions: `busy` disables them all so they can't be double-tapped
           while the request is in flight. */}
       {hasActions ? (
@@ -95,13 +104,36 @@ export default function SessionCard({
           />
         )}
 
+        {/* Check-in: the tutor shows a code, the student types it in. That
+            completes the session with hours confirmed by both. "Mark as
+            done" stays as the fallback. */}
         {session.status === 'confirmed' && isTutor && canMarkDone(session) && (
+          <>
+            <Button
+              label="Check-in code"
+              icon="keypad-outline"
+              size="sm"
+              disabled={busy}
+              onPress={() => onShowCode?.(session)}
+            />
+            <Button
+              label="Mark as done"
+              icon="checkmark-done"
+              size="sm"
+              variant="secondary"
+              loading={busy}
+              onPress={() => onComplete?.(session.id, session.period)}
+            />
+          </>
+        )}
+
+        {session.status === 'confirmed' && !isTutor && canMarkDone(session) && (
           <Button
-            label="Mark as done"
-            icon="checkmark-done"
+            label="Check in"
+            icon="shield-checkmark-outline"
             size="sm"
-            loading={busy}
-            onPress={() => onComplete?.(session.id, session.period)}
+            disabled={busy}
+            onPress={() => onCheckIn?.(session)}
           />
         )}
 
@@ -154,6 +186,8 @@ const styles = StyleSheet.create({
   whenText: { ...type.small, fontWeight: '600', color: colors.brandText },
 
   notes: { ...type.small, color: colors.gray600, marginTop: space.md },
+  confirmed:     { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: space.sm },
+  confirmedText: { ...type.small, fontWeight: '600', color: colors.brandText },
 
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.md },
   grow:    { flex: 1 },

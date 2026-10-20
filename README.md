@@ -24,8 +24,12 @@ schedule, "when are we both free?" takes a dozen texts.
   **Match my schedule** to rank tutors who are free when you are.
 - **Book a free block** and add a note. The tutor confirms or declines.
 - **Reminders** 10 minutes before a confirmed block, plus *Add to calendar*.
-- **Service-hours log**: every session a tutor marks as done counts as one
-  50-minute block; tutors download a CSV a moderator can check and sign.
+- **Service-hours log**: every finished session counts (an hour per block,
+  50 minutes for Community Time, 25 for lunch); tutors download a CSV a
+  moderator can check and sign.
+- **Check-in, confirmed by both**: at the session the tutor shows a 4-digit
+  code and the student types it in, so the hours are confirmed by both people
+  before a moderator verifies them (five wrong tries and the code expires).
 - **Real scheduling**: pick an actual school day and block; nobody can be
   double-booked, and only the tutor can confirm or mark a session done
   (on or after its date). All enforced in the database, not just the app.
@@ -33,8 +37,10 @@ schedule, "when are we both free?" takes a dozen texts.
   number or email. Reported chats can be read by a moderator.
 - **Push notifications** for new requests, confirmations, cancellations
   and messages.
-- **Moderator tools** for teachers: verify service hours (so the log is
-  official) and review reports.
+- **Moderator tools** for teachers: verify service hours (all checked-in
+  sessions in one tap), review reports, and **Insights**: sessions and hours
+  over the last 30 days, the busiest blocks, the most requested subjects, and
+  the subjects students searched for but found no tutor in.
 - **Reviews** after a session, so the best tutors rise to the top.
 - **Safety and privacy for minors**: school-email sign-up only, report and
   block on every profile, email addresses never shown (students tap
@@ -85,11 +91,11 @@ More detail: [ARCHITECTURE.md](ARCHITECTURE.md) · database:
 
 - **Unit tests** (Jest + Testing Library): service hours, schedule maths,
   reminders and core components: `npm test`.
-- **Screen tests** with Playwright against the web build: 128 checks that
+- **Screen tests** with Playwright against the web build: 137 checks that
   press every screen's buttons and check what the app sends
   (`npm run test:e2e`, in [e2e/](e2e/)).
 - **Database tests**: every migration is applied twice to a real Postgres,
-  the demo data is loaded twice, then 54 checks sign in as a tutor, a
+  the demo data is loaded twice, then 69 checks sign in as a tutor, a
   student, a moderator, an outsider and a visitor and try everything they
   should and shouldn't be able to do (`npm run test:db`, in
   [supabase/tests/](supabase/tests/)).
@@ -126,11 +132,13 @@ run them in order (each one is safe to run again):
 4. `004_community_time.sql`: Community Time and A/B Lunch as free times
 5. `005_school_email_only.sql`: the database itself refuses any account
    that isn't an @mail.strakejesuit.org address (email or Google sign-in)
-6. `supabase/seed_demo.sql` *(optional)*: demo accounts, all with password
+6. `006_checkin_insights.sql`: two-sided check-in (the student types the
+   tutor's code, so hours are confirmed by both) and moderator Insights
+7. `supabase/seed_demo.sql` *(optional)*: demo accounts, all with password
    `DemoTutor2026!`. Sign in as `james.smith.demo@mail.strakejesuit.org`
    (student), `alex.kim.demo@…` (tutor) or `mr.thompson.demo@…` (moderator).
 
-Shortcut: `supabase/all_migrations.sql` has 001–005 in one file to paste and
+Shortcut: `supabase/all_migrations.sql` has 001–006 in one file to paste and
 run (rebuild it with `npm run db:bundle` after changing a migration).
 
 Or with the Supabase CLI: `npx supabase link --project-ref <your ref>`, then

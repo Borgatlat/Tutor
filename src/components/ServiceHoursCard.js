@@ -48,8 +48,9 @@ export default function ServiceHoursCard({ tutorId, tutorName }) {
     <View style={styles.card}>
       <Text style={styles.title}>Service hours</Text>
       <Text style={styles.hint}>
-        Every session you mark as done counts as one 50-minute block. A
-        moderator verifies them so your log is official.
+        Each session counts: an hour for a block, 50 minutes for CT, 25 for
+        lunch. When your student checks in with your code, the hours are
+        confirmed by both of you, and a moderator verifies them.
       </Text>
 
       <StatRow
@@ -60,6 +61,11 @@ export default function ServiceHoursCard({ tutorId, tutorName }) {
           { value: String(summary.students),      label: 'Students helped' },
         ]}
       />
+      {summary.confirmedSessions > 0 ? (
+        <Text style={styles.confirmed}>
+          {summary.confirmedSessions} session{summary.confirmedSessions === 1 ? '' : 's'} confirmed by your students
+        </Text>
+      ) : null}
 
       <ErrorBanner message={error} />
 
@@ -85,4 +91,5 @@ const styles = StyleSheet.create({
   title: { ...type.heading, color: colors.black, marginBottom: space.xs },
   hint:  { ...type.small, color: colors.gray500, marginBottom: space.lg },
   stats: { marginBottom: space.lg },
+  confirmed: { ...type.small, fontWeight: '600', color: colors.brandText, marginTop: -space.sm, marginBottom: space.lg },
 });

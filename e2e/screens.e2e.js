@@ -41,7 +41,7 @@ const SESS = {
   ],
   past: [
     { id:'s3', tutor_id:'t2', student_id:UID, status:'completed', subject:'SAT English', period:5, notes:null, tutor:{id:'t2',full_name:'Luke Patel'}, student:{id:UID,full_name:'James Smith'} },
-    { id:'s5', tutor_id:UID, student_id:'t2', status:'completed', subject:'Calculus', period:2, notes:null, created_at:'2026-10-01T15:00:00Z', tutor:{id:UID,full_name:'James Smith'}, student:{id:'t2',full_name:'Luke Patel'} },
+    { id:'s5', tutor_id:UID, student_id:'t2', status:'completed', subject:'Calculus', period:2, notes:null, created_at:'2026-10-01T15:00:00Z', student_confirmed_at:'2026-10-01T16:00:00Z', tutor:{id:UID,full_name:'James Smith'}, student:{id:'t2',full_name:'Luke Patel'} },
   ],
 };
 
@@ -76,6 +76,15 @@ async function ctxFor(browser, mode, failWrites = false, tour = false) {
     else if (u.includes('/rpc/community_stats')) out = [{ sessions_completed: 42, hours_tutored: 35, active_tutors: 9 }];
     else if (u.includes('/rpc/shared_phone')) out = body?.uid === 't2' ? '7135550142' : null;
     else if (u.includes('/rpc/delete_my_account')) out = null;
+    else if (u.includes('/rpc/start_checkin')) out = '4821';
+    else if (u.includes('/rpc/confirm_checkin')) out = body?.code === '4821' ? 'ok' : 'wrong';
+    else if (u.includes('/rpc/log_search')) out = null;
+    else if (u.includes('/rpc/insights')) out = { days: 30,
+      totals: { sessions: 12, hours: 11.5, tutors: 5, students: 9, confirmed: 9 },
+      weekly: [{ week: '2026-10-05', sessions: 4 }, { week: '2026-10-12', sessions: 8 }],
+      blocks: [{ period: 9, sessions: 5 }, { period: 3, sessions: 2 }],
+      subjects: [{ subject: 'SAT Math', sessions: 6, tutors: 2 }],
+      unmet: [{ subject: 'AP Physics C', searches: 7, tutors: 0 }] };
     else if (u.includes('/storage/v1/object/list/avatars')) out = [{ name: 'avatar.jpg' }];
     else if (u.includes('/storage/v1/object/avatars') && m === 'DELETE') return route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
     else if (u.includes('/rpc/search_tutors') && mode === 'empty') out = [];
@@ -248,6 +257,11 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     await page.getByRole('button', { name: /^Verify .*session/ }).filter({ visible: true }).first().click(); await wait(page, 1000);
     const vf = lastWrite((w) => w.u.includes('/rest/v1/sessions') && w.m === 'PATCH');
     ok('Moderation: verify hours', vf && !!vf.body.verified_at, JSON.stringify(vf?.body));
+    ok('Moderation: checked-in sessions are marked', await seen(page, 'Student checked in'));
+    writes = [];
+    await page.getByRole('button', { name: /Verify all checked-in/i }).filter({ visible: true }).first().click(); await wait(page, 1000);
+    { const va = lastWrite((w) => w.u.includes('/rest/v1/sessions') && w.m === 'PATCH');
+      ok('Moderation: verify all checked-in in one tap', va && !!va.body.verified_at && decodeURIComponent(va.u).includes('id=in.(s5)'), va?.u); }
     await page.getByRole('tab', { name: 'Reports' }).filter({ visible: true }).first().click(); await wait(page, 1000);
     ok('Moderation: reports queue shows the report', await seen(page, 'Cal Out') && await seen(page, 'Kept posting links', false));
     writes = [];
@@ -255,6 +269,11 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     const rv2 = lastWrite((w) => w.u.includes('/rest/v1/reports') && w.m === 'PATCH');
     ok('Moderation: mark report reviewed', rv2 && rv2.body.reviewed === true && rv2.body.reviewed_by === UID, JSON.stringify(rv2?.body));
     ok('Moderation: handled report leaves the queue', !(await seen(page, 'Cal Out')));
+    await page.getByRole('tab', { name: 'Insights' }).filter({ visible: true }).first().click(); await wait(page, 1500);
+    ok('Insights: totals and confirmed share', await seen(page, '9 of 12 confirmed by both tutor and student (75%)') && await seen(page, '11.5'));
+    ok('Insights: subjects students can\'t find a tutor for', await seen(page, 'AP Physics C') && await seen(page, '7 searches · no tutors yet'));
+    ok('Insights: busiest blocks use block names', await page.getByLabel('CT: 5').count() > 0);
+    await shot(page, 'insights.png');
     await ctx.close(); }
 
   // ── First-run tour ─────────────────────────────────────────────────────
@@ -309,6 +328,8 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     await V(page, 'SAT Math').click(); await wait(page, 1000);
     const rpc2 = lastWrite((w) => w.u.includes('search_tutors'));
     ok('Search: subject filter sent', rpc2 && rpc2.body.filter_subject === 'SAT Math', JSON.stringify(rpc2?.body));
+    { const ls = lastWrite((w) => w.u.includes('/rpc/log_search'));
+      ok('Search: subject searches are logged for Insights (no names)', ls && ls.body.subject === 'SAT Math' && typeof ls.body.results === 'number' && Object.keys(ls.body).length === 3, JSON.stringify(ls?.body)); }
     await V(page, 'Match my schedule').click(); await wait(page, 1000);
     const rpc3 = lastWrite((w) => w.u.includes('search_tutors'));
     ok('Search: match my schedule sent', rpc3 && rpc3.body.match_schedule === true && rpc3.body.student_id === UID);
@@ -383,6 +404,22 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     const d = await dl; await wait(page, 600);
     ok('Sessions: Add to Calendar downloads .ics', d && d.suggestedFilename().endsWith('.ics'), d?.suggestedFilename());
     ok('Sessions: calendar confirmation toast', await seen(page, 'Calendar file downloaded', false));
+    // Check-in: tutor shows a code, student types it in
+    writes = [];
+    await page.getByRole('button', { name: /^Check-in code$/i }).filter({ visible: true }).first().click(); await wait(page, 1000);
+    { const sc = lastWrite((w) => w.u.includes('/rpc/start_checkin'));
+      ok('Check-in: tutor gets a code for their session', sc && sc.body.session === 's4' && await seen(page, '4821'), JSON.stringify(sc?.body)); }
+    await shot(page, 'checkin-code.png');
+    await page.getByRole('button', { name: 'Done' }).filter({ visible: true }).last().click(); await wait(page, 800);
+    await page.getByRole('button', { name: /^Check in$/i }).filter({ visible: true }).first().click(); await wait(page, 800);
+    await type(page, 'Code from your tutor', '1111');
+    await page.getByRole('button', { name: /^Check in$/i }).filter({ visible: true }).last().click(); await wait(page, 1000);
+    ok('Check-in: a wrong code is explained', await seen(page, "That code didn't match", false));
+    await type(page, 'Code from your tutor', '4821'); writes = [];
+    await page.getByRole('button', { name: /^Check in$/i }).filter({ visible: true }).last().click(); await wait(page, 1200);
+    { const cc = lastWrite((w) => w.u.includes('/rpc/confirm_checkin'));
+      ok('Check-in: student confirms with the code', cc && cc.body.session === 's1' && cc.body.code === '4821' && await seen(page, "You're checked in!", false), JSON.stringify(cc?.body)); }
+    await wait(page, 2500);
     ok('Sessions: confirmed session can be marked done', await page.getByRole('button', { name: /Mark .*(Done|Complete)/i }).filter({ visible: true }).count() > 0);
     writes = [];
     await page.getByRole('button', { name: 'Mark as Done' }).filter({ visible: true }).first().click().catch(()=>{}); await wait(page, 1200);

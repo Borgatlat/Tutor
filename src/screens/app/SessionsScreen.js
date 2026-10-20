@@ -51,6 +51,9 @@ export default function SessionsScreen({ navigation }) {
   const [submitting, setSubmitting]       = useState(false);
   const [reviewError, setReviewError]     = useState('');
 
+  // Check-in sheet: { session, code (tutor), entry (student), error, busy }
+  const [checkin, setCheckin] = useState(null);
+
   // Calendar: tracks which session IDs have been added
   const [calendarAdded, setCalendarAdded] = useState(new Set());
   const [toast, setToast]                 = useState(null); // { message, isError }
@@ -163,6 +166,44 @@ export default function SessionsScreen({ navigation }) {
     }
     loadSessions();
   };
+
+  // Check-in, tutor side: a 4-digit code (valid 10 minutes) to show the student.
+  const showCheckinCode = async (session) => {
+    setCheckin({ session, code: null, error: '', busy: true });
+    const { data, error } = await supabase.rpc('start_checkin', { session: session.id });
+    setCheckin((c) => c && { ...c, busy: false, code: error ? null : data, error: error?.message ?? '' });
+  };
+
+  // Check-in, student side: typing the tutor's code completes the session with
+  // the hours confirmed by both of them.
+  const submitCheckin = async () => {
+    const { session, entry = '' } = checkin;
+    if (!/^\d{4}$/.test(entry)) {
+      setCheckin((c) => ({ ...c, error: 'Enter the 4-digit code from your tutor.' }));
+      return;
+    }
+    setCheckin((c) => ({ ...c, busy: true, error: '' }));
+    const { data, error } = await supabase.rpc('confirm_checkin', { session: session.id, code: entry });
+    if (error || data !== 'ok') {
+      warn();
+      setCheckin((c) => ({
+        ...c,
+        busy: false,
+        error: error?.message ?? "That code didn't match. Check it with your tutor and try again.",
+      }));
+      return;
+    }
+    setCheckin(null);
+    const hours = minutesToHours(blockMinutes(session.period));
+    const tutorName = session.tutor?.full_name?.split(' ')[0] ?? 'Your tutor';
+    setParty({
+      title: "You're checked in!",
+      subtitle: `${tutorName} earned ${hours} service hour${hours === 1 ? '' : 's'}, confirmed by you.`,
+    });
+    loadSessions();
+  };
+
+  const closeCheckin = () => { setCheckin(null); loadSessions(true); };
 
   const handleCancel = (sessionId) => setCancelConfirmId(sessionId);
 
@@ -279,6 +320,8 @@ export default function SessionsScreen({ navigation }) {
                 busy={busyId === item.id}
                 onConfirm={handleConfirm}
                 onComplete={handleComplete}
+                onShowCode={showCheckinCode}
+                onCheckIn={(s) => setCheckin({ session: s, entry: '', error: '', busy: false })}
                 onCancel={handleCancel}
                 onReview={(s) => setReviewSession(s)}
                 onMessage={(s) => navigation.navigate('Chat', { session: s })}
@@ -290,6 +333,52 @@ export default function SessionsScreen({ navigation }) {
           )}
         />
       )}
+
+      {/* Check-in sheet: the tutor's code, or the student's code entry */}
+      <Sheet
+        visible={!!checkin}
+        onClose={closeCheckin}
+        title={checkin?.session?.tutor_id === profile?.id ? 'Check-in code' : 'Check in'}
+        subtitle={checkin?.session?.tutor_id === profile?.id
+          ? `Show this to ${checkin?.session?.student?.full_name?.split(' ')[0] ?? 'your student'} so they can check in. It works for 10 minutes.`
+          : `Type the 4-digit code on ${checkin?.session?.tutor?.full_name?.split(' ')[0] ?? 'your tutor'}'s screen. This confirms the session happened.`}
+      >
+        <ErrorBanner message={checkin?.error} />
+        {checkin?.session?.tutor_id === profile?.id ? (
+          <>
+            <Text
+              style={styles.code}
+              accessibilityLabel={checkin?.code ? `Check-in code ${checkin.code.split('').join(' ')}` : 'Making a code'}
+            >
+              {checkin?.code ?? '····'}
+            </Text>
+            <View style={styles.rowActions}>
+              <Button
+                label="New code"
+                variant="secondary"
+                loading={checkin?.busy}
+                onPress={() => showCheckinCode(checkin.session)}
+                style={styles.grow}
+              />
+              <Button label="Done" onPress={closeCheckin} style={styles.grow} />
+            </View>
+          </>
+        ) : (
+          <>
+            <Field
+              label="Code from your tutor"
+              icon="keypad-outline"
+              placeholder="1234"
+              keyboardType="number-pad"
+              inputMode="numeric"
+              maxLength={4}
+              value={checkin?.entry ?? ''}
+              onChangeText={(t) => setCheckin((c) => ({ ...c, entry: t.replace(/\D/g, ''), error: '' }))}
+            />
+            <Button label="Check in" onPress={submitCheckin} loading={checkin?.busy} fullWidth />
+          </>
+        )}
+      </Sheet>
 
       {/* Cancel confirm sheet */}
       <Sheet
@@ -460,6 +549,10 @@ const styles = StyleSheet.create({
     textAlign: 'center', lineHeight: 20, marginBottom: space.xxl,
   },
   rowActions: { flexDirection: 'row', gap: space.md },
+  code: {
+    ...type.title, fontSize: 48, lineHeight: 56, letterSpacing: 12,
+    textAlign: 'center', color: colors.brandText, marginVertical: space.lg,
+  },
   grow:       { flex: 1 },
 
   starsRow: {

@@ -27,7 +27,7 @@ export function minutesToHours(minutes) {
 
 /**
  * Summary for the Profile card.
- * @returns {{ sessions, minutes, hours, students, verifiedSessions, verifiedHours }}
+ * @returns {{ sessions, minutes, hours, students, verifiedSessions, verifiedHours, confirmedSessions }}
  */
 export function summarizeHours(sessions, tutorId) {
   const taught   = taughtSessions(sessions, tutorId);
@@ -37,6 +37,8 @@ export function summarizeHours(sessions, tutorId) {
   return {
     sessions: taught.length, minutes, hours: minutesToHours(minutes), students,
     verifiedSessions: verified.length, verifiedHours: minutesToHours(minutesOf(verified)),
+    // Sessions the student checked in to with the tutor's code
+    confirmedSessions: taught.filter((s) => s.student_confirmed_at).length,
   };
 }
 
@@ -70,7 +72,7 @@ export function buildHoursCsv(sessions, tutorId, tutorName = '') {
     [`${school.name} peer tutoring: service hours`],
     ['Tutor', tutorName],
     [],
-    ['Date', 'Day', 'Block', 'Subject', 'Student', 'Minutes', 'Verified'],
+    ['Date', 'Day', 'Block', 'Subject', 'Student', 'Minutes', 'Verified', 'Student confirmed'],
     ...taught.map((s) => [
       sessionDay(s),
       s.session_date ? weekday(s.session_date) : (s.day ?? ''),
@@ -79,6 +81,7 @@ export function buildHoursCsv(sessions, tutorId, tutorName = '') {
       s.student?.full_name ?? '',
       blockMinutes(s.period),
       s.verified_at ? 'Yes' : '',
+      s.student_confirmed_at ? 'Yes' : '',
     ]),
     [],
     ['Total sessions', taught.length],
