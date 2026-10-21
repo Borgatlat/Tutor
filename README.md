@@ -53,6 +53,15 @@ schedule, "when are we both free?" takes a dozen texts.
   checklist (add your classes or free blocks, invite a friend, host or book
   your first session).
 - **Ollie the owl** guides new users through a three-step welcome tour.
+- **Ask Ollie**: tap the owl in the corner of Home or Search and type what you
+  need ("chem during B3", "APUSH at lunch"). OpenAI reads the message and
+  turns it into search filters; the tutors are found in our own database, so
+  no student or tutor data is ever sent to the AI. Built for minors: the AI is
+  off until the student ticks a consent box, phone numbers and emails are
+  removed before anything is sent, Ollie's replies are fixed sentences (never
+  AI text), the chat isn't saved, and a student who mentions self-harm or
+  abuse is pointed to a counselor and 988 instead. Without consent or an
+  OpenAI key, Ollie still works by matching keywords.
 - **Feels like a real app**: confetti when a session is confirmed or done,
   tutor badges (Top tutor, 10+ hours), pull to refresh, loading placeholders,
   haptic feedback, and a full **dark mode** that follows your phone.
@@ -95,11 +104,11 @@ More detail: [ARCHITECTURE.md](ARCHITECTURE.md) · database:
 
 - **Unit tests** (Jest + Testing Library): service hours, schedule maths,
   reminders and core components: `npm test`.
-- **Screen tests** with Playwright against the web build: 141 checks that
+- **Screen tests** with Playwright against the web build: 149 checks that
   press every screen's buttons and check what the app sends
   (`npm run test:e2e`, in [e2e/](e2e/)).
 - **Database tests**: every migration is applied twice to a real Postgres,
-  the demo data is loaded twice, then 79 checks sign in as a tutor, a
+  the demo data is loaded twice, then 106 checks sign in as a tutor, a
   student, a moderator, an outsider and a visitor and try everything they
   should and shouldn't be able to do (`npm run test:db`, in
   [supabase/tests/](supabase/tests/)).
@@ -140,11 +149,12 @@ run them in order (each one is safe to run again):
    tutor's code, so hours are confirmed by both) and moderator Insights
 7. `007_email_notifications.sql`: opt-in email notifications through Resend
    (see *Email notifications* below)
+8. `008_ask_ollie.sql`: Ask Ollie (see *Ask Ollie* below)
 8. `supabase/seed_demo.sql` *(optional)*: demo accounts, all with password
    `DemoTutor2026!`. Sign in as `james.smith.demo@mail.strakejesuit.org`
    (student), `alex.kim.demo@…` (tutor) or `mr.thompson.demo@…` (moderator).
 
-Shortcut: `supabase/all_migrations.sql` has 001–007 in one file to paste and
+Shortcut: `supabase/all_migrations.sql` has 001–008 in one file to paste and
 run (rebuild it with `npm run db:bundle` after changing a migration).
 
 Or with the Supabase CLI: `npx supabase link --project-ref <your ref>`, then
@@ -163,6 +173,20 @@ select vault.create_secret('Strake Jesuit Tutors <tutors@your-verified-domain>',
 ```
 and check that **pg_net** is on (Database → Extensions). The sender address
 must be on a domain verified in Resend.
+
+**Ask Ollie** (optional AI): Ollie works without setup by matching keywords.
+To let it understand messy messages, add an OpenAI API key to the Vault
+(SQL Editor), never to GitHub:
+```sql
+select vault.create_secret('sk-…your OpenAI key…', 'openai_api_key');
+```
+The migration turns on the **http** extension it needs (check Database →
+Extensions if it says it couldn't). It uses `gpt-4.1-mini` (about $0.0005 per
+question); set a different model with
+`select vault.create_secret('model-name', 'openai_model');`. Each student can
+ask 25 AI questions a day; after that Ollie uses keywords. Consent is
+recorded in `ai_consents` like email consent, and only counts are logged in
+`ollie_requests`, never what was typed.
 
 **Continue with Google** (optional): the button appears on its own once
 Google is turned on in Supabase.

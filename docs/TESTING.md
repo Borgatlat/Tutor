@@ -7,10 +7,14 @@ first week") are the strongest line in the Congressional App Challenge video.
 Live app: **https://tutor-delta-one.vercel.app**
 
 ## Before you send it
-- [ ] The latest migrations are run in Supabase (through `007_email_notifications.sql`).
+- [ ] The latest migrations are run in Supabase (through `008_ask_ollie.sql`).
 - [ ] Optional: email updates switched on (Resend key and sender in the Vault,
       see *Email notifications* in the README). Send yourself a test booking
       with email updates ticked to check it arrives (and isn't in spam).
+- [ ] Optional: Ask Ollie's AI switched on (OpenAI key in the Vault, see
+      *Ask Ollie* in the README). Without it Ollie still matches keywords.
+- [ ] Your privacy policy (betterullc.com/privacy) names OpenAI (Ask Ollie)
+      and Resend (emails) as services that process data for the app.
 - [ ] The site opens in a private browser window without a Vercel login screen.
 - [ ] Sign up yourself with your school email and book a test session with a friend.
 - [ ] You are a moderator (`update public.profiles set is_moderator = true where email = 'you@mail.strakejesuit.org';`).
@@ -48,6 +52,8 @@ when you sign up so people can book you."*
 6. **At the session**: the tutor taps **Check-in code**, the student taps
    **Check in** and types it. This logs the hours, confirmed by both.
 7. **Students: leave a review** afterwards.
+8. **Try Ask Ollie**: tap the owl in the corner and type what you need, like
+   "I need help with chem during B3".
 
 On a phone, use the browser's **Add to Home Screen** so it opens like an app.
 

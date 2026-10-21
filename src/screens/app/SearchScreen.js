@@ -15,6 +15,7 @@ import AppTextInput from '../../components/AppTextInput';
 import TutorCard from '../../components/TutorCard';
 import SkeletonCard from '../../components/SkeletonCard';
 import InviteButton from '../../components/InviteButton';
+import OllieButton from '../../components/OllieButton';
 import {
   Chip, EmptyState, FadeIn, IconButton, SubjectPicker,
   OrganicBackdrop,
@@ -23,7 +24,7 @@ import { BLOCKS } from '../../constants';
 import { blockLabel, blockName } from '../../utils/schedule';
 import { useResponsive } from '../../hooks/useResponsive';
 
-export default function SearchScreen({ navigation }) {
+export default function SearchScreen({ navigation, route }) {
   const { profile } = useAuthStore();
   const { isWide, columns } = useResponsive();
   const isStudent = profile?.role === 'student' || profile?.role === 'both';
@@ -63,6 +64,16 @@ export default function SearchScreen({ navigation }) {
   useEffect(() => {
     runSearch(query, subject, block, matchSchedule);
   }, [subject, block, matchSchedule]);
+
+  // "See all in Search" from Ask Ollie opens here with Ollie's filters.
+  const fromOllie = route?.params?.ollie;
+  useEffect(() => {
+    if (!fromOllie) return;
+    setQuery('');
+    setSubject(fromOllie.subject ?? null);
+    setBlock(fromOllie.block ?? null);
+    setMatchSchedule(!!fromOllie.matchSchedule && isStudent);
+  }, [fromOllie?.at]);
 
   const handleQueryChange = (text) => {
     setQuery(text);
@@ -278,6 +289,7 @@ export default function SearchScreen({ navigation }) {
           {results_}
         </>
       )}
+      {isStudent ? <OllieButton navigation={navigation} /> : null}
     </SafeAreaView>
   );
 }
@@ -369,7 +381,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.lg, paddingTop: space.md, paddingBottom: space.xs,
   },
 
-  list:          { paddingHorizontal: space.lg, paddingTop: space.sm, paddingBottom: space.xxxl },
+  list:          { paddingHorizontal: space.lg, paddingTop: space.sm, paddingBottom: 88 },  // room for Ollie
   columnWrapper: { gap: space.md },
   gridItem:      { flex: 1 },
 });

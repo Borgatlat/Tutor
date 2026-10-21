@@ -55,3 +55,23 @@ describe('email consent', () => {
     expect(EMAIL_CONSENT_TEXT).toMatch(/BetterU LLC/);
   });
 });
+
+describe('Ask Ollie', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const sql = fs.readFileSync(path.join(__dirname, '../../supabase/migrations/008_ask_ollie.sql'), 'utf8');
+
+  it('shows the same consent words the database records', () => {
+    const { OLLIE_CONSENT_TEXT } = require('../constants');
+    expect(sql).toContain(`select '${OLLIE_CONSENT_TEXT.replace(/'/g, "''")}'`);
+    expect(OLLIE_CONSENT_TEXT).toMatch(/OpenAI/);
+    expect(OLLIE_CONSENT_TEXT).toMatch(/BetterU LLC/);
+  });
+
+  it('knows every class the app lists', () => {
+    const { SUBJECTS } = require('../constants');
+    const list = sql.match(/unnest\(array\[([\s\S]*?)\]\) as s/)[1];
+    const inSql = [...list.matchAll(/'((?:[^']|'')*)'/g)].map((m) => m[1].replace(/''/g, "'"));
+    expect(inSql.sort()).toEqual([...SUBJECTS].sort());
+  });
+});
