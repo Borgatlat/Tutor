@@ -43,3 +43,10 @@ returns bigint language sql as
 grant usage on schema net to authenticated, service_role;
 grant all on net.requests to authenticated, service_role;
 grant usage on sequence net.requests_id_seq to authenticated, service_role;
+
+-- Vault stand-in: the Resend key and sender the email functions read.
+create schema vault;
+create table vault.decrypted_secrets (name text primary key, decrypted_secret text);
+insert into vault.decrypted_secrets values
+  ('resend_api_key', 're_test_key'),
+  ('resend_from', 'Strake Jesuit Tutors <tutors@example.com>');

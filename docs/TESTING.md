@@ -7,7 +7,10 @@ first week") are the strongest line in the Congressional App Challenge video.
 Live app: **https://tutor-delta-one.vercel.app**
 
 ## Before you send it
-- [ ] The latest migrations are run in Supabase (through `006_checkin_insights.sql`).
+- [ ] The latest migrations are run in Supabase (through `007_email_notifications.sql`).
+- [ ] Optional: email updates switched on (Resend key and sender in the Vault,
+      see *Email notifications* in the README). Send yourself a test booking
+      with email updates ticked to check it arrives (and isn't in spam).
 - [ ] The site opens in a private browser window without a Vercel login screen.
 - [ ] Sign up yourself with your school email and book a test session with a friend.
 - [ ] You are a moderator (`update public.profiles set is_moderator = true where email = 'you@mail.strakejesuit.org';`).

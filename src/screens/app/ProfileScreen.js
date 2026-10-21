@@ -22,6 +22,7 @@ import {
 } from '../../components/ui';
 import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../../constants/legal';
 import { school } from '../../theme/school';
+import EmailConsent from '../../components/EmailConsent';
 
 export default function ProfileScreen({ navigation }) {
   const { profile, session, signOut, deleteAccount, refreshProfile } = useAuthStore();
@@ -34,6 +35,21 @@ export default function ProfileScreen({ navigation }) {
   // Private by default: a phone number is only shown to others if the user
   // switches this on (profiles.show_phone).
   const [showPhone, setShowPhone] = useState(!!profile?.show_phone);
+
+  // Session emails: opt-in only, saved as soon as the box is ticked.
+  const [emailOptIn, setEmailOptIn]   = useState(!!profile?.email_opt_in);
+  const [savingEmail, setSavingEmail] = useState(false);
+  const [emailError, setEmailError]   = useState('');
+  useEffect(() => { setEmailOptIn(!!profile?.email_opt_in); }, [profile?.email_opt_in]);
+  const toggleEmail = async (on) => {
+    setEmailOptIn(on);
+    setEmailError('');
+    setSavingEmail(true);
+    const { error } = await supabase.from('profiles').update({ email_opt_in: on }).eq('id', userId);
+    setSavingEmail(false);
+    if (error) { setEmailOptIn(!on); setEmailError(error.message); return; }
+    refreshProfile();
+  };
   const [avatarUri, setAvatarUri] = useState(null);
   const [saveError, setSaveError] = useState('');
 
@@ -472,6 +488,9 @@ export default function ProfileScreen({ navigation }) {
           {/* Account */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Account</Text>
+
+            <EmailConsent value={emailOptIn} onChange={toggleEmail} disabled={savingEmail} style={styles.feedback} />
+            <ErrorBanner message={emailError} />
 
             {/* Feedback from testers: shown once school.feedbackUrl is set */}
             {school.feedbackUrl ? (

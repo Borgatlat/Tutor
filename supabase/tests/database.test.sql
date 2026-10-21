@@ -91,6 +91,7 @@ select pg_temp.fails(format('insert into public.tutor_availability(tutor_id, per
                      'the same free block twice', '%duplicate%');
 insert into public.tutor_subjects(tutor_id, subject) values (:A, 'SAT Math');
 insert into public.push_tokens(user_id, token, platform) values (:A, 'ExponentPushToken[A]', 'ios');
+update public.profiles set email_opt_in = true where id = :A;   -- A ticks the email consent box
 select pg_temp.fails(format('update public.profiles set is_moderator = true where id = %L', :A),
                      'making yourself a moderator', '%moderator%');
 update public.profiles set session_count = 999, bio = 'hi' where id = :A;
@@ -303,6 +304,30 @@ select pg_temp.ok((select i->'unmet'->0->>'subject' = 'AP Physics C' and (i->'un
 reset role;
 
 select pg_temp.ok((select count(*) >= 3 from net.requests where url like '%exp.host%'), 'push notifications were sent');
+
+\echo '--- email notifications (opt-in only)'
+select pg_temp.ok((select email_opt_in and email_opt_in_at is not null from public.profiles where id = :A), 'A''s consent is time-stamped');
+select pg_temp.ok((select count(*) = 1 from public.email_consents where user_id = :A and opted_in and wording like '%BetterU LLC%'),
+                  'the consent wording is recorded');
+select pg_temp.ok((select count(*) >= 1 from net.requests where url = 'https://api.resend.com/emails'
+                     and body->'to'->>0 = 'a@mail.strakejesuit.org'
+                     and body->>'subject' like 'New tutoring request%'
+                     and body->>'text' like '%BetterU LLC%' and body->>'text' like '%Email updates%'
+                     and headers->>'Authorization' = 'Bearer re_test_key'),
+                  'an opted-in tutor gets a request email that says how to stop them');
+select pg_temp.ok((select count(*) = 0 from net.requests where url like '%resend%' and body->'to'->>0 <> 'a@mail.strakejesuit.org'),
+                  'nobody else gets email without consent');
+select pg_temp.sign_in(:C);
+set role authenticated;
+select pg_temp.fails('select email_opt_in from public.profiles', 'reading someone''s email settings', '%permission denied%');
+select pg_temp.ok((select count(*) = 0 from public.email_consents), 'consent records are private');
+reset role;
+select pg_temp.sign_in(:A);
+set role authenticated;
+update public.profiles set email_opt_in = false where id = :A;
+reset role;
+select pg_temp.ok((select not email_opt_in and email_opt_in_at is null from public.profiles where id = :A)
+                  and (select count(*) = 2 from public.email_consents where user_id = :A), 'turning emails off is recorded too');
 
 
 \echo '--- judge account (supabase/judge_account.sql)'

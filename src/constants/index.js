@@ -108,3 +108,9 @@ export const SESSION_STATUS = {
 };
 
 export const SCHOOL_EMAIL_DOMAIN = '@mail.strakejesuit.org';
+
+// Shown next to the email opt-in box. Keep it the same as
+// email_consent_wording() in supabase/migrations/007_email_notifications.sql.
+export const EMAIL_CONSENT_TEXT =
+  'I agree to receive emails about my tutoring sessions (new requests, confirmations '
+  + 'and cancellations) from BetterU LLC. I can turn them off anytime in Profile.';

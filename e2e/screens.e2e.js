@@ -193,6 +193,9 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     ok('Setup: step 1 of 3 with progress', await seen(page, 'About you') && await seen(page, 'Step 1 of 3'));
     ok('Setup: no phone field (private, added later in Profile)', (await page.locator('[aria-label="Phone number"]').count()) === 0);
     await type(page, 'Bio', 'I like math');
+    ok('Setup: email updates are off until the student ticks the box', !(await page.getByRole('checkbox', { name: 'Email updates from BetterU LLC' }).filter({ visible: true }).first().isChecked()));
+    await page.getByRole('checkbox', { name: 'Email updates from BetterU LLC' }).filter({ visible: true }).first().click(); await wait(page, 200);
+    await shot(page, 'setup-email-consent.png');
     await page.getByRole('button', { name: 'Next' }).filter({ visible: true }).first().click(); await wait(page, 400);
     ok('Setup: step 2 is what you teach', await seen(page, 'What you teach') && await seen(page, 'Step 2 of 3'));
     await page.getByRole('button', { name: 'Back' }).filter({ visible: true }).first().click(); await wait(page, 300);
@@ -213,6 +216,7 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     const subj = lastWrite((w) => w.u.includes('/rest/v1/tutor_subjects') && w.m === 'POST');
     const av = lastWrite((w) => w.u.includes('/rest/v1/tutor_availability') && w.m === 'POST');
     ok('Setup: saves bio (and no phone)', prof && prof.body.bio === 'I like math' && !('phone' in prof.body), JSON.stringify(prof?.body));
+    ok('Setup: saves the email consent', prof && prof.body.email_opt_in === true, JSON.stringify(prof?.body));
     ok('Setup: saves CT with the free blocks', av && JSON.stringify(av.body).includes('"period":9') && JSON.stringify(av.body).includes('"period":4'), JSON.stringify(av?.body));
     ok('Setup: saves subject + grade', subj && JSON.stringify(subj.body).includes('"grade":"A"'), JSON.stringify(subj?.body));
     ok('Setup: saves free block', av && JSON.stringify(av.body).includes('"period":4'), JSON.stringify(av?.body));
@@ -452,6 +456,10 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     // Profile
     await tab(page, 'Profile'); await wait(page, 1000);
     ok('Moderation: hidden for regular users', !(await seen(page, 'Moderator tools')));
+    writes = [];
+    await page.getByRole('checkbox', { name: 'Email updates from BetterU LLC' }).filter({ visible: true }).first().click(); await wait(page, 800);
+    { const em = lastWrite((w) => w.u.includes('/rest/v1/profiles') && w.m === 'PATCH');
+      ok('Profile: email updates can be turned on from Profile', em && em.body.email_opt_in === true && Object.keys(em.body).length === 1, JSON.stringify(em?.body)); }
     { const { feedbackUrl } = require('../src/theme/school').school;
       const btn = page.getByLabel('Send feedback about the app').filter({ visible: true });
       if (feedbackUrl) {

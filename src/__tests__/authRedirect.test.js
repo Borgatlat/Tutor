@@ -44,3 +44,14 @@ describe('Google sign-in messages', () => {
     expect(friendlyGoogleError(null)).toBeNull();
   });
 });
+
+describe('email consent', () => {
+  test('the app shows exactly the wording the database records', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const { EMAIL_CONSENT_TEXT } = require('../constants');
+    const sql = fs.readFileSync(path.join(__dirname, '../../supabase/migrations/007_email_notifications.sql'), 'utf8');
+    expect(sql).toContain(`select '${EMAIL_CONSENT_TEXT.replace(/'/g, "''")}'`);
+    expect(EMAIL_CONSENT_TEXT).toMatch(/BetterU LLC/);
+  });
+});

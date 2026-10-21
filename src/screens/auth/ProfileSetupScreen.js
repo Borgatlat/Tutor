@@ -21,6 +21,7 @@ import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { radii, space, border, press, hit } from '../../theme/layout';
 import AvailabilityGrid from '../../components/AvailabilityGrid';
+import EmailConsent from '../../components/EmailConsent';
 import { type } from '../../theme/fonts';
 import {
   AuthShell, Button, ErrorBanner, FadeIn, Field, Mascot, RoleSelector, SubjectPicker,
@@ -61,6 +62,7 @@ export default function ProfileSetupScreen() {
 
   const [avatarUri, setAvatarUri] = useState(null);
   const [bio, setBio]             = useState(profile?.bio ?? '');
+  const [emailOptIn, setEmailOptIn] = useState(!!profile?.email_opt_in);
 
   // Pre-populate subjects from saved profile
   const savedSubjects = (profile?.subjects ?? []).map((s) =>
@@ -136,6 +138,7 @@ export default function ProfileSetupScreen() {
           setup_complete: true,
           ...(askRole   ? { role }      : {}),
           ...(bio       ? { bio }       : {}),
+          ...(emailOptIn ? { email_opt_in: true } : {}),
           ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
         })
         .eq('id', userId);
@@ -253,6 +256,8 @@ export default function ProfileSetupScreen() {
               value={bio}
               onChangeText={setBio}
             />
+
+            <EmailConsent value={emailOptIn} onChange={setEmailOptIn} style={styles.consent} />
           </>
         ) : null}
 
@@ -321,6 +326,7 @@ export default function ProfileSetupScreen() {
 }
 
 const styles = StyleSheet.create({
+  consent: { marginTop: space.lg },
   avatarSection: { alignItems: 'center', marginBottom: space.xxl },
   avatarWrap:    { position: 'relative', marginBottom: space.sm },
   avatarImage:   { width: 100, height: 100, borderRadius: radii.pill },
