@@ -305,6 +305,19 @@ reset role;
 select pg_temp.ok((select count(*) >= 3 from net.requests where url like '%exp.host%'), 'push notifications were sent');
 
 
+\echo '--- judge account (supabase/judge_account.sql)'
+select pg_temp.sign_in('');
+insert into auth.users(id, email) values (gen_random_uuid(), 'cac.judge@mail.strakejesuit.org');
+\i supabase/judge_account.sql
+\i supabase/judge_account.sql
+select pg_temp.ok((select p.role = 'both' and p.setup_complete and p.is_moderator from public.profiles p
+                   join auth.users u on u.id = p.id where u.email = 'cac.judge@mail.strakejesuit.org'),
+                  'the judge is a tutor, a student and a moderator');
+select pg_temp.ok((select count(*) = 4 from public.sessions where id::text like '55555555-%'), 'running it twice leaves one set of judge sessions');
+select pg_temp.ok((select status = 'confirmed' and session_date <= public.school_today() + 3 from public.sessions
+                   where id = '55555555-0000-4000-8000-000000000001'), 'one session is ready for check-in');
+
+
 \echo '--- deleting accounts'
 select pg_temp.sign_in(:B);
 set role authenticated;

@@ -7,6 +7,10 @@ earn verifiable service hours for every session they finish.
 Built with React Native (Expo), so one codebase runs as an **iPhone / Android
 app** and as a **website**.
 
+**Live:** https://tutor-delta-one.vercel.app · **Testing with students:**
+[docs/TESTING.md](docs/TESTING.md) (invite message, 5-minute test, feedback
+questions, judge account)
+
 | Home | Find a tutor | Tutor profile | Sessions | Profile & hours |
 |---|---|---|---|---|
 | ![Home](docs/screenshots/mobile-home.png) | ![Search](docs/screenshots/mobile-search.png) | ![Tutor profile](docs/screenshots/mobile-tutorprofile.png) | ![Sessions](docs/screenshots/mobile-sessions.png) | ![Profile](docs/screenshots/mobile-profile.png) |
@@ -91,11 +95,11 @@ More detail: [ARCHITECTURE.md](ARCHITECTURE.md) · database:
 
 - **Unit tests** (Jest + Testing Library): service hours, schedule maths,
   reminders and core components: `npm test`.
-- **Screen tests** with Playwright against the web build: 137 checks that
+- **Screen tests** with Playwright against the web build: 138 checks that
   press every screen's buttons and check what the app sends
   (`npm run test:e2e`, in [e2e/](e2e/)).
 - **Database tests**: every migration is applied twice to a real Postgres,
-  the demo data is loaded twice, then 69 checks sign in as a tutor, a
+  the demo data is loaded twice, then 72 checks sign in as a tutor, a
   student, a moderator, an outsider and a visitor and try everything they
   should and shouldn't be able to do (`npm run test:db`, in
   [supabase/tests/](supabase/tests/)).

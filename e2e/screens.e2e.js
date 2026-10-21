@@ -452,6 +452,14 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     // Profile
     await tab(page, 'Profile'); await wait(page, 1000);
     ok('Moderation: hidden for regular users', !(await seen(page, 'Moderator tools')));
+    { const { feedbackUrl } = require('../src/theme/school').school;
+      const btn = page.getByLabel('Send feedback about the app').filter({ visible: true });
+      if (feedbackUrl) {
+        await btn.first().click(); await wait(page, 600);
+        ok('Profile: Send feedback opens the form', (await page.evaluate(() => window.__opened)).includes(feedbackUrl));
+      } else {
+        ok('Profile: Send feedback hidden until a form link is set', await btn.count() === 0);
+      } }
     ok('Profile: service hours card (1 taught session = 1 h)', await seen(page, 'Service hours') && await seen(page, '1'));
     { const [d] = await Promise.all([page.waitForEvent('download', { timeout: 4000 }).catch(() => null),
         page.getByRole('button', { name: 'Download hours log' }).filter({ visible: true }).first().click()]);

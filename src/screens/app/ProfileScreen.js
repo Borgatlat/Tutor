@@ -21,6 +21,7 @@ import {
   OrganicBackdrop,
 } from '../../components/ui';
 import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../../constants/legal';
+import { school } from '../../theme/school';
 
 export default function ProfileScreen({ navigation }) {
   const { profile, session, signOut, deleteAccount, refreshProfile } = useAuthStore();
@@ -362,7 +363,7 @@ export default function ProfileScreen({ navigation }) {
               </View>
               <View style={styles.flex1}>
                 <Text style={styles.modTitle}>Moderator tools</Text>
-                <Text style={styles.modSub}>Verify service hours and review reports</Text>
+                <Text style={styles.modSub}>Verify hours, review reports, see Insights</Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.brandText} />
             </TouchableOpacity>
@@ -471,6 +472,19 @@ export default function ProfileScreen({ navigation }) {
           {/* Account */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Account</Text>
+
+            {/* Feedback from testers: shown once school.feedbackUrl is set */}
+            {school.feedbackUrl ? (
+              <Button
+                label="Send feedback"
+                icon="chatbox-ellipses-outline"
+                variant="secondary"
+                onPress={() => Linking.openURL(school.feedbackUrl)}
+                fullWidth
+                style={styles.feedback}
+                accessibilityLabel="Send feedback about the app"
+              />
+            ) : null}
 
             <View style={styles.legalRow}>
               <TouchableOpacity
@@ -680,6 +694,7 @@ const styles = StyleSheet.create({
 
   // ── Account ───────────────────────────────────────────────────────────────
   legalRow:  { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  feedback:  { marginBottom: space.md },
   legalLink: {
     fontSize: 13, color: colors.brandText,
     fontWeight: '600', textDecorationLine: 'underline',
