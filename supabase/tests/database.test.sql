@@ -80,7 +80,23 @@ insert into public.profiles(id, email, full_name, role) values (:D, 'd@mail.stra
   on conflict (id) do update set email = excluded.email, full_name = excluded.full_name, role = excluded.role;
 update public.profiles set bio = 'New here', phone = '7135550199' where id = :D;
 select pg_temp.ok((select phone from public.get_my_profile()) = '7135550199', 'D reads own phone through get_my_profile');
+update public.profiles set email = 'someone@gmail.com' where id = :D;
+select pg_temp.ok((select email from public.get_my_profile()) = 'd@mail.strakejesuit.org', 'a profile email always matches the sign-in email');
 reset role;
+
+\echo '--- a new user trying to sign up as a moderator'
+insert into auth.users(id, email) values ('ffffffff-0000-0000-0000-000000000006', 'e@mail.strakejesuit.org');
+select pg_temp.sign_in('ffffffff-0000-0000-0000-000000000006');
+set role authenticated;
+insert into public.profiles(id, email, full_name, role, is_moderator, avg_rating, review_count, session_count)
+values ('ffffffff-0000-0000-0000-000000000006', 'victim@gmail.com', 'Eve', 'tutor', true, 5, 40, 999);
+reset role;
+select pg_temp.ok((select not is_moderator and avg_rating = 0 and review_count = 0 and session_count = 0
+                          and email = 'e@mail.strakejesuit.org'
+                   from public.profiles where id = 'ffffffff-0000-0000-0000-000000000006'),
+                  'a new profile can''t make itself a moderator, fake its rating or use another email');
+delete from public.profiles where id = 'ffffffff-0000-0000-0000-000000000006';
+delete from auth.users where id = 'ffffffff-0000-0000-0000-000000000006';
 
 
 \echo '--- tutor A'
@@ -116,10 +132,12 @@ select pg_temp.ok((select availability = '[{"period": 3}, {"period": 5}]'::jsonb
                    from public.search_tutors(student_id => :B, match_schedule => true) where id = :A),
                   'match my schedule finds A with free blocks');
 
-insert into public.sessions(tutor_id, student_id, subject, period, session_date)
-  select :A, :B, 'SAT Math', 3, day from d;
+insert into public.sessions(tutor_id, student_id, subject, period, session_date, student_confirmed_at)
+  select :A, :B, 'SAT Math', 3, day, now() from d;   -- tries to pre-fill "confirmed by both"
 insert into ids select 'first', id from public.sessions where student_id = :B;
 select pg_temp.ok((select status = 'pending' and day is not null from public.sessions where id = (select id from ids)), 'B booked A, pending');
+select pg_temp.ok((select student_confirmed_at is null from public.sessions where id = (select id from ids)),
+                  'a new booking can''t claim it was already checked in');
 select pg_temp.fails(format('insert into public.sessions(tutor_id, student_id, subject, period, session_date) select %L, %L, %L, 3, day from d', :A, :B, 'SAT Math'),
                      'double-booking a block', '%duplicate%');
 select pg_temp.fails(format('insert into public.sessions(tutor_id, student_id, subject, period, session_date) select %L, %L, %L, 5, saturday from d', :A, :B, 'SAT Math'),
