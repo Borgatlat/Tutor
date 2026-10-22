@@ -6,7 +6,7 @@
  * radius and padding.
  */
 import React from 'react';
-import { Modal, View, Text, StyleSheet } from 'react-native';
+import { Modal, View, Text, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import colors from '../../theme/colors';
 import { radii, space } from '../../theme/layout';
 import { sheetShadow } from '../../theme/shadows';
@@ -22,7 +22,8 @@ export default function Sheet({
 }) {
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.overlay}>
+      {/* Lifts the sheet above the keyboard on iPhone, so inputs stay visible. */}
+      <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={[styles.sheet, style]}>
           <View style={styles.handle} />
 
@@ -31,7 +32,7 @@ export default function Sheet({
 
           {children}
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

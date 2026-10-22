@@ -41,11 +41,11 @@ const SESS = {
   ],
   past: [
     { id:'s3', tutor_id:'t2', student_id:UID, status:'completed', subject:'SAT English', period:5, notes:null, tutor:{id:'t2',full_name:'Luke Patel'}, student:{id:UID,full_name:'James Smith'} },
-    { id:'s5', tutor_id:UID, student_id:'t2', status:'completed', subject:'Calculus', period:2, notes:null, created_at:'2026-10-01T15:00:00Z', tutor:{id:UID,full_name:'James Smith'}, student:{id:'t2',full_name:'Luke Patel'} },
+    { id:'s5', tutor_id:UID, student_id:'t2', status:'completed', subject:'Calculus', period:2, notes:null, created_at:'2026-10-01T15:00:00Z', student_confirmed_at:'2026-10-01T16:00:00Z', tutor:{id:UID,full_name:'James Smith'}, student:{id:'t2',full_name:'Luke Patel'} },
   ],
 };
 
-const results = []; let writes = []; let denied = [];
+const results = []; let writes = []; let denied = []; let aiOptIn = false;
 // The days the app should offer for block 3, from the app's own rotation
 // rules (sucrase, already installed with Expo, loads the ES module here).
 require('sucrase/register');
@@ -59,6 +59,7 @@ async function ctxFor(browser, mode, failWrites = false, tour = false) {
     const r = route.request(); const u = r.url(); const m = r.method(); const accept = r.headers()['accept'] || '';
     let body = null; try { body = r.postDataJSON(); } catch {}
     if (m !== 'GET' && !u.includes('/auth/v1/token') && !u.includes('/auth/v1/logout')) writes.push({ m, u, body });
+    if (m === 'PATCH' && u.includes('/rest/v1/profiles') && body && 'ai_opt_in' in body) aiOptIn = !!body.ai_opt_in;
     if (m === 'POST' && u.includes('/auth/v1/token')) {
       return route.fulfill({ status: 400, contentType:'application/json', body: JSON.stringify({ error:'invalid_grant', error_description:'Invalid login credentials', msg:'Invalid login credentials' }) });
     }
@@ -68,12 +69,25 @@ async function ctxFor(browser, mode, failWrites = false, tour = false) {
     let out = [];
     if (u.includes('/auth/v1/signup')) out = { id:'new', email: body?.email, user_metadata: body?.data };
     else if (u.includes('/auth/v1/resend')) out = {};
+    else if (u.includes('/auth/v1/settings')) out = { external: { email: true, google: true } };
+    else if (u.includes('/auth/v1/authorize')) return route.fulfill({ status: 200, contentType: 'text/html', body: '<p>Google</p>' });
     else if (u.includes('/auth/v1/logout')) return route.fulfill({ status: 204, body: '' });
     else if (u.includes('/auth/v1/user')) out = mode === 'setup' ? {...user, user_metadata:{role:'both'}} : user;
     else if (u.includes('/rpc/tutor_booked_slots')) out = [{ session_date: BOOKABLE[1], period: 3 }];
     else if (u.includes('/rpc/community_stats')) out = [{ sessions_completed: 42, hours_tutored: 35, active_tutors: 9 }];
     else if (u.includes('/rpc/shared_phone')) out = body?.uid === 't2' ? '7135550142' : null;
     else if (u.includes('/rpc/delete_my_account')) out = null;
+    else if (u.includes('/rpc/start_checkin')) out = '4821';
+    else if (u.includes('/rpc/confirm_checkin')) out = body?.code === '4821' ? 'ok' : 'wrong';
+    else if (u.includes('/rpc/log_search')) out = null;
+    else if (u.includes('/rpc/ask_ollie')) out = { reply: 'I found 4 tutors for SAT Math free during B3. Here are the top 3.',
+      kind: 'results', tutors: [tutors[0]], total: 4, subject: 'SAT Math', blocks: [3], match_schedule: false, used_ai: aiOptIn };
+    else if (u.includes('/rpc/insights')) out = { days: 30,
+      totals: { sessions: 12, hours: 11.5, tutors: 5, students: 9, confirmed: 9 },
+      weekly: [{ week: '2026-10-05', sessions: 4 }, { week: '2026-10-12', sessions: 8 }],
+      blocks: [{ period: 9, sessions: 5 }, { period: 3, sessions: 2 }],
+      subjects: [{ subject: 'SAT Math', sessions: 6, tutors: 2 }],
+      unmet: [{ subject: 'AP Physics C', searches: 7, tutors: 0 }] };
     else if (u.includes('/storage/v1/object/list/avatars')) out = [{ name: 'avatar.jpg' }];
     else if (u.includes('/storage/v1/object/avatars') && m === 'DELETE') return route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
     else if (u.includes('/rpc/search_tutors') && mode === 'empty') out = [];
@@ -88,7 +102,7 @@ async function ctxFor(browser, mode, failWrites = false, tour = false) {
       const t = tutors.find((t) => u.includes('eq.' + t.id));
       const p = t ? { ...t, role:'tutor' } : (mode === 'setup'
         ? { id: UID, email: user.email, full_name: '', role: 'both', setup_complete: false }
-        : { id: UID, email: user.email, full_name: 'James Smith', role: 'both', bio: 'Bio here', phone: null, setup_complete: true, is_moderator: mode === 'mod' });
+        : { id: UID, email: user.email, full_name: 'James Smith', role: 'both', bio: 'Bio here', phone: null, setup_complete: true, is_moderator: mode === 'mod', ai_opt_in: aiOptIn });
       out = accept.includes('object') ? p : [p];
     }
     else if (u.includes('/rest/v1/tutor_subjects') && m === 'GET') out = u.includes('eq.t1') ? [{subject:'SAT Math',grade:'800'},{subject:'Chemistry',grade:null}] : [{subject:'SAT Math',grade:'790'}];
@@ -132,6 +146,18 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
 
   // ── Signed out: Login / Sign up / Verify ────────────────────────────────
   { const { ctx, page } = await ctxFor(browser, 'signedOut');
+    ok('Google: button on sign in when Google is turned on', await page.getByLabel('Continue with your school Google account').filter({ visible: true }).count() > 0);
+    await shot(page, 'login-google.png');
+    await page.getByLabel('Continue with your school Google account').filter({ visible: true }).first().click();
+    await page.waitForURL(/auth\/v1\/authorize/, { timeout: 5000 }).catch(() => {});
+    { const u = new URL(page.url());
+      ok('Google: goes to Google limited to school accounts', u.searchParams.get('provider') === 'google' && u.searchParams.get('hd') === 'mail.strakejesuit.org' && u.searchParams.get('redirect_to') === 'http://localhost:8099/', page.url()); }
+    await page.goto('http://localhost:8099/#error=server_error&error_code=unexpected_failure&error_description=Database+error+saving+new+user'); await wait(page, 2500);
+    ok('Google: a personal Gmail is turned away with a clear message', await seen(page, 'Use your @mail.strakejesuit.org Google account', false));
+    ok('Google: the error is cleared from the address bar', !page.url().includes('error'), page.url());
+    await ctx.close(); }
+
+  { const { ctx, page } = await ctxFor(browser, 'signedOut');
     await V(page, 'Sign In').click().catch(()=>{});
     await page.getByRole('button', { name: 'Sign In' }).filter({ visible: true }).first().click(); await wait(page);
     ok('Login: empty submit shows validation', await seen(page, 'Enter a valid email', false) || await seen(page, 'Required', false) || await seen(page, 'expected string', false));
@@ -170,6 +196,9 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     ok('Setup: step 1 of 3 with progress', await seen(page, 'About you') && await seen(page, 'Step 1 of 3'));
     ok('Setup: no phone field (private, added later in Profile)', (await page.locator('[aria-label="Phone number"]').count()) === 0);
     await type(page, 'Bio', 'I like math');
+    ok('Setup: email updates are off until the student ticks the box', !(await page.getByRole('checkbox', { name: 'Email updates from BetterU LLC' }).filter({ visible: true }).first().isChecked()));
+    await page.getByRole('checkbox', { name: 'Email updates from BetterU LLC' }).filter({ visible: true }).first().click(); await wait(page, 200);
+    await shot(page, 'setup-email-consent.png');
     await page.getByRole('button', { name: 'Next' }).filter({ visible: true }).first().click(); await wait(page, 400);
     ok('Setup: step 2 is what you teach', await seen(page, 'What you teach') && await seen(page, 'Step 2 of 3'));
     await page.getByRole('button', { name: 'Back' }).filter({ visible: true }).first().click(); await wait(page, 300);
@@ -190,6 +219,7 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     const subj = lastWrite((w) => w.u.includes('/rest/v1/tutor_subjects') && w.m === 'POST');
     const av = lastWrite((w) => w.u.includes('/rest/v1/tutor_availability') && w.m === 'POST');
     ok('Setup: saves bio (and no phone)', prof && prof.body.bio === 'I like math' && !('phone' in prof.body), JSON.stringify(prof?.body));
+    ok('Setup: saves the email consent', prof && prof.body.email_opt_in === true, JSON.stringify(prof?.body));
     ok('Setup: saves CT with the free blocks', av && JSON.stringify(av.body).includes('"period":9') && JSON.stringify(av.body).includes('"period":4'), JSON.stringify(av?.body));
     ok('Setup: saves subject + grade', subj && JSON.stringify(subj.body).includes('"grade":"A"'), JSON.stringify(subj?.body));
     ok('Setup: saves free block', av && JSON.stringify(av.body).includes('"period":4'), JSON.stringify(av?.body));
@@ -234,6 +264,11 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     await page.getByRole('button', { name: /^Verify .*session/ }).filter({ visible: true }).first().click(); await wait(page, 1000);
     const vf = lastWrite((w) => w.u.includes('/rest/v1/sessions') && w.m === 'PATCH');
     ok('Moderation: verify hours', vf && !!vf.body.verified_at, JSON.stringify(vf?.body));
+    ok('Moderation: checked-in sessions are marked', await seen(page, 'Student checked in'));
+    writes = [];
+    await page.getByRole('button', { name: /Verify all checked-in/i }).filter({ visible: true }).first().click(); await wait(page, 1000);
+    { const va = lastWrite((w) => w.u.includes('/rest/v1/sessions') && w.m === 'PATCH');
+      ok('Moderation: verify all checked-in in one tap', va && !!va.body.verified_at && decodeURIComponent(va.u).includes('id=in.(s5)'), va?.u); }
     await page.getByRole('tab', { name: 'Reports' }).filter({ visible: true }).first().click(); await wait(page, 1000);
     ok('Moderation: reports queue shows the report', await seen(page, 'Cal Out') && await seen(page, 'Kept posting links', false));
     writes = [];
@@ -241,6 +276,11 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     const rv2 = lastWrite((w) => w.u.includes('/rest/v1/reports') && w.m === 'PATCH');
     ok('Moderation: mark report reviewed', rv2 && rv2.body.reviewed === true && rv2.body.reviewed_by === UID, JSON.stringify(rv2?.body));
     ok('Moderation: handled report leaves the queue', !(await seen(page, 'Cal Out')));
+    await page.getByRole('tab', { name: 'Insights' }).filter({ visible: true }).first().click(); await wait(page, 1500);
+    ok('Insights: totals and confirmed share', await seen(page, '9 of 12 confirmed by both tutor and student (75%)') && await seen(page, '11.5'));
+    ok('Insights: subjects students can\'t find a tutor for', await seen(page, 'AP Physics C') && await seen(page, '7 searches · no tutors yet'));
+    ok('Insights: busiest blocks use block names', await page.getByLabel('CT: 5').count() > 0);
+    await shot(page, 'insights.png');
     await ctx.close(); }
 
   // ── First-run tour ─────────────────────────────────────────────────────
@@ -262,6 +302,7 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     ok('Badges: Top tutor on tutor card', await seen(page, 'Top tutor'));
     ok('Checklist: Get started card on Home', await seen(page, 'Get started') && await seen(page, 'Invite a friend') && await seen(page, 'Host your first session'));
     ok('Home: school-wide impact strip', await seen(page, 'Hours tutored') && await seen(page, '35'));
+    ok('Ollie: chat button on Home', (await page.getByRole('button', { name: 'Ask Ollie' }).filter({ visible: true }).count()) === 1);
     await L(page, 'Find a tutor').click(); await wait(page);
     ok('Home: Find a Tutor → Search', await seen(page, 'Find a Tutor'));
     await tab(page, 'Home'); await wait(page);
@@ -276,6 +317,37 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     await tab(page, 'Home'); await wait(page);
     await L(page, 'Browse tutors for core classes, SAT and AP').click(); await wait(page);
     ok('Home: promo → Search', await seen(page, 'Find a Tutor'));
+
+    // Ask Ollie (from the Search screen)
+    writes = [];
+    await page.getByRole('button', { name: 'Ask Ollie' }).filter({ visible: true }).first().click(); await wait(page);
+    { const box = page.getByRole('checkbox', { name: "Use Ollie's AI" }).filter({ visible: true }).first();
+      const start = page.getByRole('button', { name: 'Start chatting' }).filter({ visible: true }).first();
+      ok('Ollie: asks for consent before using AI', await seen(page, 'OpenAI', false) && !(await box.isChecked()) && await start.isDisabled());
+      await box.click(); await wait(page, 300);
+      await start.click(); await wait(page, 1000); }
+    { const pa = lastWrite((w) => w.m === 'PATCH' && w.u.includes('/rest/v1/profiles'));
+      ok('Ollie: saves the AI consent (and nothing else)', pa && pa.body.ai_opt_in === true && Object.keys(pa.body).length === 1, JSON.stringify(pa?.body)); }
+    await type(page, 'Message Ollie', 'chem during b3');
+    await page.locator('[aria-label="Message Ollie"]').filter({ visible: true }).first().press('Enter'); await wait(page, 1200);
+    { const ao = lastWrite((w) => w.u.includes('/rpc/ask_ollie'));
+      ok('Ollie: Enter sends the message to ask_ollie', ao && ao.body.message === 'chem during b3' && Object.keys(ao.body).length === 1, JSON.stringify(ao?.body)); }
+    ok('Ollie: shows the reply and the tutors it found', await seen(page, 'I found 4 tutors for SAT Math', false)
+       && (await page.getByLabel("View Alex Kim's profile").filter({ visible: true }).count()) >= 1);
+    await V(page, 'Turn off AI').click(); await wait(page, 1000);
+    { const pa = lastWrite((w) => w.m === 'PATCH' && w.u.includes('/rest/v1/profiles'));
+      ok('Ollie: AI can be turned off from the chat', pa && pa.body.ai_opt_in === false && await seen(page, 'Start chatting'), JSON.stringify(pa?.body)); }
+    await V(page, 'Use Ollie without AI (keywords only)').click(); await wait(page, 500);
+    ok('Ollie: works without AI too', await seen(page, 'AI is off', false));
+    await type(page, 'Message Ollie', 'SAT math b3');
+    await L(page, 'Send').click(); await wait(page, 1200);
+    await V(page, 'See all 4 in Search').click(); await wait(page, 1200);
+    { const st = lastWrite((w) => w.u.includes('search_tutors'));
+      ok('Ollie: See all opens Search with Ollie\'s filters', st && st.body.filter_subject === 'SAT Math' && st.body.filter_period === 3
+         && !(await seen(page, 'Turn on AI')), JSON.stringify(st?.body)); }
+    await L(page, 'Show filters').click(); await wait(page);
+    await L(page, 'Clear all filters').click(); await wait(page, 1000);
+    await L(page, 'Hide filters').click(); await wait(page);
 
     // Search
     writes = [];
@@ -295,6 +367,8 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     await V(page, 'SAT Math').click(); await wait(page, 1000);
     const rpc2 = lastWrite((w) => w.u.includes('search_tutors'));
     ok('Search: subject filter sent', rpc2 && rpc2.body.filter_subject === 'SAT Math', JSON.stringify(rpc2?.body));
+    { const ls = lastWrite((w) => w.u.includes('/rpc/log_search'));
+      ok('Search: subject searches are logged for Insights (no names)', ls && ls.body.subject === 'SAT Math' && typeof ls.body.results === 'number' && Object.keys(ls.body).length === 3, JSON.stringify(ls?.body)); }
     await V(page, 'Match my schedule').click(); await wait(page, 1000);
     const rpc3 = lastWrite((w) => w.u.includes('search_tutors'));
     ok('Search: match my schedule sent', rpc3 && rpc3.body.match_schedule === true && rpc3.body.student_id === UID);
@@ -369,6 +443,22 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     const d = await dl; await wait(page, 600);
     ok('Sessions: Add to Calendar downloads .ics', d && d.suggestedFilename().endsWith('.ics'), d?.suggestedFilename());
     ok('Sessions: calendar confirmation toast', await seen(page, 'Calendar file downloaded', false));
+    // Check-in: tutor shows a code, student types it in
+    writes = [];
+    await page.getByRole('button', { name: /^Check-in code$/i }).filter({ visible: true }).first().click(); await wait(page, 1000);
+    { const sc = lastWrite((w) => w.u.includes('/rpc/start_checkin'));
+      ok('Check-in: tutor gets a code for their session', sc && sc.body.session === 's4' && await seen(page, '4821'), JSON.stringify(sc?.body)); }
+    await shot(page, 'checkin-code.png');
+    await page.getByRole('button', { name: 'Done' }).filter({ visible: true }).last().click(); await wait(page, 800);
+    await page.getByRole('button', { name: /^Check in$/i }).filter({ visible: true }).first().click(); await wait(page, 800);
+    await type(page, 'Code from your tutor', '1111');
+    await page.getByRole('button', { name: /^Check in$/i }).filter({ visible: true }).last().click(); await wait(page, 1000);
+    ok('Check-in: a wrong code is explained', await seen(page, "That code didn't match", false));
+    await type(page, 'Code from your tutor', '4821'); writes = [];
+    await page.getByRole('button', { name: /^Check in$/i }).filter({ visible: true }).last().click(); await wait(page, 1200);
+    { const cc = lastWrite((w) => w.u.includes('/rpc/confirm_checkin'));
+      ok('Check-in: student confirms with the code', cc && cc.body.session === 's1' && cc.body.code === '4821' && await seen(page, "You're checked in!", false), JSON.stringify(cc?.body)); }
+    await wait(page, 2500);
     ok('Sessions: confirmed session can be marked done', await page.getByRole('button', { name: /Mark .*(Done|Complete)/i }).filter({ visible: true }).count() > 0);
     writes = [];
     await page.getByRole('button', { name: 'Mark as Done' }).filter({ visible: true }).first().click().catch(()=>{}); await wait(page, 1200);
@@ -401,6 +491,18 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     // Profile
     await tab(page, 'Profile'); await wait(page, 1000);
     ok('Moderation: hidden for regular users', !(await seen(page, 'Moderator tools')));
+    writes = [];
+    await page.getByRole('checkbox', { name: 'Email updates from BetterU LLC' }).filter({ visible: true }).first().click(); await wait(page, 800);
+    { const em = lastWrite((w) => w.u.includes('/rest/v1/profiles') && w.m === 'PATCH');
+      ok('Profile: email updates can be turned on from Profile', em && em.body.email_opt_in === true && Object.keys(em.body).length === 1, JSON.stringify(em?.body)); }
+    { const { feedbackUrl } = require('../src/theme/school').school;
+      const btn = page.getByLabel('Send feedback about the app').filter({ visible: true });
+      if (feedbackUrl) {
+        await btn.first().click(); await wait(page, 600);
+        ok('Profile: Send feedback opens the form', (await page.evaluate(() => window.__opened)).includes(feedbackUrl));
+      } else {
+        ok('Profile: Send feedback hidden until a form link is set', await btn.count() === 0);
+      } }
     ok('Profile: service hours card (1 taught session = 1 h)', await seen(page, 'Service hours') && await seen(page, '1'));
     { const [d] = await Promise.all([page.waitForEvent('download', { timeout: 4000 }).catch(() => null),
         page.getByRole('button', { name: 'Download hours log' }).filter({ visible: true }).first().click()]);

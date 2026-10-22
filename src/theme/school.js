@@ -12,4 +12,7 @@ export const school = {
   // website. On the website the app uses its own address instead.
   appUrl: 'https://tutor-delta-one.vercel.app',
   mascotName:  'Ollie',           // the owl
+  // Where "Send feedback" on the Profile screen goes (a Google Form works
+  // well). Leave it empty to hide the button.
+  feedbackUrl: '',
 };

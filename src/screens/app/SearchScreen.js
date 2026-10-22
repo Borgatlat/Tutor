@@ -4,7 +4,7 @@ import {
   SafeAreaView, StatusBar, FlatList, ScrollView, RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { searchTutors } from '../../lib/supabase';
+import { searchTutors, supabase } from '../../lib/supabase';
 import useAuthStore from '../../store/useAuthStore';
 import colors from '../../theme/colors';
 import { cardShadow } from '../../theme/shadows';
@@ -15,6 +15,7 @@ import AppTextInput from '../../components/AppTextInput';
 import TutorCard from '../../components/TutorCard';
 import SkeletonCard from '../../components/SkeletonCard';
 import InviteButton from '../../components/InviteButton';
+import OllieButton from '../../components/OllieButton';
 import {
   Chip, EmptyState, FadeIn, IconButton, SubjectPicker,
   OrganicBackdrop,
@@ -23,7 +24,7 @@ import { BLOCKS } from '../../constants';
 import { blockLabel, blockName } from '../../utils/schedule';
 import { useResponsive } from '../../hooks/useResponsive';
 
-export default function SearchScreen({ navigation }) {
+export default function SearchScreen({ navigation, route }) {
   const { profile } = useAuthStore();
   const { isWide, columns } = useResponsive();
   const isStudent = profile?.role === 'student' || profile?.role === 'both';
@@ -47,6 +48,12 @@ export default function SearchScreen({ navigation }) {
         matchSchedule: match && isStudent,
       });
       setResults(data);
+      // Record subject searches (no names) so moderators can see where
+      // students look for help and find nobody. Never blocks the screen.
+      if (s && !silent && !q) {
+        supabase.rpc('log_search', { subject: s, period: b ?? null, results: data?.length ?? 0 })
+          .then(() => {}, () => {});
+      }
     } catch (e) {
       if (__DEV__) console.warn('[SearchScreen]', e.message);
     } finally {
@@ -57,6 +64,16 @@ export default function SearchScreen({ navigation }) {
   useEffect(() => {
     runSearch(query, subject, block, matchSchedule);
   }, [subject, block, matchSchedule]);
+
+  // "See all in Search" from Ask Ollie opens here with Ollie's filters.
+  const fromOllie = route?.params?.ollie;
+  useEffect(() => {
+    if (!fromOllie) return;
+    setQuery('');
+    setSubject(fromOllie.subject ?? null);
+    setBlock(fromOllie.block ?? null);
+    setMatchSchedule(!!fromOllie.matchSchedule && isStudent);
+  }, [fromOllie?.at]);
 
   const handleQueryChange = (text) => {
     setQuery(text);
@@ -272,6 +289,7 @@ export default function SearchScreen({ navigation }) {
           {results_}
         </>
       )}
+      {isStudent ? <OllieButton navigation={navigation} /> : null}
     </SafeAreaView>
   );
 }
@@ -363,7 +381,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.lg, paddingTop: space.md, paddingBottom: space.xs,
   },
 
-  list:          { paddingHorizontal: space.lg, paddingTop: space.sm, paddingBottom: space.xxxl },
+  list:          { paddingHorizontal: space.lg, paddingTop: space.sm, paddingBottom: 88 },  // room for Ollie
   columnWrapper: { gap: space.md },
   gridItem:      { flex: 1 },
 });

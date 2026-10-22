@@ -108,3 +108,16 @@ export const SESSION_STATUS = {
 };
 
 export const SCHOOL_EMAIL_DOMAIN = '@mail.strakejesuit.org';
+
+// Shown next to the email opt-in box. Keep it the same as
+// email_consent_wording() in supabase/migrations/007_email_notifications.sql.
+export const EMAIL_CONSENT_TEXT =
+  'I agree to receive emails about my tutoring sessions (new requests, confirmations '
+  + 'and cancellations) from BetterU LLC. I can turn them off anytime in Profile.';
+
+// Shown next to the Ask Ollie AI opt-in box. Keep it the same as
+// ollie_consent_wording() in supabase/migrations/008_ask_ollie.sql.
+export const OLLIE_CONSENT_TEXT =
+  'Ollie is an AI helper from BetterU LLC. I agree that what I type to Ollie is sent to OpenAI '
+  + 'so Ollie can understand what I need. My name and email are never sent, and I won\'t type '
+  + 'personal information. I can turn this off anytime.';

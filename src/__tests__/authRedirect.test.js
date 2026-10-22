@@ -28,3 +28,50 @@ describe('friendlyAuthEmailError', () => {
     expect(friendlyAuthEmailError('Invalid login credentials')).toBeNull();
   });
 });
+
+describe('Google sign-in messages', () => {
+  jest.mock('../lib/supabase', () => ({ supabase: {}, SUPABASE_URL: '', SUPABASE_ANON_KEY: '' }));
+  jest.mock('expo-web-browser', () => ({}));
+  const { friendlyGoogleError } = require('../lib/googleSignIn');
+
+  test('a refused personal Gmail asks for the school account', () => {
+    expect(friendlyGoogleError('Database error saving new user')).toMatch(/@mail\.strakejesuit\.org Google account/);
+  });
+
+  test('closing Google stays quiet; Google turned off is explained', () => {
+    expect(friendlyGoogleError('access_denied')).toBeNull();
+    expect(friendlyGoogleError('Unsupported provider: provider is not enabled')).toMatch(/isn't turned on yet/);
+    expect(friendlyGoogleError(null)).toBeNull();
+  });
+});
+
+describe('email consent', () => {
+  test('the app shows exactly the wording the database records', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const { EMAIL_CONSENT_TEXT } = require('../constants');
+    const sql = fs.readFileSync(path.join(__dirname, '../../supabase/migrations/007_email_notifications.sql'), 'utf8');
+    expect(sql).toContain(`select '${EMAIL_CONSENT_TEXT.replace(/'/g, "''")}'`);
+    expect(EMAIL_CONSENT_TEXT).toMatch(/BetterU LLC/);
+  });
+});
+
+describe('Ask Ollie', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const sql = fs.readFileSync(path.join(__dirname, '../../supabase/migrations/008_ask_ollie.sql'), 'utf8');
+
+  it('shows the same consent words the database records', () => {
+    const { OLLIE_CONSENT_TEXT } = require('../constants');
+    expect(sql).toContain(`select '${OLLIE_CONSENT_TEXT.replace(/'/g, "''")}'`);
+    expect(OLLIE_CONSENT_TEXT).toMatch(/OpenAI/);
+    expect(OLLIE_CONSENT_TEXT).toMatch(/BetterU LLC/);
+  });
+
+  it('knows every class the app lists', () => {
+    const { SUBJECTS } = require('../constants');
+    const list = sql.match(/unnest\(array\[([\s\S]*?)\]\) as s/)[1];
+    const inSql = [...list.matchAll(/'((?:[^']|'')*)'/g)].map((m) => m[1].replace(/''/g, "'"));
+    expect(inSql.sort()).toEqual([...SUBJECTS].sort());
+  });
+});

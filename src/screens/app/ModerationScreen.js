@@ -3,7 +3,10 @@
  *
  *   Hours    completed sessions waiting for a moderator to verify, so the
  *            service-hours log is officially signed in the app.
+ *            Ones the student checked in to (confirmed by both) can be
+ *            verified together in one tap.
  *   Reports  reports students filed, to look into and mark reviewed.
+ *   Insights how tutoring is going, and which subjects need tutors.
  *
  * Everything here is also enforced by the database (moderator-only policies
  * and the check_session_update trigger), so the screen is a convenience,
@@ -24,8 +27,9 @@ import { blockMinutes, sessionWhen } from '../../utils/schedule';
 import { minutesToHours } from '../../utils/hours';
 import { success, warn } from '../../utils/haptics';
 import { Button, EmptyState, ErrorBanner, FadeIn } from '../../components/ui';
+import InsightsPanel from '../../components/InsightsPanel';
 
-const TABS = ['Hours', 'Reports'];
+const TABS = ['Hours', 'Reports', 'Insights'];
 
 export default function ModerationScreen({ navigation }) {
   const { profile } = useAuthStore();
@@ -38,6 +42,7 @@ export default function ModerationScreen({ navigation }) {
 
   const load = useCallback(async () => {
     setError('');
+    if (tab === 'Insights') { setRows([]); setLoading(false); return; }
     const query = tab === 'Hours'
       ? supabase
           .from('sessions')
@@ -70,6 +75,20 @@ export default function ModerationScreen({ navigation }) {
   };
 
   const verify   = (s) => act(s.id, { verified_at: new Date().toISOString() }, 'sessions');
+
+  // Sessions the student checked in to are confirmed by both people, so they
+  // can be verified together.
+  const checkedIn = rows.filter((r) => r.student_confirmed_at);
+  const verifyCheckedIn = async () => {
+    const ids = checkedIn.map((r) => r.id);
+    setBusyId('all');
+    const { error: e } = await supabase.from('sessions')
+      .update({ verified_at: new Date().toISOString() }).in('id', ids);
+    setBusyId(null);
+    if (e) { warn(); setError(e.message); return; }
+    success();
+    setRows((list) => list.filter((r) => !ids.includes(r.id)));
+  };
   const resolve  = (r) => act(r.id, { reviewed: true, reviewed_by: profile.id, reviewed_at: new Date().toISOString() }, 'reports');
 
   const renderHours = ({ item, index }) => (
@@ -81,6 +100,12 @@ export default function ModerationScreen({ navigation }) {
             Tutored {item.student?.full_name ?? 'a student'} · {item.subject}
           </Text>
           <Text style={styles.meta}>{sessionWhen(item)} · {minutesToHours(blockMinutes(item.period))} h</Text>
+          {item.student_confirmed_at ? (
+            <View style={styles.badge}>
+              <Ionicons name="shield-checkmark" size={13} color={colors.brandText} />
+              <Text style={styles.badgeText}>Student checked in</Text>
+            </View>
+          ) : null}
         </View>
       </View>
       <Button
@@ -134,7 +159,7 @@ export default function ModerationScreen({ navigation }) {
           <Text style={styles.backText}>Profile</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Moderator tools</Text>
-        <Text style={styles.headerSub}>Verify service hours and review reports</Text>
+        <Text style={styles.headerSub}>Verify hours, review reports, see how tutoring is going</Text>
       </View>
 
       {!profile?.is_moderator ? (
@@ -158,6 +183,7 @@ export default function ModerationScreen({ navigation }) {
 
           <ErrorBanner message={error} style={styles.error} />
 
+          {tab === 'Insights' ? <InsightsPanel /> : (
           <FlatList
             data={loading ? [] : rows}
             keyExtractor={(r) => r.id}
@@ -165,9 +191,20 @@ export default function ModerationScreen({ navigation }) {
             contentContainerStyle={styles.list}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.brandText} />}
             ListHeaderComponent={!loading && rows.length ? (
-              <Text style={styles.count}>
-                {rows.length} {tab === 'Hours' ? `session${rows.length === 1 ? '' : 's'} to verify` : `open report${rows.length === 1 ? '' : 's'}`}
-              </Text>
+              <View style={styles.listHead}>
+                <Text style={styles.count}>
+                  {rows.length} {tab === 'Hours' ? `session${rows.length === 1 ? '' : 's'} to verify` : `open report${rows.length === 1 ? '' : 's'}`}
+                </Text>
+                {tab === 'Hours' && checkedIn.length ? (
+                  <Button
+                    label={`Verify all checked-in (${checkedIn.length})`}
+                    icon="shield-checkmark"
+                    size="sm"
+                    loading={busyId === 'all'}
+                    onPress={verifyCheckedIn}
+                  />
+                ) : null}
+              </View>
             ) : null}
             ListEmptyComponent={!loading ? (
               <EmptyState
@@ -179,6 +216,7 @@ export default function ModerationScreen({ navigation }) {
               />
             ) : null}
           />
+          )}
         </>
       )}
     </SafeAreaView>
@@ -212,6 +250,9 @@ const styles = StyleSheet.create({
   error: { marginHorizontal: space.lg, marginTop: space.md },
   list:  { padding: space.lg, gap: space.md, paddingBottom: space.xxxl },
   count: { ...type.eyebrow, color: colors.gray500, marginBottom: space.xs },
+  listHead: { gap: space.sm },
+  badge:     { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: space.xs },
+  badgeText: { ...type.small, fontWeight: '600', color: colors.brandText },
 
   card: {
     backgroundColor: colors.surface, borderRadius: radii.lg,

@@ -5,6 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { supabase } from '../../lib/supabase';
 import { authEmailRedirectTo, friendlyAuthEmailError } from '../../lib/authRedirect';
+import { takeAuthErrorFromUrl } from '../../lib/googleSignIn';
+import GoogleSignInButton from '../../components/GoogleSignInButton';
 import colors from '../../theme/colors';
 import { space, hit, press } from '../../theme/layout';
 import { heading, label, type } from '../../theme/fonts';
@@ -36,7 +38,8 @@ const schema = z.object({
 export default function LoginScreen({ navigation }) {
   const [loading, setLoading]         = useState(false);
   const [showPw, setShowPw]           = useState(false);
-  const [submitError, setSubmitError] = useState('');
+  // A refused Google sign-in (e.g. a personal Gmail) comes back in the URL on web.
+  const [submitError, setSubmitError] = useState(() => takeAuthErrorFromUrl() ?? '');
   const [resetNote, setResetNote]     = useState('');
 
   const { control, handleSubmit, getValues, formState: { errors } } = useForm({
@@ -90,6 +93,8 @@ export default function LoginScreen({ navigation }) {
       <Text style={styles.cardTitle}>Sign in</Text>
 
       <ErrorBanner message={submitError} />
+
+      <GoogleSignInButton onError={setSubmitError} />
 
       <Controller
         control={control}

@@ -169,6 +169,10 @@ export default function AppTextInput({
     spellCheck:      autoCorrect !== false,
     maxLength,
     disabled:        !editable,
+    // Enter sends, like returnKeyType="send" on a phone.
+    onKeyDown: rest.onSubmitEditing && !multiline
+      ? (e) => { if (e.key === 'Enter') { e.preventDefault(); rest.onSubmitEditing(); } }
+      : undefined,
   };
 
   if (multiline) {

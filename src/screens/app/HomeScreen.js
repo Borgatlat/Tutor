@@ -19,6 +19,7 @@ import InviteButton from '../../components/InviteButton';
 import { sessionWhen } from '../../utils/schedule';
 import { Avatar, EmptyState, FadeIn, OrganicBackdrop, SectionHeader, StatRow, StatusPill } from '../../components/ui';
 import { useResponsive } from '../../hooks/useResponsive';
+import OllieButton from '../../components/OllieButton';
 
 export default function HomeScreen({ navigation }) {
   const { profile } = useAuthStore();
@@ -213,6 +214,7 @@ export default function HomeScreen({ navigation }) {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -290,11 +292,13 @@ export default function HomeScreen({ navigation }) {
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
+      {profile?.role !== 'tutor' ? <OllieButton navigation={navigation} /> : null}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollContent: { paddingBottom: 72 },   // room for the Ollie button
   safe: { flex: 1, backgroundColor: colors.offWhite },
 
   // ── Hero ──────────────────────────────────────────────────────────────────
