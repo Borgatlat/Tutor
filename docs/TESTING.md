@@ -7,7 +7,7 @@ first week") are the strongest line in the Congressional App Challenge video.
 Live app: **https://tutor-delta-one.vercel.app**
 
 ## Before you send it
-- [ ] The latest migrations are run in Supabase (through `009_profile_insert_guard.sql`).
+- [ ] The latest migrations are run in Supabase (through `010_signed_in_only.sql`).
 - [ ] Optional: email updates switched on (Resend key and sender in the Vault,
       see *Email notifications* in the README). Send yourself a test booking
       with email updates ticked to check it arrives (and isn't in spam).

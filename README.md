@@ -11,9 +11,13 @@ app** and as a **website**.
 [docs/TESTING.md](docs/TESTING.md) (invite message, 5-minute test, feedback
 questions, judge account)
 
-| Home | Find a tutor | Tutor profile | Sessions | Profile & hours |
-|---|---|---|---|---|
-| ![Home](docs/screenshots/mobile-home.png) | ![Search](docs/screenshots/mobile-search.png) | ![Tutor profile](docs/screenshots/mobile-tutorprofile.png) | ![Sessions](docs/screenshots/mobile-sessions.png) | ![Profile](docs/screenshots/mobile-profile.png) |
+| Home | Ask Ollie | Find a tutor | Tutor profile |
+|---|---|---|---|
+| ![Home](docs/screenshots/mobile-home.png) | ![Ask Ollie](docs/screenshots/mobile-ollie.png) | ![Search](docs/screenshots/mobile-search.png) | ![Tutor profile](docs/screenshots/mobile-tutorprofile.png) |
+
+| Sessions | Check-in code | Profile & hours |
+|---|---|---|
+| ![Sessions](docs/screenshots/mobile-sessions.png) | ![Check-in code](docs/screenshots/mobile-checkin.png) | ![Profile](docs/screenshots/mobile-profile.png) |
 
 ## The problem
 
@@ -108,7 +112,7 @@ More detail: [ARCHITECTURE.md](ARCHITECTURE.md) · database:
   press every screen's buttons and check what the app sends
   (`npm run test:e2e`, in [e2e/](e2e/)).
 - **Database tests**: every migration is applied twice to a real Postgres,
-  the demo data is loaded twice, then 109 checks sign in as a tutor, a
+  the demo data is loaded twice, then 112 checks sign in as a tutor, a
   student, a moderator, an outsider and a visitor and try everything they
   should and shouldn't be able to do (`npm run test:db`, in
   [supabase/tests/](supabase/tests/)).
@@ -152,11 +156,12 @@ run them in order (each one is safe to run again):
 8. `008_ask_ollie.sql`: Ask Ollie (see *Ask Ollie* below)
 9. `009_profile_insert_guard.sql`: security fixes (nobody can sign up as a
    moderator or with a fake rating or email; new bookings start unconfirmed)
-10. `supabase/seed_demo.sql` *(optional)*: demo accounts, all with password
+10. `010_signed_in_only.sql`: tutor search only for signed-in students
+11. `supabase/seed_demo.sql` *(optional)*: demo accounts, all with password
    `DemoTutor2026!`. Sign in as `james.smith.demo@mail.strakejesuit.org`
    (student), `alex.kim.demo@…` (tutor) or `mr.thompson.demo@…` (moderator).
 
-Shortcut: `supabase/all_migrations.sql` has 001–009 in one file to paste and
+Shortcut: `supabase/all_migrations.sql` has 001–010 in one file to paste and
 run (rebuild it with `npm run db:bundle` after changing a migration).
 
 Or with the Supabase CLI: `npx supabase link --project-ref <your ref>`, then
