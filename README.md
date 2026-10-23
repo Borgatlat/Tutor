@@ -11,9 +11,13 @@ app** and as a **website**.
 [docs/TESTING.md](docs/TESTING.md) (invite message, 5-minute test, feedback
 questions, judge account)
 
-| Home | Find a tutor | Tutor profile | Sessions | Profile & hours |
-|---|---|---|---|---|
-| ![Home](docs/screenshots/mobile-home.png) | ![Search](docs/screenshots/mobile-search.png) | ![Tutor profile](docs/screenshots/mobile-tutorprofile.png) | ![Sessions](docs/screenshots/mobile-sessions.png) | ![Profile](docs/screenshots/mobile-profile.png) |
+| Home | Ask Ollie | Find a tutor | Tutor profile |
+|---|---|---|---|
+| ![Home](docs/screenshots/mobile-home.png) | ![Ask Ollie](docs/screenshots/mobile-ollie.png) | ![Search](docs/screenshots/mobile-search.png) | ![Tutor profile](docs/screenshots/mobile-tutorprofile.png) |
+
+| Sessions | Check-in code | Profile & hours |
+|---|---|---|
+| ![Sessions](docs/screenshots/mobile-sessions.png) | ![Check-in code](docs/screenshots/mobile-checkin.png) | ![Profile](docs/screenshots/mobile-profile.png) |
 
 ## The problem
 
