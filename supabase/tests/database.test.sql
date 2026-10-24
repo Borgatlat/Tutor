@@ -70,6 +70,10 @@ select pg_temp.sign_in('');
 set role anon;
 select pg_temp.fails('select id from public.profiles', 'visitors cannot list profiles', '%permission denied%');
 select pg_temp.fails('select public.delete_my_account()', 'visitors cannot delete accounts', '%permission denied%');
+select pg_temp.fails('select * from public.search_tutors()', 'visitors cannot list tutors', '%permission denied%');
+select pg_temp.fails(format('select public.first_name(%L)', :A), 'visitors cannot look up names', '%permission denied%');
+select pg_temp.fails(format('select * from public.tutor_booked_slots(%L, current_date, current_date + 7)', :A),
+                     'visitors cannot see a tutor''s bookings', '%permission denied%');
 reset role;
 
 
