@@ -1,4 +1,4 @@
-# Strake Jesuit Tutors
+# Tutors for Others
 
 **Peer tutoring that fits a block schedule.** Students find a classmate who has
 already aced the class, book one of the blocks they're both free, and tutors
@@ -157,11 +157,12 @@ run them in order (each one is safe to run again):
 9. `009_profile_insert_guard.sql`: security fixes (nobody can sign up as a
    moderator or with a fake rating or email; new bookings start unconfirmed)
 10. `010_signed_in_only.sql`: tutor search only for signed-in students
-11. `supabase/seed_demo.sql` *(optional)*: demo accounts, all with password
+11. `011_app_name.sql`: the new name, Tutors for Others, in session emails
+12. `supabase/seed_demo.sql` *(optional)*: demo accounts, all with password
    `DemoTutor2026!`. Sign in as `james.smith.demo@mail.strakejesuit.org`
    (student), `alex.kim.demo@…` (tutor) or `mr.thompson.demo@…` (moderator).
 
-Shortcut: `supabase/all_migrations.sql` has 001–010 in one file to paste and
+Shortcut: `supabase/all_migrations.sql` has 001–011 in one file to paste and
 run (rebuild it with `npm run db:bundle` after changing a migration).
 
 Or with the Supabase CLI: `npx supabase link --project-ref <your ref>`, then
@@ -176,7 +177,7 @@ and how to turn emails off. To switch it on, keep the key out of GitHub by
 storing it in the Supabase Vault (SQL Editor):
 ```sql
 select vault.create_secret('re_…your Resend API key…', 'resend_api_key');
-select vault.create_secret('Strake Jesuit Tutors <tutors@your-verified-domain>', 'resend_from');
+select vault.create_secret('Tutors for Others <tutors@your-verified-domain>', 'resend_from');
 ```
 and check that **pg_net** is on (Database → Extensions). The sender address
 must be on a domain verified in Resend.

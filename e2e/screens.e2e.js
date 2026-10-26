@@ -592,7 +592,7 @@ async function type(page, label, text) { const el = page.locator(`[aria-label="$
     ok('Empty: Sessions invites a study friend', await seen(page, 'No upcoming sessions') && (await page.getByRole('button', { name: 'Invite a friend to study with' }).filter({ visible: true }).count()) === 1);
     await page.getByRole('button', { name: 'Invite a friend to study with' }).filter({ visible: true }).first().click(); await wait(page, 800);
     { const c = await clip();
-      ok('Empty: study invite is the normal invite message', c.includes('Strake Jesuit Tutors') && !c.includes('Are you good at'), c); }
+      ok('Empty: study invite is the normal invite message', c.includes('Tutors for Others') && !c.includes('Are you good at'), c); }
     await shot(page, 'empty-sessions.png');
     await ctx.close(); }
 

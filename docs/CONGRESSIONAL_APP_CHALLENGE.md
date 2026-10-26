@@ -14,11 +14,11 @@ Each part of the kit below is aimed at one of these three.
 
 ## 1. App title
 
-**Strake Jesuit Tutors**: peer tutoring built around the block schedule.
+**Tutors for Others**: peer tutoring built around the block schedule.
 
 ## 2. Short description (for the form)
 
-> Strake Jesuit Tutors connects students who need help with classmates who have
+> Tutors for Others connects students who need help with classmates who have
 > already mastered the class, during the free blocks they share. Students
 > search by class or tap "Match my schedule", or just tell Ollie, our AI owl,
 > what they need ("chem during B3"). They book a real school day on Strake's
@@ -51,7 +51,7 @@ phone-sized browser window. Speak over it. Use **clear placeholder names**
 
 | Time | On screen | Say |
 |---|---|---|
-| 0:00–0:15 | Each team member on camera, or a title card | "Hi, we're **[names]** from **[school]**, and this is Strake Jesuit Tutors." |
+| 0:00–0:15 | Each team member on camera, or a title card | "Hi, we're **[names]** from **[school]**, and this is Tutors for Others." |
 | 0:15–0:35 | Login screen with Ollie the owl | "At our school, getting help means texting around to find someone who's free during your block. Students who want to tutor also need service hours but have no way to be found. We built one app for both." |
 | 0:35–0:50 | Sign up with a school email, then the welcome tour | "You can only sign up with a school email, and Ollie gives a quick three-step tour." |
 | 0:50–1:20 | Search: type a subject, tap **Match my schedule**; then tap the owl, type "chem during B3", open a tutor | "Search by class, from Algebra to AP Calc, or tap *Match my schedule*. Our search ranks tutors by rating and experience, and boosts anyone who shares your free blocks. Or just ask Ollie: AI turns your words into a search, but the matching happens in our own database, so no student's data goes to the AI." |
@@ -59,7 +59,7 @@ phone-sized browser window. Speak over it. Use **clear placeholder names**
 | 1:40–2:00 | Switch to the tutor account: the push notification, **Confirm**, then **Message** | "The tutor gets a notification, confirms, and they plan the session in the built-in chat, so no one shares a phone number." |
 | 2:00–2:15 | Tutor taps **Check-in code**, student types it, then Profile **Service hours** and the moderator's **Insights** tab | "At the session, the student types the tutor's code, so the hours are confirmed by both. A teacher verifies them, and Insights shows which classes students need help in but can't find a tutor for." |
 | 2:15–2:35 | Quick shots: the code, the tests passing, the accessibility scan | "We built it in React Native with Expo, so it runs on iPhone, Android and the web, with a Supabase backend. Security rules keep each student's sessions private. It has 44 unit tests, 149 automated screen checks, 112 database security tests, dark mode, and an accessibility scan with zero issues." |
-| 2:35–2:45 | Home screen | "In our first week of testing, **[N] students** signed up and booked **[N] sessions**. Strake Jesuit Tutors: Crusaders helping Crusaders. Thanks for watching!" |
+| 2:35–2:45 | Home screen | "In our first week of testing, **[N] students** signed up and booked **[N] sessions**. Tutors for Others: Crusaders helping Crusaders. Thanks for watching!" |
 
 Check before you upload:
 - [ ] Under 3 minutes.
@@ -77,7 +77,7 @@ Check before you upload:
 ## 7. Before you submit
 
 **Database and accounts**
-- [ ] All migrations are run: paste `supabase/all_migrations.sql` (001–010) into the Supabase SQL Editor and run it. Safe to run again.
+- [ ] All migrations are run: paste `supabase/all_migrations.sql` (001–011) into the Supabase SQL Editor and run it. Safe to run again.
 - [ ] The OpenAI key is in the Vault (README → *Ask Ollie*). Test by tapping the owl and asking "chem during B3".
 - [ ] The judge account is set up (`docs/TESTING.md` → *Judge access*), and its password is written **only** in the submission form.
 - [ ] Record the video with the demo data (`supabase/seed_demo.sql`, password in the README). **Then delete the demo accounts before submitting**, because their password is public:

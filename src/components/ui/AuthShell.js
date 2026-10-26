@@ -38,8 +38,8 @@ export default function AuthShell({
       <View style={styles.lockup}>
         <Logo size={compact ? 40 : 48} onDark />
         <View>
-          <Text style={styles.school}>{school.name.toUpperCase()}</Text>
-          <Text style={styles.schoolSub}>Tutors</Text>
+          <Text style={styles.school}>{school.appName.toUpperCase()}</Text>
+          <Text style={styles.schoolSub}>{school.name}</Text>
         </View>
       </View>
       <View style={[styles.rule, compact && styles.ruleCompact]} />
