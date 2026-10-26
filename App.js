@@ -87,8 +87,8 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
     ));
   }
 
-  // 3. Montserrat from Google Fonts: the exported page doesn't use
-  //    web/index.html, so the stylesheet is added here at load time.
+  // 3. Montserrat from Google Fonts. public/index.html links it too; this
+  //    covers dev servers and any page built without that template.
   if (!document.getElementById('montserrat-font')) {
     const fontLink = document.createElement('link');
     fontLink.id   = 'montserrat-font';
@@ -130,7 +130,7 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
   }
 }
 
-// Montserrat everywhere. Web gets it from Google Fonts (web/index.html); native
+// Montserrat everywhere. Web gets it from Google Fonts (public/index.html); native
 // registers one family per weight below.
 applyFontFamily();
 
