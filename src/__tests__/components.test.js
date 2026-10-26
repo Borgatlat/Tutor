@@ -46,11 +46,11 @@ describe('Logo', () => {
 
   test('full logo is one labelled image', () => {
     const { getByLabelText } = render(<Logo size={48} />);
-    expect(getByLabelText('Strake Jesuit Tutors logo')).toBeTruthy();
+    expect(getByLabelText('Tutors for Others logo')).toBeTruthy();
   });
 
   test('animation layers are hidden from screen readers', () => {
     const { queryByLabelText } = render(<Logo size={48} layer="left" />);
-    expect(queryByLabelText('Strake Jesuit Tutors logo')).toBeNull();
+    expect(queryByLabelText('Tutors for Others logo')).toBeNull();
   });
 });

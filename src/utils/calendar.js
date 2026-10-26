@@ -56,7 +56,7 @@ async function addToNativeCalendar(session, otherName, startDate, endDate) {
     session.notes ?? null,
     `Subject: ${session.subject}`,
     blockName(session.period),
-    `${school.name} Tutor Marketplace`,
+    `${school.appName}`,
   ].filter(Boolean).join('\n');
 
   try {
@@ -107,7 +107,7 @@ function addToWebCalendar(session, otherName, startDate, endDate) {
     session.notes ?? null,
     `Subject: ${session.subject}`,
     blockName(session.period),
-    `${school.name} Tutor Marketplace`,
+    `${school.appName}`,
   ].filter(Boolean).join('\\n');
 
   const uid = `session-${session.id ?? Date.now()}@strakejesuit.tutors`;
@@ -116,7 +116,7 @@ function addToWebCalendar(session, otherName, startDate, endDate) {
   const ics = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Strake Jesuit Tutors//EN',
+    'PRODID:-//Tutors for Others//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',

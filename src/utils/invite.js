@@ -16,14 +16,14 @@ export function inviteLink() {
 
 export function inviteMessage(isTutor) {
   return isTutor
-    ? `I'm tutoring on ${school.name} Tutors. Book a free block with me or find another ${school.memberName} who can help: ${inviteLink()}`
-    : `I'm using ${school.name} Tutors to get help from other ${school.memberPlural}. Join me: ${inviteLink()}`;
+    ? `I'm tutoring on ${school.appName}. Book a free block with me or find another ${school.memberName} who can help: ${inviteLink()}`
+    : `I'm using ${school.appName} to get help from other ${school.memberPlural}. Join me: ${inviteLink()}`;
 }
 
 // For an empty search: ask someone who's good at a class to start tutoring.
 export function recruitMessage(subject) {
   const what = subject ? `good at ${subject}` : 'good at a class';
-  return `Are you ${what}? Tutor other ${school.memberPlural} on ${school.name} Tutors during your free blocks and earn service hours: ${inviteLink()}`;
+  return `Are you ${what}? Tutor other ${school.memberPlural} on ${school.appName} during your free blocks and earn service hours: ${inviteLink()}`;
 }
 
 /**
@@ -38,7 +38,7 @@ export async function shareInvite(isTutor, { kind = 'friend', subject } = {}) {
       return r.action === Share.dismissedAction ? 'cancelled' : 'shared';
     }
     if (navigator.share) {
-      await navigator.share({ title: `${school.name} Tutors`, text: message });
+      await navigator.share({ title: `${school.appName}`, text: message });
       return 'shared';
     }
     await navigator.clipboard.writeText(message);

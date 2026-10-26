@@ -49,7 +49,7 @@ create schema vault;
 create table vault.decrypted_secrets (name text primary key, decrypted_secret text);
 insert into vault.decrypted_secrets values
   ('resend_api_key', 're_test_key'),
-  ('resend_from', 'Strake Jesuit Tutors <tutors@example.com>');
+  ('resend_from', 'Tutors for Others <tutors@example.com>');
 insert into vault.decrypted_secrets values ('openai_api_key', 'sk-test');
 
 -- pgsql-http stand-in for Ollie: answers with whatever a test puts in

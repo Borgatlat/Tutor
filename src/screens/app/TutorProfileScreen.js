@@ -140,7 +140,7 @@ export default function TutorProfileScreen({ route, navigation }) {
                   size="sm"
                   variant="secondary"
                   onPress={() => Linking.openURL(
-                    `mailto:${tutor.email}?subject=${encodeURIComponent(`Peer tutoring (${school.name} Tutors)`)}`,
+                    `mailto:${tutor.email}?subject=${encodeURIComponent(`Peer tutoring (${school.appName})`)}`,
                   )}
                 />
               ) : null}

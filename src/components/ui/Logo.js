@@ -39,7 +39,7 @@ export default function Logo({ size = 64, onDark = false, layer = 'all', style }
       viewBox="0 0 120 120"
       style={style}
       accessibilityRole={layer === 'all' ? 'image' : undefined}
-      accessibilityLabel={layer === 'all' ? `${school.name} Tutors logo` : undefined}
+      accessibilityLabel={layer === 'all' ? `${school.appName} logo` : undefined}
       accessibilityElementsHidden={layer !== 'all'}
       importantForAccessibility={layer === 'all' ? 'yes' : 'no-hide-descendants'}
     >

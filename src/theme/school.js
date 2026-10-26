@@ -5,7 +5,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const school = {
-  name:        'Strake Jesuit',   // full name, as shown in the header lockup
+  appName:     'Tutors for Others', // the app's name (after the Jesuit motto "men and women for others")
+  name:        'Strake Jesuit',   // the school's name, shown under the app name
   memberName:  'Crusader',        // what a student is called ("Welcome back, Crusader")
   memberPlural:'Crusaders',
   // Link people are sent when someone taps "Invite a friend": the production

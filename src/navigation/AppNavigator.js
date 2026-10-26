@@ -87,8 +87,8 @@ function DesktopSidebar({ state, navigation }) {
       <View style={styles.brand}>
         <Logo size={40} onDark />
         <View>
-          <Text style={styles.brandLine1}>{school.name.toUpperCase()}</Text>
-          <Text style={styles.brandLine2}>Tutors</Text>
+          <Text style={styles.brandLine1}>{school.appName.toUpperCase()}</Text>
+          <Text style={styles.brandLine2}>{school.name}</Text>
         </View>
       </View>
 

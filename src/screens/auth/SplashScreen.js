@@ -97,7 +97,7 @@ export default function SplashScreen() {
         style={styles.content}
         accessible
         accessibilityRole="progressbar"
-        accessibilityLabel={`${school.name} Tutors is loading`}
+        accessibilityLabel={`${school.appName} is loading`}
       >
         <Animated.View style={[styles.mark, heartStyle]}>
           <Animated.View style={[styles.layer, bookStyle]}>
@@ -113,7 +113,7 @@ export default function SplashScreen() {
 
         <Animated.View style={[styles.words, wordStyle]}>
           <Text style={styles.school}>{school.name.toUpperCase()}</Text>
-          <Text style={styles.title}>Tutors</Text>
+          <Text style={styles.title}>{school.appName}</Text>
           <View style={styles.rule} />
           <Text style={styles.sub}>{school.memberPlural} helping {school.memberPlural}</Text>
         </Animated.View>
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
 
   words:  { alignItems: 'center' },
   school: { ...label.caps, color: colors.whiteAlpha[80], fontSize: 12, letterSpacing: 3 },
-  title:  { ...heading.xl, color: colors.white, fontSize: 44, lineHeight: 52, marginTop: space.xs },
+  title:  { ...heading.xl, color: colors.white, fontSize: 38, lineHeight: 46, marginTop: space.xs, textAlign: 'center' },
   rule: {
     width: rule.width, height: rule.height, borderRadius: rule.radius,
     backgroundColor: colors.gold,
